@@ -1,17 +1,16 @@
 import logging
 
-from crypto.endpoints import market_data  # noqa
 from crypto import constants  # noqa
 from crypto import mongo
 
 logger = logging.getLogger(__name__)
 
 
-class Crawler:
+class Charter:
 
     def __init__(self):
         self.mongo_conn = mongo.connect()
 
-    def crawl(self, symbol):
-        logger.info(f'Crawling {symbol}')
+    def show_charts(self, symbol):
+        logger.info(f'Trading {symbol}')
         return 'None'

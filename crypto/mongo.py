@@ -7,10 +7,10 @@ logger = logging.getLogger(__name__)
 
 
 def connect():
-    host = os.getenv('SV_MONGO_HOST')
-    port = os.getenv('SV_MONGO_PORT')
-    user = os.getenv('SV_MONGO_USER')
-    passwd = os.getenv('SV_MONGO_PASSWD')
+    host = os.getenv('CRYPTO_MONGO_HOST')
+    port = os.getenv('CRYPTO_MONGO_PORT')
+    user = os.getenv('CRYPTO_MONGO_USER')
+    passwd = os.getenv('CRYPTO_MONGO_PASSWD')
     if user and passwd:
         quoted_user = urllib.parse.quote_plus(user)
         quoted_passwd = urllib.parse.quote_plus(passwd)
