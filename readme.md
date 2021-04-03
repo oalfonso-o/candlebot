@@ -1,0 +1,28 @@
+# CRYPTO AUTO TRADER
+This project has few features to:
+- crawl Binance crypto values and store them in a DB
+- show charts of these values
+- automatically trade with a little % of profit
+
+## Install
+1. Create a virtualenv with python 3.8
+2. Install this repo inside with pip
+3. Run a mongod
+
+## To crawl data:
+```
+python run.py crawl -s SYMBOL
+```
+
+## To show charts:
+```
+python run.py plot -s SYMBOL
+```
+
+## To auto-trade:
+```
+python run.py trade -s SYMBOL
+```
+
+## List of Symbols
+You can check them in `crypto.constants`
