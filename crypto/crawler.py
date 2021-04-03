@@ -18,7 +18,7 @@ class Crawler:
     interval = '1m'
     crawl_limit = 1
     fill_limit = 1000
-    rpad_zeros = '000'
+    milis_product = 1000
 
     @classmethod
     def crawl(cls, symbol):
@@ -72,5 +72,5 @@ class Crawler:
         if not date_from:
             date_from = datetime.datetime.now().timestamp()
         two_minutes_ago = int(date_from) - 120
-        timestamp = int(f'{two_minutes_ago}{cls.rpad_zeros}')
+        timestamp = two_minutes_ago * cls.milis_product
         return timestamp
