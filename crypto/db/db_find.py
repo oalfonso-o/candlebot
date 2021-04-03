@@ -1,24 +1,13 @@
-import pymongo
 import logging
-import urllib.parse
 
+from crypto.db import connection
 from crypto import settings
+from crypto import constants
 
 logger = logging.getLogger(__name__)
 
 
-def connect():
-    host = settings.MONGO_HOST
-    port = settings.MONGO_PORT
-    user = settings.MONGO_USER
-    passwd = settings.MONGO_PASSWD
-    if user and passwd:
-        quoted_user = urllib.parse.quote_plus(user)
-        quoted_passwd = urllib.parse.quote_plus(passwd)
-        uri = f'mongodb://{quoted_user}:{quoted_passwd}@{host}:{port}'
-    else:
-        uri = f'mongodb://{host}:{port}'
-    connection = pymongo.MongoClient(uri)
-    connection.server_info()
-    logger.info(f'PyMongo client connected to {host}:{port}')
-    return connection
+def find(symbol, query, fields):
+    coll_name = constants.MONGO_COLLS[symbol]
+    mongo_coll = connection[settings.MONGO_DATABASE][coll_name]
+    return mongo_coll.find(query, fields)
