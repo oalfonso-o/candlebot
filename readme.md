@@ -7,7 +7,9 @@ This project has few features to:
 ## Install
 1. Create a virtualenv with python 3.8
 2. Install this repo inside with pip
-3. Run a mongod
+3. Copy .env.example to .env and customize vars
+4. Run a mongod
+5. Run the desired command with run.py
 
 ## To crawl data:
 ```

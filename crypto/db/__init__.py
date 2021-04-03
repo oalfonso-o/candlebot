@@ -1,16 +1,20 @@
-import os
 import pymongo
 import logging
 import urllib.parse
 
+from crypto import settings
+
 logger = logging.getLogger(__name__)
+
+connection = None
 
 
 def connect():
-    host = os.getenv('CRYPTO_MONGO_HOST')
-    port = os.getenv('CRYPTO_MONGO_PORT')
-    user = os.getenv('CRYPTO_MONGO_USER')
-    passwd = os.getenv('CRYPTO_MONGO_PASSWD')
+    global connection
+    host = settings.MONGO_HOST
+    port = settings.MONGO_PORT
+    user = settings.MONGO_USER
+    passwd = settings.MONGO_PWD
     if user and passwd:
         quoted_user = urllib.parse.quote_plus(user)
         quoted_passwd = urllib.parse.quote_plus(passwd)
@@ -20,4 +24,3 @@ def connect():
     connection = pymongo.MongoClient(uri)
     connection.server_info()
     logger.info(f'PyMongo client connected to {host}:{port}')
-    return connection

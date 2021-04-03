@@ -1,38 +1,40 @@
 import logging
 import argparse
+import time
 from dotenv import load_dotenv
 
-from crypto.crawler import Crawler
-from crypto.charter import Charter
-from crypto.trader import Trader
-from crypto import constants
-
 load_dotenv()
+from crypto import db  # noqa
+db.connect()
+
+from crypto.crawler import Crawler  # noqa
+from crypto.charter import Charter  # noqa
+from crypto.trader import Trader  # noqa
+from crypto import constants  # noqa
 
 
 def crawl(symbol):
     logging.info(f'Crawling with {symbol}')
-    crawler = Crawler()
-    crawler.crawl(symbol)
+    while True:
+        Crawler.crawl(symbol)
+        time.sleep(constants.CRAWLING_SECONDS_WINDOW)
 
 
 def charts(symbol):
     logging.info(f'Show charts with {symbol}')
-    charter = Charter()
-    charter.show_charts(symbol)
+    Charter.show_charts(symbol)
 
 
 def trade(symbol):
     logging.info(f'Trading with {symbol}')
-    trader = Trader()
-    trader.trade(symbol)
+    Trader.trade(symbol)
 
 
 if __name__ == '__main__':
     logging.basicConfig(
         level=logging.INFO,
         format=(
-            '%(asctime)s %(name)16.16s %(funcName)10s %(levelname)7s: '
+            '%(asctime)s %(name)16.16s %(funcName)10.10s %(levelname)7s: '
             '%(message)s'
         ),
         force=True,

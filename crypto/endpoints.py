@@ -2,7 +2,6 @@ market_data = {
     'exchange_info': '/exchangeInfo',
     'ping': '/ping',
     'time': '/time',
-    'price': '/ticker/price',
     'avg_price': '/avgPrice',
     'klines': '/klines',
     'ticker_24h': '/ticker/24hr',
