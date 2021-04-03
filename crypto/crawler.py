@@ -47,7 +47,7 @@ class Crawler:
     def fill(cls, symbol, date_from):
         params = {
             'symbol': symbol,
-            'startTime': cls._timestamp(date_from),
+            'startTime': date_from,
             'interval': cls.interval,
             'limit': cls.fill_limit,
         }
@@ -66,11 +66,11 @@ class Crawler:
             candlestick['_id'] = candlestick['timestamp']
             candlesticks.append(candlestick)
         db_insert.crawled_symbols(symbol, candlesticks)
+        return candlestick['timestamp']
 
     @classmethod
-    def _timestamp(cls, date_from=None):
-        if not date_from:
-            date_from = datetime.datetime.now().timestamp()
-        two_minutes_ago = int(date_from) - 120
+    def _timestamp(cls):
+        timestamp_now = datetime.datetime.now().timestamp()
+        two_minutes_ago = int(timestamp_now) - 120
         timestamp = two_minutes_ago * cls.milis_product
         return timestamp

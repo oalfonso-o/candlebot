@@ -34,7 +34,8 @@ def fill(symbol, date_from):
     if not date_from:
         raise ValueError('Parameter --date-from is required for fill command')
     logging.info(f'Filling {symbol} from {date_from}')
-    Crawler.fill(symbol, date_from)
+    while date_from:
+        date_from = Crawler.fill(symbol, date_from)
 
 
 if __name__ == '__main__':
@@ -69,7 +70,8 @@ if __name__ == '__main__':
     parser.add_argument(
         '--date-from',
         help=(
-            f'Used when command is {constants.COMMAND_FILL} as date from to '
+            'Unix timestamp in miliseconds. Used when command is '
+            f'{constants.COMMAND_FILL} as date from to '
             'query Binance API and perform an initial filling of the DB.'
         )
     )

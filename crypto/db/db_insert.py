@@ -19,8 +19,14 @@ def crawled_symbols(symbol, docs):
     coll_name = constants.MONGO_COLLS[symbol]
     mongo_coll = connection[settings.MONGO_DATABASE][coll_name]
     ops = [
-        ReplaceOne(doc['_id'], doc, upsert=True)
+        ReplaceOne({'_id': doc['_id']}, doc, upsert=True)
         for doc in docs
     ]
     result = mongo_coll.bulk_write(ops)
-    logger.info(f'DB Bulk Insert: {symbol} - {result}')
+    result_dict = {
+        'inserted_count': result.inserted_count,
+        'matched_count': result.matched_count,
+        'modified_count': result.modified_count,
+        'upserted_count': result.upserted_count,
+    }
+    logger.info(f'DB Bulk Insert: {symbol} - {result_dict}')
