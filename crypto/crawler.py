@@ -10,23 +10,25 @@ logger = logging.getLogger(__name__)
 
 
 class Crawler:
+    url = (
+        f'{constants.API_BASE_URL}'
+        f'{constants.MARKET_DATA_SPOT_API_PREFIX}'
+        f'{market_data["klines"]}'
+    )
+    interval = '1m'
+    crawl_limit = 1
+    fill_limit = 1000
+    rpad_zeros = '000'
 
-    @staticmethod
-    def crawl(symbol):
-        url = (
-            f'{constants.API_BASE_URL}'
-            f'{constants.MARKET_DATA_SPOT_API_PREFIX}'
-            f'{market_data["klines"]}'
-        )
-        two_minutes_ago = int(datetime.datetime.now().timestamp()) - 120
-        timestamp = int(f'{two_minutes_ago}000')
+    @classmethod
+    def crawl(cls, symbol):
         params = {
             'symbol': symbol,
-            'startTime': timestamp,
-            'interval': '1m',
-            'limit': 1,
+            'startTime': cls._timestamp(),
+            'interval': cls.interval,
+            'limit': cls.crawl_limit,
         }
-        response = requests.get(url, params=params)
+        response = requests.get(cls.url, params=params)
         if not response.ok:
             logger.error(response['msg'])
             return
@@ -40,3 +42,35 @@ class Crawler:
         }
         candlestick['_id'] = candlestick['timestamp']
         db_insert.crawled_symbol(symbol, candlestick)
+
+    @classmethod
+    def fill(cls, symbol, date_from):
+        params = {
+            'symbol': symbol,
+            'startTime': cls._timestamp(date_from),
+            'interval': cls.interval,
+            'limit': cls.fill_limit,
+        }
+        response = requests.get(cls.url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        if not data:
+            logging.info('No more klines returned')
+            return
+        candlesticks = []
+        for kline in data:
+            candlestick = {
+                k: v
+                for k, v in zip(constants.MAPPING_KLINES, kline)
+            }
+            candlestick['_id'] = candlestick['timestamp']
+            candlesticks.append(candlestick)
+        db_insert.crawled_symbols(symbol, candlesticks)
+
+    @classmethod
+    def _timestamp(cls, date_from=None):
+        if not date_from:
+            date_from = datetime.datetime.now().timestamp()
+        two_minutes_ago = int(date_from) - 120
+        timestamp = int(f'{two_minutes_ago}{cls.rpad_zeros}')
+        return timestamp

@@ -30,6 +30,13 @@ def trade(symbol):
     Trader.trade(symbol)
 
 
+def fill(symbol, date_from):
+    if not date_from:
+        raise ValueError('Parameter --date-from is required for fill command')
+    logging.info(f'Filling {symbol} from {date_from}')
+    Crawler.fill(symbol, date_from)
+
+
 if __name__ == '__main__':
     logging.basicConfig(
         level=logging.INFO,
@@ -46,6 +53,7 @@ if __name__ == '__main__':
             constants.COMMAND_CRAWL,
             constants.COMMAND_CHARTS,
             constants.COMMAND_TRADE,
+            constants.COMMAND_FILL,
         ],
     )
     parser.add_argument(
@@ -58,6 +66,13 @@ if __name__ == '__main__':
             constants.SYMBOL_ETHEREUM_EURO,
         ],
     )
+    parser.add_argument(
+        '--date-from',
+        help=(
+            f'Used when command is {constants.COMMAND_FILL} as date from to '
+            'query Binance API and perform an initial filling of the DB.'
+        )
+    )
     args = parser.parse_args()
     logging.info(f'Command {args.command} -s {args.symbol} launched.')
     if args.command == constants.COMMAND_CRAWL:
@@ -66,4 +81,6 @@ if __name__ == '__main__':
         charts(args.symbol)
     elif args.command == constants.COMMAND_TRADE:
         trade(args.symbol)
+    elif args.command == constants.COMMAND_FILL:
+        fill(args.symbol, args.date_from)
     logging.info(f'Command {args.command} -s {args.symbol} finished.')
