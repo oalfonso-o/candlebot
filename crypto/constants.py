@@ -14,10 +14,24 @@ COMMAND_CRAWL = 'crawl'
 COMMAND_CHARTS = 'charts'
 COMMAND_TRADE = 'trade'
 
-CRAWLING_SECONDS_WINDOW = 10
+CRAWLING_SECONDS_WINDOW = 60
 
 MONGO_COLLS = {
     SYMBOL_CARDANO_EURO: 'ada_eur',
     SYMBOL_BITCOIN_EURO: 'btc_eur',
     SYMBOL_ETHEREUM_EURO: 'eth_eur',
 }
+
+MAPPING_KLINES = [
+    'timestamp',
+    'open',
+    'high',
+    'low',
+    'close',
+    'volume',
+    'timestamp_close',
+    'volume_quote',
+    'trades_count',
+    'volume_taker_base',
+    'volume_taker_quote',
+]
