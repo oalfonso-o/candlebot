@@ -64,3 +64,7 @@ MAPPING_KLINES = [
     'volume_taker_quote',
 ]
 KLINE_FIELDS = {'open': 1, 'high': 1, 'low': 1, 'close': 1}
+
+CONFIG_EMA_WINDOW = 25
+CONFIG_EMA_ADJUST = False
+CONFIG_EMA_DROP_PERCENT = 0.02
