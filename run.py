@@ -11,7 +11,7 @@ db.connect()
 from crypto.crawler import Crawler  # noqa
 from crypto.charter import Charter  # noqa
 from crypto.trader import Trader  # noqa
-from crypto.playbook import Playbook  # noqa
+from crypto.backtesting import Backtesting  # noqa
 from crypto import constants  # noqa
 from crypto import utils  # noqa
 
@@ -31,7 +31,7 @@ def charts(symbol, interval, date_from, date_to):
     date_to = utils.date_to_timestamp(date_to)
     logging.info(f'Show charts with {symbol}')
     pprint(
-        Charter.show_charts(symbol, interval, date_from, date_to)[1]
+        Charter.show_charts(symbol, interval, date_from, date_to)
     )
 
 
@@ -58,12 +58,12 @@ def fill(symbol, date_from, interval):
 
 def fill_all():
     logging.info(f'Filling all')
-    Crawler.fill_playbook()
+    Crawler.fill_backtesting()
 
 
-def playbook():
-    logging.info(f'Running Playbook')
-    Playbook.run()
+def backtesting():
+    logging.info(f'Running Backtesting')
+    Backtesting.run()
 
 
 if __name__ == '__main__':
@@ -84,7 +84,7 @@ if __name__ == '__main__':
             constants.COMMAND_TRADE,
             constants.COMMAND_FILL,
             constants.COMMAND_FILL_ALL,
-            constants.COMMAND_PLAYBOOK,
+            constants.COMMAND_BACKTESTING,
         ],
     )
     parser.add_argument(
@@ -137,7 +137,7 @@ if __name__ == '__main__':
         )
     )
     args = parser.parse_args()
-    logging.info(f'Command {args.command} -s {args.symbol} launched.')
+    logging.info(f'Command {args.command} launched.')
     if args.command == constants.COMMAND_CRAWL:
         crawl(args.symbol, args.interval)
     elif args.command == constants.COMMAND_CHARTS:
@@ -151,6 +151,6 @@ if __name__ == '__main__':
         fill(args.symbol, args.fill_date_from, args.interval)
     elif args.command == constants.COMMAND_FILL_ALL:
         fill_all()
-    elif args.command == constants.COMMAND_PLAYBOOK:
-        playbook()
-    logging.info(f'Command {args.command} -s {args.symbol} finished.')
+    elif args.command == constants.COMMAND_BACKTESTING:
+        backtesting()
+    logging.info(f'Command {args.command} finished.')

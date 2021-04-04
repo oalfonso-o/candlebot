@@ -1,5 +1,4 @@
 import logging
-import datetime
 
 from plotly.subplots import make_subplots
 from plotly.offline import plot
@@ -9,6 +8,7 @@ import numpy as np
 
 from crypto.db import db_find
 from crypto import constants
+from crypto import utils
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class Charter:
     def show_charts(
         cls, symbol, interval, date_from=None, date_to=None, show_plot=True
     ):
-        logger.info(f'Trading {symbol}')
+        logger.info(f'Charting {symbol}_{interval} f:{date_from} t:{date_to}')
         query = {}
         if date_from or date_to:
             query = {'_id': {}}
@@ -29,10 +29,12 @@ class Charter:
                 query['_id']['$lte'] = int(date_to)
         all_cursor = db_find.find(
             symbol, interval, query, constants.KLINE_FIELDS)
-        df = pd.DataFrame(list(all_cursor))
-        df['_id'] = df['_id'].apply(
-            lambda _id: datetime.datetime.fromtimestamp(_id / 1000)
-        )
+        docs = list(all_cursor)
+        if not docs:
+            logging.warning('No klines')
+            return {}
+        df = pd.DataFrame(docs)
+        df['_id'] = df['_id'].apply(lambda _id: utils.timestamp_to_date(_id))
         df['ema'] = df['close'].ewm(
             span=constants.CONFIG_EMA_WINDOW,
             adjust=constants.CONFIG_EMA_ADJUST,

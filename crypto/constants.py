@@ -48,7 +48,7 @@ COMMAND_CHARTS = 'charts'
 COMMAND_TRADE = 'trade'
 COMMAND_FILL = 'fill'
 COMMAND_FILL_ALL = 'fill_all'
-COMMAND_PLAYBOOK = 'playbook'
+COMMAND_BACKTESTING = 'backtesting'
 
 CRAWLING_SECONDS_WINDOW = 60
 
@@ -70,3 +70,5 @@ KLINE_FIELDS = {'open': 1, 'high': 1, 'low': 1, 'close': 1}
 CONFIG_EMA_WINDOW = 25
 CONFIG_EMA_ADJUST = True
 CONFIG_EMA_DROP_PERCENT = 0.02
+
+DATE_ARG_FORMAT = '%Y%m%d'
