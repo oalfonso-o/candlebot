@@ -5,6 +5,8 @@ import logging
 from crypto.endpoints import market_data
 from crypto import constants
 from crypto.db import db_insert
+from crypto.playbook import Playbook
+from crypto import utils
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +68,19 @@ class Crawler:
             candlesticks.append(candlestick)
         db_insert.crawled_symbols(symbol, candlesticks, interval)
         return candlestick['timestamp'] + 1
+
+    @classmethod
+    def fill_playbook(cls):
+        for symbol in Playbook.symbols:
+            for interval in Playbook.intervals:
+                date_from = '20170101'
+                date_from = utils.date_to_timestamp(date_from)
+                while date_from:
+                    date_from = cls.fill(
+                        symbol=symbol,
+                        date_from=date_from,
+                        interval=interval,
+                    )
 
     @classmethod
     def _timestamp(cls):

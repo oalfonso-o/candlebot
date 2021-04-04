@@ -1,6 +1,7 @@
 import logging
 import argparse
 import time
+from pprint import pprint
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,7 +11,9 @@ db.connect()
 from crypto.crawler import Crawler  # noqa
 from crypto.charter import Charter  # noqa
 from crypto.trader import Trader  # noqa
+from crypto.playbook import Playbook  # noqa
 from crypto import constants  # noqa
+from crypto import utils  # noqa
 
 
 def crawl(symbol, interval):
@@ -24,8 +27,12 @@ def crawl(symbol, interval):
 
 
 def charts(symbol, interval, date_from, date_to):
+    date_from = utils.date_to_timestamp(date_from)
+    date_to = utils.date_to_timestamp(date_to)
     logging.info(f'Show charts with {symbol}')
-    Charter.show_charts(symbol, interval, date_from, date_to)
+    pprint(
+        Charter.show_charts(symbol, interval, date_from, date_to)[1]
+    )
 
 
 def trade(symbol, interval, history=False):
@@ -43,9 +50,20 @@ def fill(symbol, date_from, interval):
     if not interval:
         raise ValueError(
             'Parameter --crawler-interval is required for fill command')
+    date_from = utils.date_to_timestamp(date_from)
     logging.info(f'Filling {symbol} from {date_from}')
     while date_from:
         date_from = Crawler.fill(symbol, date_from, interval)
+
+
+def fill_all():
+    logging.info(f'Filling all')
+    Crawler.fill_playbook()
+
+
+def playbook():
+    logging.info(f'Running Playbook')
+    Playbook.run()
 
 
 if __name__ == '__main__':
@@ -65,12 +83,13 @@ if __name__ == '__main__':
             constants.COMMAND_CHARTS,
             constants.COMMAND_TRADE,
             constants.COMMAND_FILL,
+            constants.COMMAND_FILL_ALL,
+            constants.COMMAND_PLAYBOOK,
         ],
     )
     parser.add_argument(
         '-s',
         '--symbol',
-        required=True,
         choices=[
             constants.SYMBOL_CARDANO_EURO,
             constants.SYMBOL_BITCOIN_EURO,
@@ -83,13 +102,12 @@ if __name__ == '__main__':
     parser.add_argument(
         '-i',
         '--interval',
-        required=True,
         help='Str Binance candlesticks interval',
     )
     parser.add_argument(
         '--fill-date-from',
         help=(
-            'Unix timestamp in miliseconds. Used when command is '
+            'Date YYYYMMDD. Used when command is '
             f'{constants.COMMAND_FILL} as date from to '
             'query Binance API and perform an initial filling of the DB.'
         )
@@ -97,7 +115,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--chart-date-from',
         help=(
-            'Unix timestamp in miliseconds. Used when command is '
+            'Date YYYYMMDD. Used when command is '
             f'{constants.COMMAND_CHARTS} as date from to '
             'query our database and select candlesticks from that date.'
         )
@@ -105,7 +123,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--chart-date-to',
         help=(
-           'Unix timestamp in miliseconds. Used when command is '
+           'Date YYYYMMDD. Used when command is '
            f'{constants.COMMAND_CHARTS} as date to for '
            'querying our database and select candlesticks before that date.'
         )
@@ -131,4 +149,8 @@ if __name__ == '__main__':
         trade(args.symbol, args.trade_history)
     elif args.command == constants.COMMAND_FILL:
         fill(args.symbol, args.fill_date_from, args.interval)
+    elif args.command == constants.COMMAND_FILL_ALL:
+        fill_all()
+    elif args.command == constants.COMMAND_PLAYBOOK:
+        playbook()
     logging.info(f'Command {args.command} -s {args.symbol} finished.')

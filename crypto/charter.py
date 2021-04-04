@@ -1,6 +1,5 @@
 import logging
 import datetime
-from pprint import pprint
 
 from plotly.subplots import make_subplots
 from plotly.offline import plot
@@ -17,7 +16,9 @@ logger = logging.getLogger(__name__)
 class Charter:
 
     @classmethod
-    def show_charts(cls, symbol, interval, date_from=None, date_to=None):
+    def show_charts(
+        cls, symbol, interval, date_from=None, date_to=None, show_plot=True
+    ):
         logger.info(f'Trading {symbol}')
         query = {}
         if date_from or date_to:
@@ -36,41 +37,46 @@ class Charter:
             span=constants.CONFIG_EMA_WINDOW,
             adjust=constants.CONFIG_EMA_ADJUST,
         ).mean()
-        cls._calc_buy_sell(df)
-        candlestick = go.Candlestick(
-            x=df['_id'],
-            open=df['open'],
-            high=df['high'],
-            low=df['low'],
-            close=df['close'],
-            name=symbol,
-        )
-        ema_scatter = go.Scatter(
-            x=df['_id'],
-            y=df['ema'],
-            name='EMA',
-            yaxis='y2',
-        )
-        buy_sell_scatter = go.Scatter(
-            x=df['_id'],
-            y=df['bs'],
-            name='buy/sell',
-            yaxis='y2',
-        )
-        fig = make_subplots(specs=[[{"secondary_y": True}]])
-        fig.add_trace(candlestick)
-        fig.add_trace(ema_scatter, secondary_y=True)
-        fig.add_trace(buy_sell_scatter, secondary_y=True)
-        fig['layout'].update(title='EMA Chart', xaxis=dict(tickangle=-90))
-        plot(fig)
+        operations = cls._calc_buy_sell(df)
+        if show_plot:
+            candlestick = go.Candlestick(
+                x=df['_id'],
+                open=df['open'],
+                high=df['high'],
+                low=df['low'],
+                close=df['close'],
+                name=symbol,
+            )
+            ema_scatter = go.Scatter(
+                x=df['_id'],
+                y=df['ema'],
+                name='EMA',
+                yaxis='y2',
+            )
+            buy_sell_scatter = go.Scatter(
+                x=df['_id'],
+                y=df['bs'],
+                name='buy/sell',
+                yaxis='y2',
+                mode='markers',
+                marker=dict(color='crimson', size=7),
+            )
+            fig = make_subplots(specs=[[{"secondary_y": True}]])
+            fig.add_trace(candlestick)
+            fig.add_trace(ema_scatter, secondary_y=True)
+            fig.add_trace(buy_sell_scatter, secondary_y=True)
+            fig['layout'].update(title='EMA Chart', xaxis=dict(tickangle=-90))
+            plot(fig)
+        return operations
 
-    @staticmethod
-    def _calc_buy_sell(df):
+    @classmethod
+    def _calc_buy_sell(cls, df):
         lowest = None
         highest = None
         df['bs'] = np.NaN
         last_buy = 0
         last_sell = 0
+        direction = 0
         operations = {
             'buys': 0,
             'sells': 0,
@@ -80,30 +86,43 @@ class Charter:
         for i, row in df.iterrows():
             row['close'] = float(row['close'])
             row['ema'] = float(row['ema'])
+            row['bs'] = float(0)
             if lowest is None and highest is None:
                 lowest = row
                 highest = row
                 continue
-            if (
-                (row['ema'] - lowest['ema'])
-                > (lowest['ema'] * constants.CONFIG_EMA_DROP_PERCENT)
-            ):
+            if cls._must_buy(row, lowest, direction):
                 df.at[i, 'bs'] = row['close']
                 operations['buys'] += 1
                 last_buy = row['close']
                 if last_sell:
                     operations['short_profit'] += last_sell - row['close']
-            if (
-                (highest['ema'] - row['ema'])
-                > (highest['ema'] * constants.CONFIG_EMA_DROP_PERCENT)
-            ):
+                direction = 1
+            elif cls._must_sell(row, highest, direction):
                 df.at[i, 'bs'] = row['close']
                 operations['sells'] += 1
                 last_sell = row['close']
                 if last_buy:
                     operations['long_profit'] += row['close'] - last_buy
+                direction = -1
             if (row['ema'] - highest['ema']) > 0:
                 highest = row
             if (row['ema'] - lowest['ema']) < 0:
                 lowest = row
-        pprint(operations)
+        return operations
+
+    @staticmethod
+    def _must_buy(row, lowest, direction):
+        return bool(
+            (row['ema'] - lowest['ema'])
+            > (lowest['ema'] * constants.CONFIG_EMA_DROP_PERCENT)
+            and (not direction or direction < 0)
+        )
+
+    @staticmethod
+    def _must_sell(row, highest, direction):
+        return bool(
+            (highest['ema'] - row['ema'])
+            > (highest['ema'] * constants.CONFIG_EMA_DROP_PERCENT)
+            and (not direction or direction > 0)
+        )
