@@ -30,9 +30,8 @@ def charts(symbol, interval, date_from, date_to):
     date_from = utils.date_to_timestamp(date_from)
     date_to = utils.date_to_timestamp(date_to)
     logging.info(f'Show charts with {symbol}')
-    pprint(
-        Charter.show_charts(symbol, interval, date_from, date_to)
-    )
+    charter = Charter()
+    charter.calc_chart(symbol, interval, date_from, date_to)
 
 
 def trade(symbol, interval, history=False):
@@ -61,9 +60,12 @@ def fill_all():
     Crawler.fill_backtesting()
 
 
-def backtesting():
+def backtesting(backtesting_full):
     logging.info(f'Running Backtesting')
-    Backtesting.run()
+    if not backtesting_full:
+        Backtesting.run()
+    else:
+        Backtesting.full()
 
 
 if __name__ == '__main__':
@@ -136,6 +138,14 @@ if __name__ == '__main__':
             'with history.'
         )
     )
+    parser.add_argument(
+        '--backtesting-full',
+        action='store_true',
+        help=(
+            f'Used with {constants.COMMAND_BACKTESTING} to check test all '
+            'strategies and persist results to the DB.'
+        )
+    )
     args = parser.parse_args()
     logging.info(f'Command {args.command} launched.')
     if args.command == constants.COMMAND_CRAWL:
@@ -152,5 +162,5 @@ if __name__ == '__main__':
     elif args.command == constants.COMMAND_FILL_ALL:
         fill_all()
     elif args.command == constants.COMMAND_BACKTESTING:
-        backtesting()
+        backtesting(args.backtesting_full)
     logging.info(f'Command {args.command} finished.')

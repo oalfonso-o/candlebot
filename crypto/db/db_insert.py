@@ -30,3 +30,8 @@ def crawled_symbols(symbol, docs, interval):
         'upserted_count': result.upserted_count,
     }
     logger.info(f'DB Bulk Insert: {coll_name} - {result_dict}')
+
+
+def backtesting_play(doc):
+    mongo_coll = constants.MONGO_COLL_BACKFILL_PLAYS
+    mongo_coll.insert_one(doc)

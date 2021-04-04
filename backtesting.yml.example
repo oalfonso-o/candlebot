@@ -1,0 +1,4 @@
+ema:
+    window: 25
+    adjust: false
+    drop_factor: 1

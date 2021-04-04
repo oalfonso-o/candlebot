@@ -9,15 +9,25 @@ import numpy as np
 from crypto.db import db_find
 from crypto import constants
 from crypto import utils
+from crypto import settings
 
 logger = logging.getLogger(__name__)
 
 
 class Charter:
 
-    @classmethod
-    def show_charts(
-        cls, symbol, interval, date_from=None, date_to=None, show_plot=True
+    def __init__(
+        self,
+        window=settings.BT_CONFIG['ema']['window'],
+        adjust=settings.BT_CONFIG['ema']['window'],
+        drop_factor=settings.BT_CONFIG['ema']['window'],
+    ):
+        self.window = window
+        self.adjust = adjust
+        self.drop_factor = drop_factor
+
+    def calc_chart(
+        self, symbol, interval, date_from=None, date_to=None, show_plot=True
     ):
         logger.info(f'Charting {symbol}_{interval} f:{date_from} t:{date_to}')
         query = {}
@@ -36,10 +46,9 @@ class Charter:
         df = pd.DataFrame(docs)
         df['_id'] = df['_id'].apply(lambda _id: utils.timestamp_to_date(_id))
         df['ema'] = df['close'].ewm(
-            span=constants.CONFIG_EMA_WINDOW,
-            adjust=constants.CONFIG_EMA_ADJUST,
+            span=self.window, adjust=self.adjust
         ).mean()
-        operations = cls._calc_buy_sell(df)
+        operations = self._calc_buy_sell(df)
         if show_plot:
             candlestick = go.Candlestick(
                 x=df['_id'],
@@ -71,8 +80,7 @@ class Charter:
             plot(fig)
         return operations
 
-    @classmethod
-    def _calc_buy_sell(cls, df):
+    def _calc_buy_sell(self, df):
         lowest = None
         highest = None
         df['bs'] = np.NaN
@@ -95,7 +103,7 @@ class Charter:
                 lowest = row
                 highest = row
                 continue
-            if cls._must_buy(row, lowest, direction):
+            if self._must_buy(row, lowest, direction):
                 df.at[i, 'bs'] = row['close']
                 operations['buys'] += 1
                 last_buy = row['close']
@@ -105,7 +113,7 @@ class Charter:
                     percent_profit = profit / last_sell
                     operations['short_profit_percents'].append(percent_profit)
                 direction = 1
-            elif cls._must_sell(row, highest, direction):
+            elif self._must_sell(row, highest, direction):
                 df.at[i, 'bs'] = row['close']
                 operations['sells'] += 1
                 last_sell = row['close']
@@ -121,18 +129,16 @@ class Charter:
                 lowest = row
         return operations
 
-    @staticmethod
-    def _must_buy(row, lowest, direction):
+    def _must_buy(self, row, lowest, direction):
         return bool(
             (row['ema'] - lowest['ema'])
-            > (lowest['ema'] * constants.CONFIG_EMA_DROP_PERCENT)
+            > (lowest['ema'] * self.drop_factor)
             and (not direction or direction < 0)
         )
 
-    @staticmethod
-    def _must_sell(row, highest, direction):
+    def _must_sell(self, row, highest, direction):
         return bool(
             (highest['ema'] - row['ema'])
-            > (highest['ema'] * constants.CONFIG_EMA_DROP_PERCENT)
+            > (highest['ema'] * self.drop_factor)
             and (not direction or direction > 0)
         )

@@ -42,6 +42,7 @@ MONGO_COLLS = {
     symbol: {i: f'{symbol}_{i}' for i in INTERVALS}
     for symbol in TRADING_SYMBOLS
 }
+MONGO_COLL_BACKFILL_PLAYS = 'backtesting_plays'
 
 COMMAND_CRAWL = 'crawl'
 COMMAND_CHARTS = 'charts'
@@ -66,9 +67,5 @@ MAPPING_KLINES = [
     'volume_taker_quote',
 ]
 KLINE_FIELDS = {'open': 1, 'high': 1, 'low': 1, 'close': 1}
-
-CONFIG_EMA_WINDOW = 25
-CONFIG_EMA_ADJUST = True
-CONFIG_EMA_DROP_PERCENT = 0.02
 
 DATE_ARG_FORMAT = '%Y%m%d'
