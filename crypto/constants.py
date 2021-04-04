@@ -63,3 +63,4 @@ MAPPING_KLINES = [
     'volume_taker_base',
     'volume_taker_quote',
 ]
+KLINE_FIELDS = {'open': 1, 'high': 1, 'low': 1, 'close': 1}
