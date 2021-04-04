@@ -1,7 +1,6 @@
 import logging
 import argparse
 import time
-from pprint import pprint
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -30,10 +29,8 @@ def charts(symbol, interval, date_from, date_to):
     date_from = utils.date_to_timestamp(date_from)
     date_to = utils.date_to_timestamp(date_to)
     logging.info(f'Show charts with {symbol}')
-    import pudb;pu.db
     charter = Charter()
-    ops = charter.calc_chart(symbol, interval, date_from, date_to)
-    pprint(ops)
+    _ = charter.calc_chart(symbol, interval, date_from, date_to)
 
 
 def trade(symbol, interval, history=False):
