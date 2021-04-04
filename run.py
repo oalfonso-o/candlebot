@@ -30,8 +30,10 @@ def charts(symbol, interval, date_from, date_to):
     date_from = utils.date_to_timestamp(date_from)
     date_to = utils.date_to_timestamp(date_to)
     logging.info(f'Show charts with {symbol}')
+    import pudb;pu.db
     charter = Charter()
-    charter.calc_chart(symbol, interval, date_from, date_to)
+    ops = charter.calc_chart(symbol, interval, date_from, date_to)
+    pprint(ops)
 
 
 def trade(symbol, interval, history=False):

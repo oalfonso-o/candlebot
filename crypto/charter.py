@@ -19,8 +19,8 @@ class Charter:
     def __init__(
         self,
         window=settings.BT_CONFIG['ema']['window'],
-        adjust=settings.BT_CONFIG['ema']['window'],
-        drop_factor=settings.BT_CONFIG['ema']['window'],
+        adjust=settings.BT_CONFIG['ema']['adjust'],
+        drop_factor=settings.BT_CONFIG['ema']['drop_factor'],
     ):
         self.window = window
         self.adjust = adjust
