@@ -15,17 +15,16 @@ class Crawler:
         f'{constants.MARKET_DATA_SPOT_API_PREFIX}'
         f'{market_data["klines"]}'
     )
-    interval = '1m'
     crawl_limit = 1
     fill_limit = 1000
     milis_product = 1000
 
     @classmethod
-    def crawl(cls, symbol):
+    def crawl(cls, symbol, interval):
         params = {
             'symbol': symbol,
             'startTime': cls._timestamp(),
-            'interval': cls.interval,
+            'interval': interval,
             'limit': cls.crawl_limit,
         }
         response = requests.get(cls.url, params=params)
@@ -41,14 +40,14 @@ class Crawler:
             for k, v in zip(constants.MAPPING_KLINES, data)
         }
         candlestick['_id'] = candlestick['timestamp']
-        db_insert.crawled_symbol(symbol, candlestick)
+        db_insert.crawled_symbol(symbol, candlestick, interval)
 
     @classmethod
-    def fill(cls, symbol, date_from):
+    def fill(cls, symbol, date_from, interval):
         params = {
             'symbol': symbol,
             'startTime': date_from,
-            'interval': cls.interval,
+            'interval': interval,
             'limit': cls.fill_limit,
         }
         response = requests.get(cls.url, params=params)
@@ -65,8 +64,8 @@ class Crawler:
             }
             candlestick['_id'] = candlestick['timestamp']
             candlesticks.append(candlestick)
-        db_insert.crawled_symbols(symbol, candlesticks)
-        return candlestick['timestamp']
+        db_insert.crawled_symbols(symbol, candlesticks, interval)
+        return candlestick['timestamp'] + 1
 
     @classmethod
     def _timestamp(cls):

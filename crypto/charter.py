@@ -1,5 +1,5 @@
-import datetime
 import logging
+import datetime
 
 import plotly.graph_objects as go
 import pandas as pd
@@ -12,13 +12,21 @@ logger = logging.getLogger(__name__)
 class Charter:
 
     @staticmethod
-    def show_charts(symbol):
+    def show_charts(symbol, date_from=None, date_to=None):
         logger.info(f'Trading {symbol}')
         fields = {'open': 1, 'high': 1, 'low': 1, 'close': 1}
-        date_from = datetime.datetime.now() - datetime.timedelta(days=2)
-        query = {'_id': {'$gte': date_from.timestamp() * 1000}}
+        query = {}
+        if date_from or date_to:
+            query = {'_id': {}}
+            if date_from:
+                query['_id']['$gte'] = int(date_from)
+            if date_to:
+                query['_id']['$lte'] = int(date_to)
         all_cursor = db_find.find(symbol, query, fields)
         df = pd.DataFrame(list(all_cursor))
+        df['_id'] = df['_id'].apply(
+            lambda _id: datetime.datetime.fromtimestamp(_id / 1000)
+        )
         figure = go.Figure(
             data=[
                 go.Candlestick(

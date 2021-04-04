@@ -8,15 +8,15 @@ from crypto import constants
 logger = logging.getLogger(__name__)
 
 
-def crawled_symbol(symbol, doc):
-    coll_name = constants.MONGO_COLLS[symbol]
+def crawled_symbol(symbol, doc, interval):
+    coll_name = f'{constants.MONGO_COLLS[symbol]}{interval}'
     mongo_coll = connection[settings.MONGO_DATABASE][coll_name]
     mongo_coll.replace_one({'_id': doc['_id']}, doc, upsert=True)
     logger.info(f'DB Insert: {symbol} - {doc}')
 
 
-def crawled_symbols(symbol, docs):
-    coll_name = constants.MONGO_COLLS[symbol]
+def crawled_symbols(symbol, docs, interval):
+    coll_name = f'{constants.MONGO_COLLS[symbol]}{interval}'
     mongo_coll = connection[settings.MONGO_DATABASE][coll_name]
     ops = [
         ReplaceOne({'_id': doc['_id']}, doc, upsert=True)
