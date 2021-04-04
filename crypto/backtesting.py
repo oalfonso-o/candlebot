@@ -1,6 +1,5 @@
 import csv
 import logging
-from pprint import pprint
 
 from crypto.charter import Charter
 from crypto import utils
