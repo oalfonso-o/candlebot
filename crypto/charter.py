@@ -84,6 +84,8 @@ class Charter:
             'sells': 0,
             'long_profit': 0,
             'short_profit': 0,
+            'long_profit_percents': [],
+            'short_profit_percents': [],
         }
         for i, row in df.iterrows():
             row['close'] = float(row['close'])
@@ -98,14 +100,20 @@ class Charter:
                 operations['buys'] += 1
                 last_buy = row['close']
                 if last_sell:
-                    operations['short_profit'] += last_sell - row['close']
+                    profit = last_sell - row['close']
+                    operations['short_profit'] += profit
+                    percent_profit = profit / last_sell
+                    operations['short_profit_percents'].append(percent_profit)
                 direction = 1
             elif cls._must_sell(row, highest, direction):
                 df.at[i, 'bs'] = row['close']
                 operations['sells'] += 1
                 last_sell = row['close']
                 if last_buy:
-                    operations['long_profit'] += row['close'] - last_buy
+                    profit = row['close'] - last_buy
+                    operations['long_profit'] += profit
+                    percent_profit = profit / last_buy
+                    operations['long_profit_percents'].append(percent_profit)
                 direction = -1
             if (row['ema'] - highest['ema']) > 0:
                 highest = row

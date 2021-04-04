@@ -29,11 +29,11 @@ class Backtesting:
     ]
     output_fieldnames = [
         'symbol', 'interval', 'df', 'dt', 'buys', 'sells', 'long_profit',
-        'short_profit', 'percent_long_profit'
+        'short_profit', 'percent_long_profit', 'percent_short_profit'
     ]
 
     @classmethod
-    def run(cls, print_results=False):
+    def run(cls):
         plays = [
             {
                 'results': {},
@@ -54,11 +54,6 @@ class Backtesting:
                 show_plot=False
             )
         cls._output(plays)
-        if print_results:
-            for play in plays:
-                if play['results']:
-                    play['results'] = play['results']['long_profit']
-                pprint(play)
 
     @classmethod
     def _output(cls, plays):
@@ -76,9 +71,44 @@ class Backtesting:
                     'sells': play['results'].get('sells') or 0,
                     'long_profit': play['results'].get('long_profit') or 0,
                     'short_profit': play['results'].get('short_profit') or 0,
-                    'percent_long_profit': '',
+                    'percent_long_profit': cls._percent_profit(play, 'long'),
+                    'percent_short_profit': cls._percent_profit(play, 'short'),
                 }
                 rows.append(row)
-            rows = sorted(rows, key=lambda r: r['long_profit'], reverse=True)
+            rows = sorted(
+                rows, key=lambda r: r['percent_long_profit'], reverse=True
+            )
             csvdict.writerows(rows)
+            csvdict.writerow(cls._totals(rows))
         logger.info(f'Backtesting output in {settings.BACKTESTING_OUTPUT}')
+
+    @staticmethod
+    def _percent_profit(play, type_):
+        percents = play['results'].get(f'{type_}_profit_percents') or []
+        percent_profit = sum(percents) / len(percents) if percents else 0
+        return percent_profit
+
+    @staticmethod
+    def _totals(rows):
+        totals = {
+            'buys': 0,
+            'sells': 0,
+            'long_profit': 0,
+            'short_profit': 0,
+            'percent_long_profit': 0,
+            'percent_short_profit': 0,
+        }
+        for row in rows:
+            totals['buys'] += row['buys']
+            totals['sells'] += row['sells']
+            totals['long_profit'] += row['long_profit']
+            totals['short_profit'] += row['short_profit']
+            totals['percent_long_profit'] += row['percent_long_profit']
+            totals['percent_short_profit'] += row['percent_short_profit']
+        totals['percent_long_profit'] = (
+            totals['percent_long_profit'] / len(rows)
+        )
+        totals['percent_short_profit'] = (
+            totals['percent_short_profit'] / len(rows)
+        )
+        return totals
