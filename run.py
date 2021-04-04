@@ -103,6 +103,14 @@ if __name__ == '__main__':
         )
     )
     parser.add_argument(
+        '--chart-date-to',
+        help=(
+           'Unix timestamp in miliseconds. Used when command is '
+           f'{constants.COMMAND_CHARTS} as date to for '
+           'querying our database and select candlesticks before that date.'
+        )
+    )
+    parser.add_argument(
         '--trade-history',
         action='store_true',
         help=(
@@ -116,8 +124,8 @@ if __name__ == '__main__':
         crawl(args.symbol, args.interval)
     elif args.command == constants.COMMAND_CHARTS:
         charts(
-            args.symbol, args.chart_date_from, args.chart_date_to,
-            args.interval,
+            args.symbol, args.interval, args.chart_date_from,
+            args.chart_date_to,
         )
     elif args.command == constants.COMMAND_TRADE:
         trade(args.symbol, args.trade_history)
