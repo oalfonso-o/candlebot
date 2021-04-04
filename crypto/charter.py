@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class Charter:
 
     @staticmethod
-    def show_charts(symbol, date_from=None, date_to=None):
+    def show_charts(symbol, interval, date_from=None, date_to=None):
         logger.info(f'Trading {symbol}')
         fields = {'open': 1, 'high': 1, 'low': 1, 'close': 1}
         query = {}
@@ -22,7 +22,7 @@ class Charter:
                 query['_id']['$gte'] = int(date_from)
             if date_to:
                 query['_id']['$lte'] = int(date_to)
-        all_cursor = db_find.find(symbol, query, fields)
+        all_cursor = db_find.find(symbol, interval, query, fields)
         df = pd.DataFrame(list(all_cursor))
         df['_id'] = df['_id'].apply(
             lambda _id: datetime.datetime.fromtimestamp(_id / 1000)

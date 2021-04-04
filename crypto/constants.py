@@ -14,21 +14,41 @@ SYMBOL_CARDANO_USDT = f'{SYMBOL_CARDANO}{SYMBOL_USDT}'
 SYMBOL_BITCOIN_USDT = f'{SYMBOL_BITCOIN}{SYMBOL_USDT}'
 SYMBOL_ETHEREUM_USDT = f'{SYMBOL_ETHEREUM}{SYMBOL_USDT}'
 
+TRADING_SYMBOLS = [
+    SYMBOL_CARDANO_EURO,
+    SYMBOL_BITCOIN_EURO,
+    SYMBOL_ETHEREUM_EURO,
+    SYMBOL_CARDANO_USDT,
+    SYMBOL_BITCOIN_USDT,
+    SYMBOL_ETHEREUM_USDT,
+]
+
+INTERVALS = [
+    '1m',
+    '3m',
+    '5m',
+    '15m',
+    '30m',
+    '1h',
+    '2h',
+    '4h',
+    '6h',
+    '8h',
+    '12h',
+    '1d',
+]
+
+MONGO_COLLS = {
+    symbol: {i: f'{symbol}_{i}' for i in INTERVALS}
+    for symbol in TRADING_SYMBOLS
+}
+
 COMMAND_CRAWL = 'crawl'
 COMMAND_CHARTS = 'charts'
 COMMAND_TRADE = 'trade'
 COMMAND_FILL = 'fill'
 
 CRAWLING_SECONDS_WINDOW = 60
-
-MONGO_COLLS = {
-    SYMBOL_CARDANO_EURO: 'ada_eur',
-    SYMBOL_BITCOIN_EURO: 'btc_eur',
-    SYMBOL_ETHEREUM_EURO: 'eth_eur',
-    SYMBOL_CARDANO_USDT: 'ada_usdt',
-    SYMBOL_BITCOIN_USDT: 'btc_usdt',
-    SYMBOL_ETHEREUM_USDT: 'eth_usdt',
-}
 
 MAPPING_KLINES = [
     'timestamp',

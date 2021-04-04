@@ -23,14 +23,17 @@ def crawl(symbol, interval):
         time.sleep(constants.CRAWLING_SECONDS_WINDOW)
 
 
-def charts(symbol, date_from, date_to):
+def charts(symbol, interval, date_from, date_to):
     logging.info(f'Show charts with {symbol}')
-    Charter.show_charts(symbol, date_from, date_to)
+    Charter.show_charts(symbol, interval, date_from, date_to)
 
 
-def trade(symbol):
+def trade(symbol, interval, history=False):
     logging.info(f'Trading with {symbol}')
-    Trader.trade(symbol)
+    if not history:
+        Trader.trade(symbol, interval)
+    else:
+        Trader.trade_history(symbol, interval)
 
 
 def fill(symbol, date_from, interval):
@@ -78,18 +81,17 @@ if __name__ == '__main__':
         ],
     )
     parser.add_argument(
+        '-i',
+        '--interval',
+        required=True,
+        help='Str Binance candlesticks interval',
+    )
+    parser.add_argument(
         '--fill-date-from',
         help=(
             'Unix timestamp in miliseconds. Used when command is '
             f'{constants.COMMAND_FILL} as date from to '
             'query Binance API and perform an initial filling of the DB.'
-        )
-    )
-    parser.add_argument(
-        '--crawler-interval',
-        help=(
-            'Str Binance candlesticks interval. Used withs commands '
-            f'{constants.COMMAND_FILL} / {constants.COMMAND_CRAWL}.'
         )
     )
     parser.add_argument(
@@ -101,24 +103,24 @@ if __name__ == '__main__':
         )
     )
     parser.add_argument(
-        '--chart-date-to',
+        '--trade-history',
+        action='store_true',
         help=(
-            'Unix timestamp in miliseconds. Used when command is '
-            f'{constants.COMMAND_CHARTS} as date to for '
-            'querying our database and select candlesticks before that date.'
+            f'Used with {constants.COMMAND_CHARTS} to check trade strategies '
+            'with history.'
         )
     )
     args = parser.parse_args()
     logging.info(f'Command {args.command} -s {args.symbol} launched.')
     if args.command == constants.COMMAND_CRAWL:
-        crawl(args.symbol, args.crawler_interval)
+        crawl(args.symbol, args.interval)
     elif args.command == constants.COMMAND_CHARTS:
         charts(
             args.symbol, args.chart_date_from, args.chart_date_to,
-            args.crawler_interval,
+            args.interval,
         )
     elif args.command == constants.COMMAND_TRADE:
-        trade(args.symbol)
+        trade(args.symbol, args.trade_history)
     elif args.command == constants.COMMAND_FILL:
-        fill(args.symbol, args.fill_date_from, args.crawler_interval)
+        fill(args.symbol, args.fill_date_from, args.interval)
     logging.info(f'Command {args.command} -s {args.symbol} finished.')
