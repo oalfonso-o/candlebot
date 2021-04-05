@@ -3,62 +3,45 @@ import logging
 from plotly.subplots import make_subplots
 from plotly.offline import plot
 import plotly.graph_objects as go
-import pandas as pd
-import numpy as np
 
 from crypto.db.candle_retriever import CandleRetriever
-from crypto import utils
-from crypto import settings
+from crypto.strategist import Strategist
 
 logger = logging.getLogger(__name__)
 
 
 class Charter:
 
-    def __init__(
-        self,
-        window=settings.BT_CONFIG['ema']['window'],
-        adjust=settings.BT_CONFIG['ema']['adjust'],
-        drop_factor=settings.BT_CONFIG['ema']['drop_factor'],
-    ):
-        self.window = window
-        self.adjust = adjust
-        self.drop_factor = drop_factor
-
+    @staticmethod
     def chart_ema(
-        self, symbol, interval, date_from=None, date_to=None, show_plot=True
+        symbol, interval, date_from=None, date_to=None, show_plot=True
     ):
         logger.info(f'Charting {symbol}_{interval} f:{date_from} t:{date_to}')
         candles_cursor = CandleRetriever.get(
             symbol, interval, date_from, date_to)
-        docs = list(candles_cursor)
-        if not docs:
+        candles = list(candles_cursor)
+        if not candles:
             logging.warning('No klines')
             return {}
-        df = pd.DataFrame(docs)
-        df['_id'] = df['_id'].apply(lambda _id: utils.timestamp_to_date(_id))
-        df['ema'] = df['close'].ewm(
-            span=self.window, adjust=self.adjust
-        ).mean()
-        operations = self._calc_buy_sell(df)
+        strat_df, operations = Strategist.calc(candles, 'ema')
         if show_plot:
             candlestick = go.Candlestick(
-                x=df['_id'],
-                open=df['open'],
-                high=df['high'],
-                low=df['low'],
-                close=df['close'],
+                x=strat_df['_id'],
+                open=strat_df['open'],
+                high=strat_df['high'],
+                low=strat_df['low'],
+                close=strat_df['close'],
                 name=symbol,
             )
             ema_scatter = go.Scatter(
-                x=df['_id'],
-                y=df['ema'],
+                x=strat_df['_id'],
+                y=strat_df['ema'],
                 name='EMA',
                 yaxis='y2',
             )
             buy_sell_scatter = go.Scatter(
-                x=df['_id'],
-                y=df['bs'],
+                x=strat_df['_id'],
+                y=strat_df['bs'],
                 name='buy/sell',
                 yaxis='y2',
                 mode='markers',
@@ -71,66 +54,3 @@ class Charter:
             fig['layout'].update(title='EMA Chart', xaxis=dict(tickangle=-90))
             plot(fig)
         return operations
-
-    def _calc_buy_sell(self, df):
-        lowest = None
-        highest = None
-        df['bs'] = np.NaN
-        last_buy = 0
-        last_sell = 0
-        direction = 0
-        operations = {
-            'buys': 0,
-            'sells': 0,
-            'long_profit': 0,
-            'short_profit': 0,
-            'long_profit_percents': [],
-            'short_profit_percents': [],
-        }
-        for i, row in df.iterrows():
-            row['close'] = float(row['close'])
-            row['ema'] = float(row['ema'])
-            row['bs'] = float(0)
-            if lowest is None and highest is None:
-                lowest = row
-                highest = row
-                continue
-            if self._must_buy(row, lowest, direction):
-                df.at[i, 'bs'] = row['close']
-                operations['buys'] += 1
-                last_buy = row['close']
-                if last_sell:
-                    profit = last_sell - row['close']
-                    operations['short_profit'] += profit
-                    percent_profit = profit / last_sell
-                    operations['short_profit_percents'].append(percent_profit)
-                direction = 1
-            elif self._must_sell(row, highest, direction):
-                df.at[i, 'bs'] = row['close']
-                operations['sells'] += 1
-                last_sell = row['close']
-                if last_buy:
-                    profit = row['close'] - last_buy
-                    operations['long_profit'] += profit
-                    percent_profit = profit / last_buy
-                    operations['long_profit_percents'].append(percent_profit)
-                direction = -1
-            if (row['ema'] - highest['ema']) > 0:
-                highest = row
-            if (row['ema'] - lowest['ema']) < 0:
-                lowest = row
-        return operations
-
-    def _must_buy(self, row, lowest, direction):
-        return bool(
-            (row['ema'] - lowest['ema'])
-            > (lowest['ema'] * self.drop_factor)
-            and (not direction or direction < 0)
-        )
-
-    def _must_sell(self, row, highest, direction):
-        return bool(
-            (highest['ema'] - row['ema'])
-            > (highest['ema'] * self.drop_factor)
-            and (not direction or direction > 0)
-        )
