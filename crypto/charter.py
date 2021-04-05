@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class Charter:
 
     @staticmethod
-    def chart_ema(
+    def ema(
         symbol, interval, date_from=None, date_to=None, show_plot=True
     ):
         logger.info(f'Charting {symbol}_{interval} f:{date_from} t:{date_to}')

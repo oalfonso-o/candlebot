@@ -51,7 +51,7 @@ class Backtesting:
         for play in plays:
             date_from = utils.date_to_timestamp(play['df'])
             date_to = utils.date_to_timestamp(play['dt'])
-            play['results'] = charter.chart_ema(
+            play['results'] = charter.ema(
                 play['symbol'], play['interval'], date_from, date_to,
                 show_plot=False
             )
@@ -104,7 +104,7 @@ class Backtesting:
         charter.window = play['window']
         charter.adjust = play['adjust']
         charter.drop = play['drop']
-        return charter.chart_ema(
+        return charter.ema(
             play['symbol'], play['interval'], date_from, date_to,
             show_plot=False
         )

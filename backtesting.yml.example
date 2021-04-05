@@ -1,4 +1,26 @@
-ema:
-    window: 25
-    adjust: false
-    drop_factor: 1
+symbols: ['BTCUSDT', 'ADAUSDT', 'ETHUSDT']
+intervals: ['1d', '1h']
+dates: [{'f': '20270101', 't': '20220101'}]
+strategies:
+    - ema:
+        - drop_factor: 0.01  # TODO: change to pips_in/pips_out
+indicators:
+    - ema:
+        - span: 25
+        - adjust: True
+tests:
+    - ema1:
+        - strategy: 'ema'
+        - override:
+            - intervals: ['1d']
+            - indicators:
+                - ema:
+                    - adjust: [True, False]
+        - ranges:
+            - strategies:
+                - ema:
+                    - drop_factor: [0.01, 0.5, 0.01]
+    - ema_default:
+        - strategy: 'ema'
+        - override: {}
+        - ranges: {}

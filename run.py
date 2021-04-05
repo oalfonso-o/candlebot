@@ -28,9 +28,8 @@ def crawl(symbol, interval):
 
 def charts(symbol, interval, date_from, date_to, chart_no_show):
     logging.info(f'Show charts with {symbol}')
-    charter = Charter()
     show_plot = not chart_no_show
-    ops = charter.chart_ema(
+    ops = Charter.ema(
         symbol, interval, date_from, date_to, show_plot=show_plot)
     if ops['long_profit_percents']:
         ops['long_profit_percents'] = (
