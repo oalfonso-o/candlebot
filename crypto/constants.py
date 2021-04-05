@@ -69,3 +69,4 @@ MAPPING_KLINES = [
 KLINE_FIELDS = {'open': 1, 'high': 1, 'low': 1, 'close': 1}
 
 DATE_ARG_FORMAT = '%Y%m%d'
+DATE_MILIS_PRODUCT = 1000

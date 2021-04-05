@@ -8,8 +8,9 @@ def str_to_date(date):
 
 
 def date_to_timestamp(date):
-    return int(str_to_date(date).timestamp()) * 1000
+    return int(str_to_date(date).timestamp()) * constants.DATE_MILIS_PRODUCT
 
 
 def timestamp_to_date(timestamp):
-    return datetime.datetime.fromtimestamp(int(timestamp) / 1000)
+    milis_timestamp = int(timestamp) / constants.DATE_MILIS_PRODUCT
+    return datetime.datetime.fromtimestamp(milis_timestamp)

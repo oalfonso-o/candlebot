@@ -62,7 +62,12 @@ class Backtesting:
         charter = Charter()
         windows = list(range(20, 50, 5))
         adjusts = [True, False]
-        drop_factors = list(map(lambda n: n / 1000, range(30, 99, 5)))
+        drop_factors = list(
+            map(
+                lambda n: n / constants.DATE_MILIS_PRODUCT,
+                range(30, 99, 5),
+            )
+        )
         plays = [
             {
                 'results': {},

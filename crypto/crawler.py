@@ -19,7 +19,6 @@ class Crawler:
     )
     crawl_limit = 1
     fill_limit = 1000
-    milis_product = 1000
 
     @classmethod
     def crawl(cls, symbol, interval):
@@ -86,5 +85,5 @@ class Crawler:
     def _timestamp(cls):
         timestamp_now = datetime.datetime.now().timestamp()
         two_minutes_ago = int(timestamp_now) - 120
-        timestamp = two_minutes_ago * cls.milis_product
+        timestamp = two_minutes_ago * constants.DATE_MILIS_PRODUCT
         return timestamp
