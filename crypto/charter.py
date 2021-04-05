@@ -6,8 +6,7 @@ import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 
-from crypto.db import db_find
-from crypto import constants
+from crypto.db.candle_retriever import CandleRetriever
 from crypto import utils
 from crypto import settings
 
@@ -30,16 +29,9 @@ class Charter:
         self, symbol, interval, date_from=None, date_to=None, show_plot=True
     ):
         logger.info(f'Charting {symbol}_{interval} f:{date_from} t:{date_to}')
-        query = {}
-        if date_from or date_to:
-            query = {'_id': {}}
-            if date_from:
-                query['_id']['$gte'] = int(date_from)
-            if date_to:
-                query['_id']['$lte'] = int(date_to)
-        all_cursor = db_find.find(
-            symbol, interval, query, constants.KLINE_FIELDS)
-        docs = list(all_cursor)
+        candles_cursor = CandleRetriever.get(
+            symbol, interval, date_from, date_to)
+        docs = list(candles_cursor)
         if not docs:
             logging.warning('No klines')
             return {}
