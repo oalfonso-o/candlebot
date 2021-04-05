@@ -1,194 +1,154 @@
 import csv
 import logging
+import datetime
+import itertools
 
-from crypto.charter import Charter
+import numpy as np
+
 from crypto import utils
-from crypto import constants
 from crypto import settings
 from crypto.db import db_insert
+from crypto.strategist import Strategist
+from crypto.db.candle_retriever import CandleRetriever
 
 logger = logging.getLogger(__name__)
 
 
 class Backtesting:
-    symbols = [
-        constants.SYMBOL_CARDANO_USDT,
-        constants.SYMBOL_BITCOIN_USDT,
-        constants.SYMBOL_ETHEREUM_USDT,
+    generic_header = [
+        'strategy',
+        'symbol',
+        'interval',
+        'df',
+        'dt',
     ]
-    dates = [
-        # {'f': '20170101', 't': '20180101'},
-        # {'f': '20180101', 't': '20190101'},
-        # {'f': '20190101', 't': '20200101'},
-        # {'f': '20200101', 't': '20210101'},
-        # {'f': '20210101', 't': '20220101'},
-        {'f': '20170101', 't': '20220101'},
-    ]
-    intervals = [
-        # '1h',
-        '1d',
-    ]
-    output_fieldnames = [
-        'symbol', 'interval', 'df', 'dt', 'buys', 'sells', 'long_profit',
-        'short_profit', 'percent_long_profit', 'percent_short_profit'
+    stats_header = [
+        'buys',
+        'sells',
+        'long_profit',
+        'short_profit',
+        'long_profit_avg',
+        'short_profit_avg',
     ]
 
-    @classmethod
-    def run(cls):
-        charter = Charter()
-        plays = [
-            {
-                'results': {},
-                'symbol': symbol,
-                'interval': interval,
-                'df': date['f'],
-                'dt': date['t'],
-            }
-            for symbol in cls.symbols
-            for interval in cls.intervals
-            for date in cls.dates
-        ]
-        for play in plays:
-            date_from = utils.date_to_timestamp(play['df'])
-            date_to = utils.date_to_timestamp(play['dt'])
-            play['results'] = charter.ema(
-                play['symbol'], play['interval'], date_from, date_to,
-                show_plot=False
-            )
-        cls._output(plays)
-
-    @classmethod
-    def full_ema(cls):
-        charter = Charter()
-        windows = list(range(20, 50, 5))
-        adjusts = [True, False]
-        drop_factors = list(
-            map(
-                lambda n: n / constants.DATE_MILIS_PRODUCT,
-                range(30, 99, 5),
-            )
-        )
-        plays = [
-            {
-                'results': {},
-                'symbol': symbol,
-                'df': date['f'],
-                'dt': date['t'],
-            }
-            # for symbol in cls.symbols
-            for symbol in [constants.SYMBOL_ETHEREUM_USDT]
-            for date in cls.dates
-        ]
-        for drop in drop_factors:
-            for adjust in adjusts:
-                for window in windows:
-                    for interval in cls.intervals:
-                        for play in plays:
-                            play.update({
-                                'interval': interval,
-                                'window': window,
-                                'adjust': adjust,
-                                'drop': drop,
-                            })
-                            play['results'] = cls._full_chart(play, charter)
-                        cls._persist(plays)
-                        logging.info(
-                            f'Persisted i: {interval} a: {adjust} w: {window} '
-                            f'd: {drop}'
-                        )
-
-    @staticmethod
-    def _full_chart(play, charter):
-        date_from = utils.date_to_timestamp(play['df'])
-        date_to = utils.date_to_timestamp(play['dt'])
-        charter.window = play['window']
-        charter.adjust = play['adjust']
-        charter.drop = play['drop']
-        return charter.ema(
-            play['symbol'], play['interval'], date_from, date_to,
-            show_plot=False
+    def __init__(self, test_id):
+        self.output_rows = []
+        date = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        self.output_mongo_coll = f'bt_{test_id}_{date}'
+        self.bt_config = self._config(test_id)
+        self.test_specific_header = self.bt_config['header']
+        self.output_header = (
+            self.generic_header
+            + self.stats_header
+            + self.test_specific_header
         )
 
-    @classmethod
-    def _persist(cls, plays):
-        rows = []
-        for play in plays:
-            row = {
-                'symbol': play['symbol'],
-                'interval': play['interval'],
-                'df': str(utils.str_to_date(play['df'])).split(' ')[0],
-                'dt': str(utils.str_to_date(play['dt'])).split(' ')[0],
-                'buys': play['results'].get('buys') or 0,
-                'sells': play['results'].get('sells') or 0,
-                'long_profit': play['results'].get('long_profit') or 0,
-                'short_profit': play['results'].get('short_profit') or 0,
-                'percent_long_profit': cls._percent_profit(play, 'long'),
-                'percent_short_profit': cls._percent_profit(play, 'short'),
+    def test(self):
+        generic_fields = [
+            self.bt_config['symbols'],
+            self.bt_config['intervals'],
+            self.bt_config['dates'],
+        ]
+        specific_fields = []
+        strategy_id = self.bt_config['strategy']
+        Strategy = Strategist.strategies[strategy_id]
+        strategy_fields = self.bt_config['strategies'][strategy_id]
+        for field_key, field_values in strategy_fields.items():
+            fields = []
+            key = f's.{strategy_id}.{field_key}'
+            for field_value in field_values:
+                fields.append({key: field_value})
+            specific_fields.append(fields)
+        for Indicator in Strategy.indicators:
+            indicator_id = Indicator._id
+            indicator_fields = self.bt_config['indicators'][indicator_id]
+            for field_key, field_values in indicator_fields.items():
+                fields = []
+                key = f'i.{indicator_id}.{field_key}'
+                for field_value in field_values:
+                    fields.append({key: field_value})
+                specific_fields.append(fields)
+
+        for s, i, d in itertools.product(*generic_fields):
+            for fields in itertools.product(*specific_fields):
+                for field in fields:
+                    for sfk, sfv in field.items():
+                        self._adapt_config(sfk, sfv)
+                candles_cursor = CandleRetriever.get(s, i, d['df'], d['dt'])
+                candles = list(candles_cursor)
+                if not candles:
+                    logging.warning('No klines')
+                    continue
+                _, stats = Strategist.calc(candles, strategy_id)
+                self._parse_output(stats, s, i, d)
+
+        self._persist_output()
+
+    @staticmethod
+    def _config(test_id):
+        bt_config = settings.BT
+        bt_test = bt_config['tests'][test_id]
+        bt_config.update(bt_test['override'])
+        bt_config['strategy'] = bt_test['strategy']
+        bt_config['header'] = bt_test['header']
+        bt_config['dates'] = [
+            {
+                'df': utils.date_to_timestamp(d['df']),
+                'dt': utils.date_to_timestamp(d['dt']),
             }
-            rows.append(row)
-        totals = cls._totals(rows)
-        row.update(totals)
-        row['symbols'] = cls.symbols
-        row['window'] = play['window']
-        row['adjust'] = play['adjust']
-        row['drop'] = play['drop']
-        row.pop('symbol')
-        db_insert.backtesting_play(row)
+            for d in bt_config['dates']
+        ]
+        for test_bt_cfg_key, str_ind in bt_test['ranges'].items():
+            for id_str_ind, config_dict in str_ind.items():
+                for config_name, range_args in config_dict.items():
+                    range_values = list(np.arange(*range_args))
+                    bt_config[test_bt_cfg_key][id_str_ind][config_name] = (
+                        range_values
+                    )
+        return bt_config
 
-    @classmethod
-    def _output(cls, plays):
-        rows = []
-        with open(settings.BT_OUTPUT, 'w') as fd:
-            csvdict = csv.DictWriter(fd, fieldnames=cls.output_fieldnames)
-            csvdict.writeheader()
-            for play in plays:
-                row = {
-                    'symbol': play['symbol'],
-                    'interval': play['interval'],
-                    'df': str(utils.str_to_date(play['df'])).split(' ')[0],
-                    'dt': str(utils.str_to_date(play['dt'])).split(' ')[0],
-                    'buys': play['results'].get('buys') or 0,
-                    'sells': play['results'].get('sells') or 0,
-                    'long_profit': play['results'].get('long_profit') or 0,
-                    'short_profit': play['results'].get('short_profit') or 0,
-                    'percent_long_profit': cls._percent_profit(play, 'long'),
-                    'percent_short_profit': cls._percent_profit(play, 'short'),
-                }
-                rows.append(row)
-            rows = sorted(
-                rows, key=lambda r: r['percent_long_profit'], reverse=True
-            )
-            csvdict.writerows(rows)
-            csvdict.writerow(cls._totals(rows))
-        logger.info(f'Backtesting output in {settings.BT_OUTPUT}')
+    def _adapt_config(self, specific_field_key, specific_field_value):
+        str_or_ind, id_, field = specific_field_key.split('.')
+        s_i = 'strategies' if str_or_ind.startswith('s') else 'indicators'
+        self.bt_config[s_i][id_][field] = specific_field_value
+        self.bt_config[specific_field_key] = specific_field_value
 
-    @staticmethod
-    def _percent_profit(play, type_):
-        percents = play['results'].get(f'{type_}_profit_percents') or []
-        percent_profit = sum(percents) / len(percents) if percents else 0
-        return percent_profit
+    def _parse_output(self, stats, symbol, interval, date):
+        row = self._prepare_output_row(stats, symbol, interval, date)
+        if self.bt_config['output']['csv']['active']:
+            self.output_rows.append(row)
+        if self.bt_config['output']['mongo']['active']:
+            db_insert.backtest(row, self.output_mongo_coll)
 
-    @staticmethod
-    def _totals(rows):
-        totals = {
-            'buys': 0,
-            'sells': 0,
-            'long_profit': 0,
-            'short_profit': 0,
-            'percent_long_profit': 0,
-            'percent_short_profit': 0,
+    def _prepare_output_row(self, stats, symbol, interval, date):
+        specific_fields = {
+            header: self.bt_config[header]
+            for header in self.test_specific_header
         }
-        for row in rows:
-            totals['buys'] += row['buys']
-            totals['sells'] += row['sells']
-            totals['long_profit'] += row['long_profit']
-            totals['short_profit'] += row['short_profit']
-            totals['percent_long_profit'] += row['percent_long_profit']
-            totals['percent_short_profit'] += row['percent_short_profit']
-        totals['percent_long_profit'] = (
-            totals['percent_long_profit'] / len(rows)
-        )
-        totals['percent_short_profit'] = (
-            totals['percent_short_profit'] / len(rows)
-        )
-        return totals
+        row = {
+            'strategy': self.bt_config['strategy'],
+            'symbol': symbol,
+            'interval': interval,
+            'df': str(utils.timestamp_to_date(date['df'])).split(' ')[0],
+            'dt': str(utils.timestamp_to_date(date['dt'])).split(' ')[0],
+            'buys': stats.get('buys') or 0,
+            'sells': stats.get('sells') or 0,
+            'long_profit': stats.get('long_profit') or 0,
+            'short_profit': stats.get('short_profit') or 0,
+            'long_profit_avg': stats.get('long_profit_avg') or 0,
+            'short_profit_avg': stats.get('short_profit_avg') or 0,
+            **specific_fields,
+        }
+        return row
+
+    def _persist_output(self):
+        if self.bt_config['output']['csv']['active']:
+            with open(self.bt_config['output']['csv']['path'], 'w') as fd:
+                csvdict = csv.DictWriter(fd, fieldnames=self.output_header)
+                csvdict.writeheader()
+                rows = sorted(
+                    self.output_rows,
+                    key=lambda r: r['long_profit_avg'],
+                    reverse=True,
+                )
+                csvdict.writerows(rows)

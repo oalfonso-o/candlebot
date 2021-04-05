@@ -36,3 +36,8 @@ def backtesting_play(doc):
     coll_name = constants.MONGO_COLL_BACKFILL_PLAYS
     mongo_coll = connection[settings.MONGO_DATABASE][coll_name]
     mongo_coll.insert_one(doc)
+
+
+def backtest(doc, coll_name):
+    mongo_coll = connection[settings.MONGO_DATABASE][coll_name]
+    mongo_coll.insert_one(doc)

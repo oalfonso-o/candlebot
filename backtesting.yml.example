@@ -1,26 +1,40 @@
+output:
+    csv:
+        active: True
+        path: /tmp/crypto_backtesting_output.csv
+    mongo:
+        active: False
 symbols: ['BTCUSDT', 'ADAUSDT', 'ETHUSDT']
 intervals: ['1d', '1h']
-dates: [{'f': '20270101', 't': '20220101'}]
+dates: [{'df': '20170101', 'dt': '20220101'}]
 strategies:
-    - ema:
-        - drop_factor: 0.01  # TODO: change to pips_in/pips_out
+    ema:
+        drop_factor: [0.01]  # TODO: change to pips_in/pips_out
 indicators:
-    - ema:
-        - span: 25
-        - adjust: True
+    ema:
+        span: [25]
+        adjust: [True]
 tests:
-    - ema1:
-        - strategy: 'ema'
-        - override:
-            - intervals: ['1d']
-            - indicators:
-                - ema:
-                    - adjust: [True, False]
-        - ranges:
-            - strategies:
-                - ema:
-                    - drop_factor: [0.01, 0.5, 0.01]
-    - ema_default:
-        - strategy: 'ema'
-        - override: {}
-        - ranges: {}
+    ema1:
+        strategy: 'ema'
+        header:
+            - 's.ema.drop_factor'
+            - 'i.ema.span'
+            - 'i.ema.adjust'
+        override:
+            intervals: ['1d']
+            symbols: ['BTCUSDT']
+            indicators:
+                ema:
+                    adjust: [True, False]
+        ranges:
+            strategies:
+                ema:
+                    drop_factor: [0.01, 0.11, 0.02]
+            indicators:
+                ema:
+                    span: [15, 30, 5]
+    ema_default:
+        strategy: 'ema'
+        override: {}
+        ranges: {}

@@ -23,7 +23,7 @@ class Charter:
         if not candles:
             logging.warning('No klines')
             return {}
-        strat_df, operations = Strategist.calc(candles, 'ema')
+        strat_df, stats = Strategist.calc(candles, 'ema')
         if show_plot:
             candlestick = go.Candlestick(
                 x=strat_df['_id'],
@@ -53,4 +53,4 @@ class Charter:
             fig.add_trace(buy_sell_scatter, secondary_y=True)
             fig['layout'].update(title='EMA Chart', xaxis=dict(tickangle=-90))
             plot(fig)
-        return operations
+        return stats

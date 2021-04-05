@@ -31,16 +31,6 @@ def charts(symbol, interval, date_from, date_to, chart_no_show):
     show_plot = not chart_no_show
     ops = Charter.ema(
         symbol, interval, date_from, date_to, show_plot=show_plot)
-    if ops['long_profit_percents']:
-        ops['long_profit_percents'] = (
-            sum(ops['long_profit_percents'])
-            / len(ops['long_profit_percents'])
-        )
-    if ops['short_profit_percents']:
-        ops['short_profit_percents'] = (
-            sum(ops['short_profit_percents'])
-            / len(ops['short_profit_percents'])
-        )
     pprint(ops)
 
 
@@ -69,12 +59,13 @@ def fill_all():
     Crawler.fill_backtesting()
 
 
-def backtesting(backtesting_full_ema):
+def backtesting(bt_test_id):
+    if not bt_test_id:
+        raise ValueError(
+            'Parameter --bt-test-id is required for backtesting command')
     logging.info(f'Running Backtesting')
-    if not backtesting_full_ema:
-        Backtesting.run()
-    else:
-        Backtesting.full_ema()
+    bt = Backtesting(bt_test_id)
+    bt.test()
 
 
 if __name__ == '__main__':
@@ -151,12 +142,8 @@ if __name__ == '__main__':
         )
     )
     parser.add_argument(
-        '--backtesting-full-ema',
-        action='store_true',
-        help=(
-            f'Used with {constants.COMMAND_BACKTESTING} to check test all '
-            'strategies and persist results to the DB.'
-        )
+        '--bt-test-id',
+        help=f'Test ID to run with {constants.COMMAND_BACKTESTING}',
     )
     parser.add_argument(
         '--chart-no-show',
@@ -178,5 +165,5 @@ if __name__ == '__main__':
     elif args.command == constants.COMMAND_FILL_ALL:
         fill_all()
     elif args.command == constants.COMMAND_BACKTESTING:
-        backtesting(args.backtesting_full_ema)
+        backtesting(args.bt_test_id)
     logging.info(f'Command {args.command} finished.')

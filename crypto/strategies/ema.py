@@ -15,7 +15,7 @@ class StrategyEMA:
 
     def __init__(self, df: pd.DataFrame):
         self.df = df
-        self.drop_factor = settings.BT_CONFIG['ema']['drop_factor']
+        self.drop_factor = settings.BT['strategies']['ema']['drop_factor']
         for indicator in self.indicators:
             self.df = indicator.apply(self.df)
 
@@ -26,13 +26,13 @@ class StrategyEMA:
         last_buy = 0
         last_sell = 0
         direction = 0
-        operations = {
+        long_profit_percents = []
+        short_profit_percents = []
+        stats = {
             'buys': 0,
             'sells': 0,
             'long_profit': 0,
             'short_profit': 0,
-            'long_profit_percents': [],
-            'short_profit_percents': [],
         }
         for i, row in self.df.iterrows():
             row['close'] = float(row['close'])
@@ -44,29 +44,30 @@ class StrategyEMA:
                 continue
             if self._must_buy(row, lowest, direction):
                 self.df.at[i, 'bs'] = row['close']
-                operations['buys'] += 1
+                stats['buys'] += 1
                 last_buy = row['close']
                 if last_sell:
                     profit = last_sell - row['close']
-                    operations['short_profit'] += profit
+                    stats['short_profit'] += profit
                     percent_profit = profit / last_sell
-                    operations['short_profit_percents'].append(percent_profit)
+                    short_profit_percents.append(percent_profit)
                 direction = 1
             elif self._must_sell(row, highest, direction):
                 self.df.at[i, 'bs'] = row['close']
-                operations['sells'] += 1
+                stats['sells'] += 1
                 last_sell = row['close']
                 if last_buy:
                     profit = row['close'] - last_buy
-                    operations['long_profit'] += profit
+                    stats['long_profit'] += profit
                     percent_profit = profit / last_buy
-                    operations['long_profit_percents'].append(percent_profit)
+                    long_profit_percents.append(percent_profit)
                 direction = -1
             if (row['ema'] - highest['ema']) > 0:
                 highest = row
             if (row['ema'] - lowest['ema']) < 0:
                 lowest = row
-        return self.df, operations
+        self._calc_avg(stats, long_profit_percents, short_profit_percents)
+        return self.df, stats
 
     def _must_buy(self, row, lowest, direction):
         return bool(
@@ -81,3 +82,16 @@ class StrategyEMA:
             > (highest['ema'] * self.drop_factor)
             and (not direction or direction > 0)
         )
+
+    @staticmethod
+    def _calc_avg(stats, long_profit_percents, short_profit_percents):
+        if long_profit_percents:
+            stats['long_profit_avg'] = (
+                sum(long_profit_percents)
+                / len(long_profit_percents)
+            )
+        if short_profit_percents:
+            stats['short_profit_avg'] = (
+                sum(short_profit_percents)
+                / len(short_profit_percents)
+            )

@@ -5,10 +5,12 @@ from crypto import settings
 
 class IndicatorEMA:
 
-    @staticmethod
-    def apply(df: pd.DataFrame) -> pd.DataFrame:
-        df['ema'] = df['close'].ewm(
-            span=settings.BT_CONFIG['ema']['window'],
-            adjust=settings.BT_CONFIG['ema']['adjust'],
+    _id = 'ema'
+
+    @classmethod
+    def apply(cls, df: pd.DataFrame) -> pd.DataFrame:
+        df[cls._id] = df['close'].ewm(
+            span=settings.BT['indicators'][cls._id]['span'],
+            adjust=settings.BT['indicators'][cls._id]['adjust'],
         ).mean()
         return df
