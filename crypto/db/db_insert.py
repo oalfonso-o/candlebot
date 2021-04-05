@@ -33,5 +33,6 @@ def crawled_symbols(symbol, docs, interval):
 
 
 def backtesting_play(doc):
-    mongo_coll = constants.MONGO_COLL_BACKFILL_PLAYS
+    coll_name = constants.MONGO_COLL_BACKFILL_PLAYS
+    mongo_coll = connection[settings.MONGO_DATABASE][coll_name]
     mongo_coll.insert_one(doc)

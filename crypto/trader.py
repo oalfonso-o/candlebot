@@ -7,6 +7,7 @@ class Trader:
 
     EMA_WINDOW = 20
 
+    @staticmethod
     def trade(symbol, interval):
         logger.info(f'Trading {symbol} {interval}')
 

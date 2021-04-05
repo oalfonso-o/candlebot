@@ -51,18 +51,18 @@ class Backtesting:
         for play in plays:
             date_from = utils.date_to_timestamp(play['df'])
             date_to = utils.date_to_timestamp(play['dt'])
-            play['results'] = charter.calc_chart(
+            play['results'] = charter.chart_ema(
                 play['symbol'], play['interval'], date_from, date_to,
                 show_plot=False
             )
         cls._output(plays)
 
     @classmethod
-    def full(cls):
+    def full_ema(cls):
         charter = Charter()
-        windows = list(range(5, 70, 5))
+        windows = list(range(20, 50, 5))
         adjusts = [True, False]
-        drop_factors = list(map(lambda n: n / 1000, range(1, 51)))
+        drop_factors = list(map(lambda n: n / 1000, range(30, 99, 5)))
         plays = [
             {
                 'results': {},
@@ -70,7 +70,8 @@ class Backtesting:
                 'df': date['f'],
                 'dt': date['t'],
             }
-            for symbol in cls.symbols
+            # for symbol in cls.symbols
+            for symbol in [constants.SYMBOL_ETHEREUM_USDT]
             for date in cls.dates
         ]
         for drop in drop_factors:
@@ -86,6 +87,10 @@ class Backtesting:
                             })
                             play['results'] = cls._full_chart(play, charter)
                         cls._persist(plays)
+                        logging.info(
+                            f'Persisted i: {interval} a: {adjust} w: {window} '
+                            f'd: {drop}'
+                        )
 
     @staticmethod
     def _full_chart(play, charter):
@@ -94,7 +99,7 @@ class Backtesting:
         charter.window = play['window']
         charter.adjust = play['adjust']
         charter.drop = play['drop']
-        return charter.calc_chart(
+        return charter.chart_ema(
             play['symbol'], play['interval'], date_from, date_to,
             show_plot=False
         )
@@ -118,6 +123,11 @@ class Backtesting:
             rows.append(row)
         totals = cls._totals(rows)
         row.update(totals)
+        row['symbols'] = cls.symbols
+        row['window'] = play['window']
+        row['adjust'] = play['adjust']
+        row['drop'] = play['drop']
+        row.pop('symbol')
         db_insert.backtesting_play(row)
 
     @classmethod

@@ -26,7 +26,7 @@ class Charter:
         self.adjust = adjust
         self.drop_factor = drop_factor
 
-    def calc_chart(
+    def chart_ema(
         self, symbol, interval, date_from=None, date_to=None, show_plot=True
     ):
         logger.info(f'Charting {symbol}_{interval} f:{date_from} t:{date_to}')

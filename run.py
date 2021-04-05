@@ -1,6 +1,7 @@
 import logging
 import argparse
 import time
+from pprint import pprint
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -25,12 +26,23 @@ def crawl(symbol, interval):
         time.sleep(constants.CRAWLING_SECONDS_WINDOW)
 
 
-def charts(symbol, interval, date_from, date_to):
-    date_from = utils.date_to_timestamp(date_from)
-    date_to = utils.date_to_timestamp(date_to)
+def charts(symbol, interval, date_from, date_to, chart_no_show):
     logging.info(f'Show charts with {symbol}')
     charter = Charter()
-    _ = charter.calc_chart(symbol, interval, date_from, date_to)
+    show_plot = not chart_no_show
+    ops = charter.chart_ema(
+        symbol, interval, date_from, date_to, show_plot=show_plot)
+    if ops['long_profit_percents']:
+        ops['long_profit_percents'] = (
+            sum(ops['long_profit_percents'])
+            / len(ops['long_profit_percents'])
+        )
+    if ops['short_profit_percents']:
+        ops['short_profit_percents'] = (
+            sum(ops['short_profit_percents'])
+            / len(ops['short_profit_percents'])
+        )
+    pprint(ops)
 
 
 def trade(symbol, interval, history=False):
@@ -48,7 +60,6 @@ def fill(symbol, date_from, interval):
     if not interval:
         raise ValueError(
             'Parameter --crawler-interval is required for fill command')
-    date_from = utils.date_to_timestamp(date_from)
     logging.info(f'Filling {symbol} from {date_from}')
     while date_from:
         date_from = Crawler.fill(symbol, date_from, interval)
@@ -59,12 +70,12 @@ def fill_all():
     Crawler.fill_backtesting()
 
 
-def backtesting(backtesting_full):
+def backtesting(backtesting_full_ema):
     logging.info(f'Running Backtesting')
-    if not backtesting_full:
+    if not backtesting_full_ema:
         Backtesting.run()
     else:
-        Backtesting.full()
+        Backtesting.full_ema()
 
 
 if __name__ == '__main__':
@@ -107,6 +118,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--fill-date-from',
+        type=lambda d: utils.date_to_timestamp(d),
         help=(
             'Date YYYYMMDD. Used when command is '
             f'{constants.COMMAND_FILL} as date from to '
@@ -115,6 +127,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--chart-date-from',
+        type=lambda d: utils.date_to_timestamp(d),
         help=(
             'Date YYYYMMDD. Used when command is '
             f'{constants.COMMAND_CHARTS} as date from to '
@@ -123,6 +136,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--chart-date-to',
+        type=lambda d: utils.date_to_timestamp(d),
         help=(
            'Date YYYYMMDD. Used when command is '
            f'{constants.COMMAND_CHARTS} as date to for '
@@ -138,12 +152,16 @@ if __name__ == '__main__':
         )
     )
     parser.add_argument(
-        '--backtesting-full',
+        '--backtesting-full-ema',
         action='store_true',
         help=(
             f'Used with {constants.COMMAND_BACKTESTING} to check test all '
             'strategies and persist results to the DB.'
         )
+    )
+    parser.add_argument(
+        '--chart-no-show',
+        action='store_true',
     )
     args = parser.parse_args()
     logging.info(f'Command {args.command} launched.')
@@ -152,7 +170,7 @@ if __name__ == '__main__':
     elif args.command == constants.COMMAND_CHARTS:
         charts(
             args.symbol, args.interval, args.chart_date_from,
-            args.chart_date_to,
+            args.chart_date_to, args.chart_no_show
         )
     elif args.command == constants.COMMAND_TRADE:
         trade(args.symbol, args.trade_history)
@@ -161,5 +179,5 @@ if __name__ == '__main__':
     elif args.command == constants.COMMAND_FILL_ALL:
         fill_all()
     elif args.command == constants.COMMAND_BACKTESTING:
-        backtesting(args.backtesting_full)
+        backtesting(args.backtesting_full_ema)
     logging.info(f'Command {args.command} finished.')
