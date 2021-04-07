@@ -5,11 +5,11 @@ import itertools
 
 import numpy as np
 
-from crypto import utils
-from crypto import settings
-from crypto.db import db_insert
-from crypto.strategist import Strategist
-from crypto.db.candle_retriever import CandleRetriever
+from candlebot import utils
+from candlebot import settings
+from candlebot.db import db_insert
+from candlebot.strategist import Strategist
+from candlebot.db.candle_retriever import CandleRetriever
 
 logger = logging.getLogger(__name__)
 
@@ -112,6 +112,7 @@ class Backtesting:
         return specific_fields
 
     def _adapt_config(self, specific_field_key, specific_field_value):
+        '''Adapts config before calculating the strategy with the new values'''
         str_or_ind, id_, field = specific_field_key.split('.')
         s_i = 'strategies' if str_or_ind.startswith('s') else 'indicators'
         self.bt_config[s_i][id_][field] = specific_field_value

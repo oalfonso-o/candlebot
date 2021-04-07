@@ -1,5 +1,9 @@
 .env
-crypto.egg-info
+*.egg-info
 __pycache__
 temp-plot.html
 backtesting.yml
+node_modules
+.cache
+.parcel-cache
+dist

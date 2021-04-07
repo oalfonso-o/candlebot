@@ -2,7 +2,7 @@ import pymongo
 import logging
 import urllib.parse
 
-from crypto import settings
+from candlebot import settings
 
 logger = logging.getLogger(__name__)
 

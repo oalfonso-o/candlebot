@@ -4,8 +4,8 @@ from typing import Tuple
 import pandas as pd
 import numpy as np
 
-from crypto.indicators.ema import IndicatorEMA
-from crypto import settings
+from candlebot.indicators.ema import IndicatorEMA
+from candlebot import settings
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +35,6 @@ class StrategyEMA:
             'short_profit': 0,
         }
         for i, row in self.df.iterrows():
-            row['close'] = float(row['close'])
-            row['ema'] = float(row['ema'])
             row['bs'] = float(0)
             if lowest is None and highest is None:
                 lowest = row
@@ -62,24 +60,24 @@ class StrategyEMA:
                     percent_profit = profit / last_buy
                     long_profit_percents.append(percent_profit)
                 direction = -1
-            if (row['ema'] - highest['ema']) > 0:
+            if (row['trend_ema_fast'] - highest['trend_ema_fast']) > 0:
                 highest = row
-            if (row['ema'] - lowest['ema']) < 0:
+            if (row['trend_ema_fast'] - lowest['trend_ema_fast']) < 0:
                 lowest = row
         self._calc_avg(stats, long_profit_percents, short_profit_percents)
         return self.df, stats
 
     def _must_buy(self, row, lowest, direction):
         return bool(
-            (row['ema'] - lowest['ema'])
-            > (lowest['ema'] * self.drop_factor)
+            (row['trend_ema_fast'] - lowest['trend_ema_fast'])
+            > (lowest['trend_ema_fast'] * self.drop_factor)
             and (not direction or direction < 0)
         )
 
     def _must_sell(self, row, highest, direction):
         return bool(
-            (highest['ema'] - row['ema'])
-            > (highest['ema'] * self.drop_factor)
+            (highest['trend_ema_fast'] - row['trend_ema_fast'])
+            > (highest['trend_ema_fast'] * self.drop_factor)
             and (not direction or direction > 0)
         )
 

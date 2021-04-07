@@ -1,7 +1,7 @@
 output:
     csv:
         active: True
-        path: /tmp/crypto_backtesting_output.csv
+        path: /tmp/candlebot_backtesting_output.csv
     mongo:
         active: False
 symbols: ['BTCUSDT', 'ADAUSDT', 'ETHUSDT']

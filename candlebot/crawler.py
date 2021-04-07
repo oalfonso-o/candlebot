@@ -2,10 +2,10 @@ import datetime
 import requests
 import logging
 
-from crypto.endpoints import market_data
-from crypto import constants
-from crypto.db import db_insert
-from crypto import utils
+from candlebot.endpoints import market_data
+from candlebot import constants
+from candlebot.db import db_insert
+from candlebot import utils
 
 logger = logging.getLogger(__name__)
 
@@ -19,11 +19,11 @@ class Crawler:
     crawl_limit = 1
     fill_limit = 1000
     symbols = [
-        constants.SYMBOL_CARDANO_USDT,
-        constants.SYMBOL_BITCOIN_USDT,
+        # constants.SYMBOL_CARDANO_USDT,
+        # constants.SYMBOL_BITCOIN_USDT,
         constants.SYMBOL_ETHEREUM_USDT,
     ]
-    intervals = ['1d', '1h']
+    intervals = ['1d']
 
     @classmethod
     def crawl(cls, symbol, interval):
@@ -64,10 +64,13 @@ class Crawler:
             return
         candlesticks = []
         for kline in data:
-            candlestick = {
-                k: v
-                for k, v in zip(constants.MAPPING_KLINES, kline)
-            }
+            candlestick = {}
+            for k, v in zip(constants.MAPPING_KLINES, kline):
+                candlestick[k] = v
+                if k != 'timestamp':
+                    candlestick[k] = float(v)
+                else:
+                    candlestick[k] = v
             candlestick['_id'] = candlestick['timestamp']
             candlesticks.append(candlestick)
         db_insert.crawled_symbols(symbol, candlesticks, interval)

@@ -20,7 +20,7 @@ dependency_links = read_dependency_links('./requirements.txt')
 
 
 setup(
-    name='crypto',
+    name='candlebot',
     version='1.0',
     author='Oriol Alfonso',
     author_email='oriolalfonso91@gmail.com',

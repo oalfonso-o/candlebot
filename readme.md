@@ -1,7 +1,8 @@
-# CRYPTO AUTO TRADER
+# CANDLEBOT AUTO TRADER
 This project has few features to:
-- crawl Binance crypto values and store them in a DB
+- crawl Binance candles and store them in a DB
 - show charts of these values
+- backtesting strategies
 - automatically trade with a little % of profit
 
 ## Install
@@ -16,15 +17,10 @@ This project has few features to:
 python run.py crawl -s SYMBOL
 ```
 
-## To show charts:
-```
-python run.py plot -s SYMBOL
-```
-
 ## To auto-trade:
 ```
 python run.py trade -s SYMBOL
 ```
 
 ## List of Symbols
-You can check them in `crypto.constants`
+You can check them in `candlebot.constants`

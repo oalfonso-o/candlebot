@@ -1,9 +1,9 @@
 import logging
 from pymongo import ReplaceOne
 
-from crypto.db import connection
-from crypto import settings
-from crypto import constants
+from candlebot.db import connection
+from candlebot import settings
+from candlebot import constants
 
 logger = logging.getLogger(__name__)
 
