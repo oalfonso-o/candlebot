@@ -49,37 +49,19 @@ class Backtesting:
             self.bt_config['intervals'],
             self.bt_config['dates'],
         ]
-        specific_fields = []
-        strategy_id = self.bt_config['strategy']
-        Strategy = Strategist.strategies[strategy_id]
-        strategy_fields = self.bt_config['strategies'][strategy_id]
-        for field_key, field_values in strategy_fields.items():
-            fields = []
-            key = f's.{strategy_id}.{field_key}'
-            for field_value in field_values:
-                fields.append({key: field_value})
-            specific_fields.append(fields)
-        for Indicator in Strategy.indicators:
-            indicator_id = Indicator._id
-            indicator_fields = self.bt_config['indicators'][indicator_id]
-            for field_key, field_values in indicator_fields.items():
-                fields = []
-                key = f'i.{indicator_id}.{field_key}'
-                for field_value in field_values:
-                    fields.append({key: field_value})
-                specific_fields.append(fields)
+        specific_fields = self._specific_fields()
 
         for s, i, d in itertools.product(*generic_fields):
             for fields in itertools.product(*specific_fields):
                 for field in fields:
-                    for sfk, sfv in field.items():
-                        self._adapt_config(sfk, sfv)
+                    for fk, fv in field.items():
+                        self._adapt_config(fk, fv)
                 candles_cursor = CandleRetriever.get(s, i, d['df'], d['dt'])
                 candles = list(candles_cursor)
                 if not candles:
                     logging.warning('No klines')
                     continue
-                _, stats = Strategist.calc(candles, strategy_id)
+                _, stats = Strategist.calc(candles, self.bt_config['strategy'])
                 self._parse_output(stats, s, i, d)
 
         self._persist_output()
@@ -106,6 +88,28 @@ class Backtesting:
                         range_values
                     )
         return bt_config
+
+    def _specific_fields(self):
+        specific_fields = []
+        strategy_id = self.bt_config['strategy']
+        Strategy = Strategist.strategies[strategy_id]
+        strategy_fields = self.bt_config['strategies'][strategy_id]
+        for field_key, field_values in strategy_fields.items():
+            fields = []
+            key = f's.{strategy_id}.{field_key}'
+            for field_value in field_values:
+                fields.append({key: field_value})
+            specific_fields.append(fields)
+        for Indicator in Strategy.indicators:
+            indicator_id = Indicator._id
+            indicator_fields = self.bt_config['indicators'][indicator_id]
+            for field_key, field_values in indicator_fields.items():
+                fields = []
+                key = f'i.{indicator_id}.{field_key}'
+                for field_value in field_values:
+                    fields.append({key: field_value})
+                specific_fields.append(fields)
+        return specific_fields
 
     def _adapt_config(self, specific_field_key, specific_field_value):
         str_or_ind, id_, field = specific_field_key.split('.')
