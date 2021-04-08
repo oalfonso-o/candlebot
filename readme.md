@@ -24,3 +24,8 @@ python run.py trade -s SYMBOL
 
 ## List of Symbols
 You can check them in `candlebot.constants`
+
+## Interesting trading documentation
+- https://www.youtube.com/watch?v=L7G0OfJUON8
+- https://www.youtube.com/watch?v=9h3lByx59ns&t=1s
+- https://www.youtube.com/channel/UCkDiQC3OeMnHBcSWgBy2plQ/videos
