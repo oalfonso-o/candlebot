@@ -22,13 +22,12 @@ class Backtesting:
         'df',
         'dt',
     ]
-    stats_header = [
-        'buys',
-        'sells',
-        'long_profit',
-        'short_profit',
-        'long_profit_avg',
-        'short_profit_avg',
+    wallet_data_header = [
+        'balance_origin',
+        'balance_long',
+        'balance_short',
+        'open_positions',
+        'close_positions',
     ]
 
     def __init__(self, test_id):
@@ -39,7 +38,7 @@ class Backtesting:
         self.test_specific_header = self.bt_config['header']
         self.output_header = (
             self.generic_header
-            + self.stats_header
+            + self.wallet_data_header
             + self.test_specific_header
         )
 
@@ -61,8 +60,9 @@ class Backtesting:
                 if not candles:
                     logging.warning('No klines')
                     continue
-                _, stats = Strategist.calc(candles, self.bt_config['strategy'])
-                self._parse_output(stats, s, i, d)
+                _, wallet_data = Strategist.calc(
+                    candles, self.bt_config['strategy'])
+                self._parse_output(wallet_data, s, i, d)
 
         self._persist_output()
 
@@ -118,30 +118,39 @@ class Backtesting:
         self.bt_config[s_i][id_][field] = specific_field_value
         self.bt_config[specific_field_key] = specific_field_value
 
-    def _parse_output(self, stats, symbol, interval, date):
-        row = self._prepare_output_row(stats, symbol, interval, date)
+    def _parse_output(self, wallet_data, symbol, interval, date):
+        row = self._prepare_output_row(wallet_data, symbol, interval, date)
         if self.bt_config['output']['csv']['active']:
             self.output_rows.append(row)
         if self.bt_config['output']['mongo']['active']:
             db_insert.backtest(row, self.output_mongo_coll)
 
-    def _prepare_output_row(self, stats, symbol, interval, date):
+    def _prepare_output_row(self, wallet_data, symbol, interval, date):
         specific_fields = {
             header: self.bt_config[header]
             for header in self.test_specific_header
         }
+        balance_origin = wallet_data.get('balance_origin') or []
+        balance_long = wallet_data.get('balance_long') or []
+        balance_short = wallet_data.get('balance_short') or []
+        open_positions = wallet_data.get('open_positions') or []
+        close_positions = wallet_data.get('close_positions') or []
+        balance_origin = sum([p['value'] for p in balance_origin]) / len(balance_origin) if balance_origin else 0  # noqa
+        balance_long = sum([p['value'] for p in balance_long]) / len(balance_long) if balance_long else 0  # noqa
+        balance_short = sum([p['value'] for p in balance_short]) / len(balance_short) if balance_short else 0  # noqa
+        open_positions = sum([p['value'] for p in open_positions]) / len(open_positions) if open_positions else 0  # noqa
+        close_positions = sum([p['value'] for p in close_positions]) / len(close_positions) if close_positions else 0  # noqa
         row = {
             'strategy': self.bt_config['strategy'],
             'symbol': symbol,
             'interval': interval,
             'df': str(utils.timestamp_to_date(date['df'])).split(' ')[0],
             'dt': str(utils.timestamp_to_date(date['dt'])).split(' ')[0],
-            'buys': stats.get('buys') or 0,
-            'sells': stats.get('sells') or 0,
-            'long_profit': stats.get('long_profit') or 0,
-            'short_profit': stats.get('short_profit') or 0,
-            'long_profit_avg': stats.get('long_profit_avg') or 0,
-            'short_profit_avg': stats.get('short_profit_avg') or 0,
+            'balance_origin': balance_origin or 0,
+            'balance_long': balance_long or 0,
+            'balance_short': balance_short or 0,
+            'open_positions': open_positions or 0,
+            'close_positions': close_positions or 0,
             **specific_fields,
         }
         return row
@@ -153,7 +162,7 @@ class Backtesting:
                 csvdict.writeheader()
                 rows = sorted(
                     self.output_rows,
-                    key=lambda r: r['long_profit_avg'],
+                    key=lambda r: r['balance_origin'],
                     reverse=True,
                 )
                 csvdict.writerows(rows)

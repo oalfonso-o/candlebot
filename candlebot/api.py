@@ -52,7 +52,7 @@ async def ema():
         utils.datetime_to_timestamp(now),
     )
     candles = list(candles_cursor)
-    strat_df, stats = Strategist.calc(candles, 'ema')
+    strat_df, wallet_data = Strategist.calc(candles, 'ema')
     candles = []
     i_ema = []
     bs = []
