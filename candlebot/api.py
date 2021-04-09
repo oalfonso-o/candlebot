@@ -107,10 +107,35 @@ async def ema():
                 chart_positions.append(point_close_position)
             index_positions += 1
     return [
-        {'type': 'candles', 'values': candles},
-        # {'type': 'lines', 'values': ema, 'color': '#999', 'lineType': 1},
-        {'type': 'lines', 'values': balance_origin, 'color': '#39f'},
-        {'type': 'lines', 'values': balance_long, 'color': '#f5a'},
-        {'type': 'lines', 'values': balance_short, 'color': '#941'},
-        {'type': 'markers', 'values': chart_positions},
+        {
+            'id': 'main',
+            'series': [
+                {'type': 'candles', 'values': candles},
+                {
+                    'type': 'lines',
+                    'values': ema,
+                    'color': '#999',
+                    'lineType': 1,
+                },
+                {'type': 'markers', 'values': chart_positions},
+            ]
+        },
+        {
+            'id': 'balance_origin',
+            'series': [
+                {'type': 'lines', 'values': balance_origin, 'color': '#39f'},
+            ]
+        },
+        {
+            'id': 'balance_long',
+            'series': [
+                {'type': 'lines', 'values': balance_long, 'color': '#f5a'},
+            ]
+        },
+        {
+            'id': 'balance_short',
+            'series': [
+                {'type': 'lines', 'values': balance_short, 'color': '#941'},
+            ]
+        },
     ]
