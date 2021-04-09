@@ -110,32 +110,43 @@ async def ema():
         {
             'id': 'main',
             'series': [
-                {'type': 'candles', 'values': candles},
+                {
+                    'type': 'candles',
+                    'values': candles,
+                    'markers': chart_positions
+                },
                 {
                     'type': 'lines',
                     'values': ema,
                     'color': '#999',
                     'lineType': 1,
                 },
-                {'type': 'markers', 'values': chart_positions},
-            ]
+            ],
+            'width': 1200,
+            'height': 600,
         },
         {
             'id': 'balance_origin',
             'series': [
                 {'type': 'lines', 'values': balance_origin, 'color': '#39f'},
-            ]
+            ],
+            'width': 1200,
+            'height': 100,
         },
         {
             'id': 'balance_long',
             'series': [
                 {'type': 'lines', 'values': balance_long, 'color': '#f5a'},
-            ]
+            ],
+            'width': 1200,
+            'height': 100,
         },
         {
             'id': 'balance_short',
             'series': [
                 {'type': 'lines', 'values': balance_short, 'color': '#941'},
-            ]
+            ],
+            'width': 1200,
+            'height': 100,
         },
     ]
