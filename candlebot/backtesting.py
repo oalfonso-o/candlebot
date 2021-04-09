@@ -60,7 +60,7 @@ class Backtesting:
                 if not candles:
                     logging.warning('No klines')
                     continue
-                _, wallet_data = Strategist.calc(
+                _, wallet_data = Strategist.calc(  # TODO FIX, NO WALLET DATA ANYMORE, USE POSITIONS
                     candles, self.bt_config['strategy'])
                 self._parse_output(wallet_data, s, i, d)
 

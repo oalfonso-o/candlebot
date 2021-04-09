@@ -22,5 +22,5 @@ class Strategist:
         candles_df['_id'] = candles_df['_id'].apply(
             lambda _id: utils.timestamp_to_date(_id)
         )
-        strat_df, stats = cls.strategies[strategy](candles_df).calc()
-        return strat_df, stats
+        strat_df, positions = cls.strategies[strategy](candles_df).calc()
+        return strat_df, positions

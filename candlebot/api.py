@@ -52,10 +52,14 @@ async def ema():
         utils.datetime_to_timestamp(now),
     )
     candles = list(candles_cursor)
-    strat_df, wallet_data = Strategist.calc(candles, 'ema')
+    strat_df, positions = Strategist.calc(candles, 'ema')
     candles = []
-    i_ema = []
-    bs = []
+    ema = []
+    balance_origin = []
+    balance_long = []
+    balance_short = []
+    chart_positions = []
+    index_positions = 0
     for _, c in strat_df.iterrows():
         time = (
             utils.datetime_to_timestamp(c['_id'].to_pydatetime())
@@ -69,15 +73,44 @@ async def ema():
             'low': c['low'],
             'volume': c['volume'],
         }
-        ema_line = {'time': time, 'value': c['close']}
-        if c['bs'] != c['bs']:
-            c['bs'] = 0
-        bs_point = {'time': time, 'value': c['bs']}
+        ema_line = {'time': time, 'value': c['ema']}
         candles.append(candle)
-        i_ema.append(ema_line)
-        bs.append(bs_point)
+        ema.append(ema_line)
+
+        if (
+            index_positions < len(positions)
+            and positions[index_positions].timestamp / 1000 == time
+        ):
+            point_balance_origin = {'time': time, 'value': positions[index_positions].balance_origin}  # noqa
+            point_balance_long = {'time': time, 'value': positions[index_positions].balance_long}  # noqa
+            point_balance_short = {'time': time, 'value': positions[index_positions].balance_short}  # noqa
+            balance_origin.append(point_balance_origin)
+            balance_long.append(point_balance_long)
+            balance_short.append(point_balance_short)
+            if positions[index_positions].action == 'open':
+                point_open_position = {
+                    'time': time,
+                    'text': str(positions[index_positions].amount),
+                    'position': 'belowBar',
+                    'color': 'blue',
+                    'shape': 'arrowUp',
+                }
+                chart_positions.append(point_open_position)
+            if positions[index_positions].action == 'close':
+                point_close_position = {
+                    'time': time,
+                    'text': str(positions[index_positions].amount),
+                    'position': 'aboveBar',
+                    'color': 'green',
+                    'shape': 'arrowDown',
+                }
+                chart_positions.append(point_close_position)
+            index_positions += 1
     return [
         {'type': 'candles', 'values': candles},
-        {'type': 'lines', 'values': i_ema, 'color': '#af0'},
-        {'type': 'lines', 'values': bs, 'color': '#0fa'},
+        {'type': 'lines', 'values': ema, 'color': '#999', 'lineType': 1},
+        {'type': 'lines', 'values': balance_origin, 'color': '#39f'},
+        {'type': 'lines', 'values': balance_long, 'color': '#f5a'},
+        {'type': 'lines', 'values': balance_short, 'color': '#941'},
+        {'type': 'markers', 'values': chart_positions},
     ]

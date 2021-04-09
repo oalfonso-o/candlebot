@@ -42,22 +42,22 @@ class StrategyEMA:
                 )
                 self.wallet.close_pos('long', row['close'], timestamp)
                 direction = -1
-            if (row['trend_ema_fast'] - highest['trend_ema_fast']) > 0:
+            if (row['ema'] - highest['ema']) > 0:
                 highest = row
-            if (row['trend_ema_fast'] - lowest['trend_ema_fast']) < 0:
+            if (row['ema'] - lowest['ema']) < 0:
                 lowest = row
-        return self.df, self.wallet.chart_data()
+        return self.df, self.wallet.positions
 
     def _must_buy(self, row, lowest, direction):
         return bool(
-            (row['trend_ema_fast'] - lowest['trend_ema_fast'])
-            > (lowest['trend_ema_fast'] * self.drop_factor)
+            (row['ema'] - lowest['ema'])
+            > (lowest['ema'] * self.drop_factor)
             and (not direction or direction < 0)
         )
 
     def _must_sell(self, row, highest, direction):
         return bool(
-            (highest['trend_ema_fast'] - row['trend_ema_fast'])
-            > (highest['trend_ema_fast'] * self.drop_factor)
+            (highest['ema'] - row['ema'])
+            > (highest['ema'] * self.drop_factor)
             and (not direction or direction > 0)
         )
