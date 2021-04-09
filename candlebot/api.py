@@ -108,7 +108,7 @@ async def ema():
             index_positions += 1
     return [
         {'type': 'candles', 'values': candles},
-        {'type': 'lines', 'values': ema, 'color': '#999', 'lineType': 1},
+        # {'type': 'lines', 'values': ema, 'color': '#999', 'lineType': 1},
         {'type': 'lines', 'values': balance_origin, 'color': '#39f'},
         {'type': 'lines', 'values': balance_long, 'color': '#f5a'},
         {'type': 'lines', 'values': balance_short, 'color': '#941'},

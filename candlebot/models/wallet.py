@@ -14,12 +14,14 @@ class Wallet:
         percentage_to_close: float = 100,
         balance_long: float = 0,
         balance_short: float = 0,
+        transaction_fee: float = 0.00075,
     ):
         self.balance_origin = balance_origin
         self.amount_to_open = amount_to_open
         self.percentage_to_close = percentage_to_close
         self.balance_long = balance_long
         self.balance_short = balance_short
+        self.transaction_fee = transaction_fee
         self.positions: List[Position] = []
 
     def open_pos(
@@ -35,8 +37,9 @@ class Wallet:
             raise ValueError(f'Type {type_} not in {self.position_types}')
         balance_type_fieldname = f'balance_{type_}'
         open_amount = amount_to_open / price
+        open_amount_w_fee = open_amount - (open_amount * self.transaction_fee)
         prev_open_balance = getattr(self, balance_type_fieldname)
-        new_open_balance = prev_open_balance + open_amount
+        new_open_balance = prev_open_balance + open_amount_w_fee
         setattr(self, balance_type_fieldname, new_open_balance)
         self.balance_origin -= amount_to_open
         position = Position(
@@ -66,9 +69,12 @@ class Wallet:
         balance_type_fieldname = f'balance_{type_}'
         prev_open_balance = getattr(self, balance_type_fieldname)
         close_amount = prev_open_balance / 100 * percentage
+        close_amount_w_fee = (
+            close_amount - (close_amount * self.transaction_fee)
+        )
         new_open_balance = prev_open_balance - close_amount
         setattr(self, balance_type_fieldname, new_open_balance)
-        closed_amount_to_the_origin = close_amount * price
+        closed_amount_to_the_origin = close_amount_w_fee * price
         self.balance_origin += closed_amount_to_the_origin
         position = Position(
             type_=type_,
