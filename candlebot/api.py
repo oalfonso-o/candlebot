@@ -44,11 +44,11 @@ async def root():
 @app.get("/ema")
 async def ema():
     now = datetime.datetime.now()
-    year_ago = datetime.datetime.now() - datetime.timedelta(days=356)
+    two_ago = datetime.datetime.now() - datetime.timedelta(days=356 * 2)
     candles_cursor = CandleRetriever.get(
         'ETHUSDT',
         '1d',
-        utils.datetime_to_timestamp(year_ago),
+        utils.datetime_to_timestamp(two_ago),
         utils.datetime_to_timestamp(now),
     )
     candles = list(candles_cursor)
@@ -90,7 +90,7 @@ async def ema():
             if positions[index_positions].action == 'open':
                 point_open_position = {
                     'time': time,
-                    'text': str(positions[index_positions].amount),
+                    'text': str(round(positions[index_positions].amount, 4)),
                     'position': 'belowBar',
                     'color': 'blue',
                     'shape': 'arrowUp',
@@ -99,13 +99,18 @@ async def ema():
             if positions[index_positions].action == 'close':
                 point_close_position = {
                     'time': time,
-                    'text': str(positions[index_positions].amount),
+                    'text': str(round(positions[index_positions].amount, 4)),
                     'position': 'aboveBar',
                     'color': 'green',
                     'shape': 'arrowDown',
                 }
                 chart_positions.append(point_close_position)
             index_positions += 1
+        else:
+            balance_origin.append({'time': time})
+            balance_long.append({'time': time})
+            balance_short.append({'time': time})
+            chart_positions.append({'time': time})
     return [
         {
             'id': 'main',

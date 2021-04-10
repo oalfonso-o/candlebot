@@ -11,6 +11,7 @@ class Charter {
     this.data = data
     this.defineCharts()
     this.pinCharts()
+    this.addChartLegends()
   }
 
   defineCharts() {
@@ -18,9 +19,10 @@ class Charter {
     for (i = 0;  i < this.data.length; i++) {
       let chartData = this.data[i]
       let container = document.createElement('div')
+      container.style.position = 'relative';
       document.body.appendChild(container)
       const chart = LightweightCharts.createChart(container, { width: chartData['width'], height: chartData['height'] })
-      chart.applyOptions({crosshair: {mode: 2}})
+      chart.applyOptions({crosshair: {mode: 0}})
       chartData['series'].forEach(function (serie) {
         if (serie['type'] == 'candles') {
           let candleSeries = chart.addCandlestickSeries();
@@ -41,8 +43,7 @@ class Charter {
           }).setData(serie['values']);
         }
       });
-      this.charts.push(chart)
-      chart.timeScale()
+      this.charts.push({'chart': chart, 'container': container, 'id': chartData.id})
     }
   }
 
@@ -50,17 +51,17 @@ class Charter {
     var i
     for (i = 0; i < this.charts.length; i++) {
       let handler = this.getChartHandler(i)
-      this.charts[i].timeScale().subscribeVisibleTimeRangeChange(handler)
+      this.charts[i].chart.timeScale().subscribeVisibleTimeRangeChange(handler)
     }
   }
 
   getChartHandler(chart_index) {
-    var chart = this.charts[chart_index]
+    var chart = this.charts[chart_index].chart
     var i
     var chartsToHandle = []
     for (i = 0; i < this.charts.length; i++) {
       if (i != chart_index) {
-        chartsToHandle.push(this.charts[i])
+        chartsToHandle.push(this.charts[i].chart)
       }
     }
     var handler = function() {
@@ -73,6 +74,19 @@ class Charter {
       }
     }
     return handler
+  }
+
+  addChartLegends() {
+    var i
+    for (i = 0; i < this.charts.length; i++) {
+      var chart_obj = this.charts[i]
+      var legend = document.createElement('div');
+      legend.classList.add('legend');
+      chart_obj.container.appendChild(legend);
+      var firstRow = document.createElement('div');
+      firstRow.innerText = chart_obj.id;
+      legend.appendChild(firstRow);
+    }
   }
 }
 
