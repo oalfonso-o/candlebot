@@ -123,7 +123,7 @@ async def ema():
                 },
             ],
             'width': 1200,
-            'height': 600,
+            'height': 500,
         },
         {
             'id': 'balance_origin',

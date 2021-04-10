@@ -1,20 +1,27 @@
 class Charter {
-  endpoint
+  endpoint = 'http://localhost:12345/ema'
+  charts = []
+  data = []
 
   constructor() {
-    this.endpoint = 'http://localhost:12345/ema'
     document.body.style.position = 'relative'
   }
 
-  defineChart(chartsData) {
-    chartsData.forEach(function (chartData) {
+  init(data) {
+    this.data = data
+    this.defineCharts()
+    this.pinCharts()
+  }
+
+  defineCharts() {
+    var i
+    for (i = 0;  i < this.data.length; i++) {
+      let chartData = this.data[i]
       let container = document.createElement('div')
       document.body.appendChild(container)
       const chart = LightweightCharts.createChart(container, { width: chartData['width'], height: chartData['height'] })
       chart.applyOptions({crosshair: {mode: 2}})
-      console.log(chartData)
       chartData['series'].forEach(function (serie) {
-        console.log(serie)
         if (serie['type'] == 'candles') {
           let candleSeries = chart.addCandlestickSeries();
           candleSeries.setData(serie['values']);
@@ -34,8 +41,38 @@ class Charter {
           }).setData(serie['values']);
         }
       });
+      this.charts.push(chart)
       chart.timeScale()
-    });
+    }
+  }
+
+  pinCharts() {
+    var i
+    for (i = 0; i < this.charts.length; i++) {
+      let handler = this.getChartHandler(i)
+      this.charts[i].timeScale().subscribeVisibleTimeRangeChange(handler)
+    }
+  }
+
+  getChartHandler(chart_index) {
+    var chart = this.charts[chart_index]
+    var i
+    var chartsToHandle = []
+    for (i = 0; i < this.charts.length; i++) {
+      if (i != chart_index) {
+        chartsToHandle.push(this.charts[i])
+      }
+    }
+    var handler = function() {
+      var barSpacing1 = chart.timeScale().getBarSpacing();
+      var scrollPosition1 = chart.timeScale().scrollPosition();
+      for (i = 0; i < chartsToHandle.length; i++) {
+        chartsToHandle[i].timeScale().applyOptions(
+          {rightOffset: scrollPosition1, barSpacing: barSpacing1}
+        )
+      }
+    }
+    return handler
   }
 }
 
@@ -43,5 +80,5 @@ class Charter {
 (async() => {
   const charter = new Charter()
   let response = await axios.get(charter.endpoint, {params: {}})
-  charter.defineChart(response.data)
+  charter.init(response.data)
 })();

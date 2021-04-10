@@ -29,4 +29,5 @@ You can check them in `candlebot.constants`
 - https://www.youtube.com/watch?v=L7G0OfJUON8
 - https://www.youtube.com/watch?v=9h3lByx59ns&t=1s
 - https://www.youtube.com/channel/UCkDiQC3OeMnHBcSWgBy2plQ/videos
-- https://jsfiddle.net/trior/q3kt6psb/3/
+- https://jsfiddle.net/trior/q3kt6psb/3/ -> pin charts
+- https://jsfiddle.net/q3u2khzt/ -> show volume
