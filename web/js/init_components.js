@@ -16,10 +16,9 @@ onReady(function() {
   setVisible('#loading', false);
 });
 
+
 class Head extends HTMLElement {
-  constructor() {
-    super();
-  }
+  constructor() {super();}
 
   connectedCallback() {
     this.innerHTML = `
@@ -32,3 +31,126 @@ class Head extends HTMLElement {
   }
 }
 customElements.define('head-content', Head);
+
+
+class PageHeader extends HTMLElement {
+  constructor() {super();}
+
+  connectedCallback() {
+    this.innerHTML = `
+      <header id="navigation" class="p-navigation">
+      <div class="p-navigation__row">
+        <div class="p-navigation__banner">
+          <div class="p-navigation__logo">
+            <a class="p-navigation__item" href="#">
+              <img class="p-navigation__image" src="img/candle.png" alt="CandleBot">
+            </a>
+          </div>
+          <a href="#navigation" class="p-navigation__toggle--open" title="menu">Menu</a>
+          <a href="#navigation-closed" class="p-navigation__toggle--close" title="close menu">Close menu</a>
+        </div>
+        <nav class="p-navigation__nav" aria-label="Example main navigation">
+          <span class="u-off-screen">
+            <a href="#main-content">Jump to main content</a>
+          </span>
+          <ul class="p-navigation__items">
+            <li class="p-navigation__item is-selected">
+              <a class="p-navigation__link" href="#">Charts</a>
+            </li>
+            <li class="p-navigation__item">
+              <a class="p-navigation__link" href="#">Backfill</a>
+            </li>
+            <li class="p-navigation__item">
+              <a class="p-navigation__link" href="#">Backtesting</a>
+            </li>
+            <li class="p-navigation__item">
+              <a class="p-navigation__link" href="#">CandleBot</a>
+            </li>
+            <li class="p-navigation__item">
+              <a class="p-navigation__link" href="#">Market</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+      </header>
+    `;
+  }
+}
+customElements.define('page-header', PageHeader);
+
+
+class PageHeaderMenu extends HTMLElement {
+  constructor() {super();}
+
+  connectedCallback() {
+    this.innerHTML = `
+      <div class="l-navigation-bar">
+        <div class="u-clearfix"><code>l-navigation-bar</code> <button class="u-float-right js-menu-toggle is-dense u-no-margin">Menu</button></div>
+      </div>
+    `;
+  }
+}
+customElements.define('page-header-menu', PageHeaderMenu);
+
+
+class MenuLeft extends HTMLElement {
+  constructor() {super();}
+
+  connectedCallback() {
+    this.innerHTML = `
+      <div class="l-navigation-bar">
+        <div class="u-clearfix"><code>l-navigation-bar</code> <button class="u-float-right js-menu-toggle is-dense u-no-margin">Menu</button></div>
+      </div>
+      <header class="l-navigation">
+        <div class="l-navigation__drawer">
+          <p class="demo-controls u-hide--large u-align--right">
+            <button class="js-menu-pin is-dense u-no-margin u-hide--small">Pin</button>
+            <button class="js-menu-close is-dense u-no-margin u-hide--medium">Close</button>
+          </p>
+          <form>
+            <label for="exampleSelect">Strategy</label>
+            <select name="exampleSelect" id="exampleSelect">
+              <option value="ema1" default>EMA1</option>
+            </select>
+            <label for="exampleSelect">Symbol</label>
+            <select name="exampleSelect" id="exampleSelect">
+              <option value="etheur" default>ETHEUR</option>
+              <option value="btceur">BTCEUR</option>
+            </select>
+            <label for="exampleSelect">Interval</label>
+            <select name="exampleSelect" id="exampleSelect">
+              <option value="1d" default>1d</option>
+              <option value="1h">1h</option>
+              <option value="15m">15m</option>
+              <option value="1m">1m</option>
+            </select>
+            <button type="submit" name="submit">Submit</button>
+          </form>
+          <footer class="p-strip--light">
+            <p>
+              <button class="js-aside-open">Open aside panel</button>
+            </p>
+          </footer>
+        </div>
+      </header>
+    `;
+  }
+}
+customElements.define('menu-left', MenuLeft);
+
+
+
+class AsideContent extends HTMLElement {
+  constructor() {super();}
+
+  connectedCallback() {
+    this.innerHTML = `
+      <p>
+        <button class="js-aside-close is-dense">Close</button>
+      </p>
+      <p><code>l-aside</code></p>
+      <p>Panel width: <button class="is-inline is-dense js-aside-resize" data-resize-class="is-narrow" aria-controls="aside-panel">narrow</button> <button class="is-dense is-inline js-aside-resize" data-resize-class="" aria-controls="aside-panel">default</button> <button class="is-dense is-inline js-aside-resize" data-resize-class="is-wide" aria-controls="aside-panel">wide</button></p>
+    `;
+  }
+}
+customElements.define('aside-content', AsideContent);

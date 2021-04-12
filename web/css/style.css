@@ -31,3 +31,6 @@ table {width: initial !important}
   pointer-events: none;
   top: -10;
 }
+
+/* VANILLA FRAMEWORK OVERRIDES */
+.is-pinned {min-width: 240px;}

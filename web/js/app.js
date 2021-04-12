@@ -6,7 +6,7 @@ class Charter {
   charts_container
 
   constructor() {
-    this.charts_container = document.getElementById('chartsContainer');
+    this.charts_container = document.getElementById('page-container');
     this.charts_container.style.position = 'relative'
   }
 
