@@ -158,7 +158,6 @@ class MenuLeft extends HTMLElement {
 customElements.define('menu-left', MenuLeft);
 
 
-
 class AsideContent extends HTMLElement {
   constructor() {super();}
 
