@@ -6,7 +6,7 @@ import itertools
 import numpy as np
 
 from candlebot import utils
-from candlebot import settings
+from candlebot.settings import Settings
 from candlebot.db import db_insert
 from candlebot.strategist import Strategist
 from candlebot.db.candle_retriever import CandleRetriever
@@ -68,7 +68,7 @@ class Backtesting:
 
     @staticmethod
     def _config(test_id):
-        bt_config = settings.BT
+        bt_config = Settings.BT
         bt_test = bt_config['tests'][test_id]
         bt_config.update(bt_test['override'])
         bt_config['strategy'] = bt_test['strategy']

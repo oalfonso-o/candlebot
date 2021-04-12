@@ -9,8 +9,12 @@ This project has few features to:
 1. Create a virtualenv with python 3.8
 2. Install this repo inside with pip
 3. Copy .env.example to .env and customize vars
-4. Run a mongod
-5. Run the desired command with run.py
+4. Copy web/js/.env.example.js to web/js/.env.js and customize vars (if needed)
+5. Run a mongod
+6. Copy the nginx site of web/candlebot.conf in an nginx sites-enabled dir
+7. Run api with make api
+8. Go to localhost:1234
+9. For more commands check candlebot/run.py
 
 ## To crawl data:
 ```

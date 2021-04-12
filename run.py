@@ -1,16 +1,11 @@
 import logging
 import argparse
 import time
-from dotenv import load_dotenv
 
-load_dotenv()
-from candlebot import db  # noqa
-db.connect()
-
-from candlebot.crawler import Crawler  # noqa
-from candlebot.backtesting import Backtesting  # noqa
-from candlebot import constants  # noqa
-from candlebot import utils  # noqa
+from candlebot.crawler import Crawler
+from candlebot.backtesting import Backtesting
+from candlebot import constants
+from candlebot import utils
 
 
 def crawl(symbol, interval):

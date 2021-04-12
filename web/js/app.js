@@ -1,5 +1,6 @@
 class Charter {
-  endpoint = 'http://localhost:12345/ema'
+  strategy_endpoint = 'ema'
+  endpoint = ENV.api.host + ':' + ENV.api.port + '/' + 'strategies' + '/' + this.strategy_endpoint
   charts = []
   data = []
   charts_container

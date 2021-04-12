@@ -3,8 +3,8 @@ from typing import Tuple
 
 import pandas as pd
 
-from candlebot import settings
 from candlebot import utils
+from candlebot.settings import Settings
 from candlebot.indicators.ema import IndicatorEMA
 from candlebot.models.wallet import Wallet
 
@@ -16,7 +16,7 @@ class StrategyEMA:
 
     def __init__(self, df: pd.DataFrame):
         self.df = df
-        self.drop_factor = settings.BT['strategies']['ema']['drop_factor']
+        self.drop_factor = Settings.BT['strategies']['ema']['drop_factor']
         self.wallet = Wallet()
         for indicator in self.indicators:
             self.df = indicator.apply(self.df)

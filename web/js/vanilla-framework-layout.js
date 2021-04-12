@@ -1,8 +1,4 @@
-/*
-  Set up event handlers for application layout examples.
-  This is for demo purposes only. Real applications should implement it within their application code.
-*/
-function setupAppLayoutExamples() {
+function setupAppLayout() {
   var aside = document.querySelector('.l-aside');
   var navigation = document.querySelector('.l-navigation');
 
@@ -12,7 +8,6 @@ function setupAppLayoutExamples() {
   var asideOpen = document.querySelector('.js-aside-open');
   var asideClose = document.querySelector('.js-aside-close');
   var asideResize = document.querySelectorAll('.js-aside-resize');
-  var asidePin = document.querySelector('.js-aside-pin');
 
   if (menuToggle) {
       menuToggle.addEventListener('click', function () {
@@ -67,4 +62,4 @@ function setupAppLayoutExamples() {
   }
 }
 
-setupAppLayoutExamples();
+setupAppLayout();

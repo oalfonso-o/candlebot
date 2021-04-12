@@ -1,4 +1,5 @@
 .env
+.env.js
 *.egg-info
 __pycache__
 temp-plot.html
@@ -7,3 +8,4 @@ node_modules
 .cache
 .parcel-cache
 dist
+.vscode

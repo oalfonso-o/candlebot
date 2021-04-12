@@ -2,7 +2,7 @@ import pandas as pd
 from ta import add_all_ta_features
 from ta.utils import dropna
 
-from candlebot import settings
+from candlebot.settings import Settings
 
 
 class IndicatorEMA:
@@ -12,8 +12,8 @@ class IndicatorEMA:
     @classmethod
     def apply(cls, df: pd.DataFrame) -> pd.DataFrame:
         df[cls._id] = df['close'].ewm(
-            span=settings.BT['indicators'][cls._id]['span'],
-            adjust=settings.BT['indicators'][cls._id]['adjust'],
+            span=Settings.BT['indicators'][cls._id]['span'],
+            adjust=Settings.BT['indicators'][cls._id]['adjust'],
         ).mean()
         # df = dropna(df)
         # df = add_all_ta_features(

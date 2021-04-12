@@ -1,22 +1,21 @@
 .legend {
-	position: absolute;
-	padding: 8px;
-	font-size: 12px;
-	z-index: 1000;
-	pointer-events: none;
-	top: -10;
+  position: absolute;
+  padding: 8px;
+  font-size: 12px;
+  z-index: 1000;
+  pointer-events: none;
+  top: -10;
 }
 body { margin: 0; }
 
-/* example structure styling to make panels visible */
-.app-demo > .l-navigation-bar,
-.app-demo > .l-main,
-.app-demo > .l-navigation .l-navigation__drawer,
-.app-demo > .l-aside,
-.app-demo > .l-status {
-background-color: #fff;
-border: 1px solid #d9d9d9;
-padding: 0.5rem;
+.app-candlebot > .l-navigation-bar,
+.app-candlebot > .l-main,
+.app-candlebot > .l-navigation .l-navigation__drawer,
+.app-candlebot > .l-aside,
+.app-candlebot > .l-status {
+  background-color: #fff;
+  border: 1px solid #d9d9d9;
+  padding: 0.5rem;
 }
 
 table {width: initial !important}
