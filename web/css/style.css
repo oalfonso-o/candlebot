@@ -1,12 +1,17 @@
-.legend {
-  position: absolute;
-  padding: 8px;
-  font-size: 12px;
-  z-index: 1000;
-  pointer-events: none;
-  top: -10;
-}
 body { margin: 0; }
+table {width: initial !important}
+
+#loading {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: 100vw;
+  height: 100vh;
+  background-color: white;
+}
+#loading i {width: 200px; height: 200px}
 
 .app-candlebot > .l-navigation-bar,
 .app-candlebot > .l-main,
@@ -18,4 +23,11 @@ body { margin: 0; }
   padding: 0.5rem;
 }
 
-table {width: initial !important}
+.legend {
+  position: absolute;
+  padding: 8px;
+  font-size: 12px;
+  z-index: 1000;
+  pointer-events: none;
+  top: -10;
+}
