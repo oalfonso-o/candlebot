@@ -1,3 +1,26 @@
+const ROUTES = [
+  {
+    'label': 'Charts',
+    'uri': '/',
+  },
+  {
+    'label': 'Backfill',
+    'uri': '/backfill.html',
+  },
+  {
+    'label': 'Backtesting',
+    'uri': '/backtesting.html',
+  },
+  {
+    'label': 'Candlebot',
+    'uri': '/candlebot.html',
+  },
+  {
+    'label': 'Market',
+    'uri': '/market.html',
+  },
+]
+
 function onReady(callback) {
   var intervalId = window.setInterval(function() {
     if (document.getElementsByTagName('body')[0] !== undefined) {
@@ -37,12 +60,22 @@ class PageHeader extends HTMLElement {
   constructor() {super();}
 
   connectedCallback() {
+    var lis = ''
+    var i
+    for (i = 0; i < ROUTES.length; i++) {
+      let li = `
+        <li class="p-navigation__item" id="menu-` + ROUTES[i].label.toLowerCase() + `">
+          <a class="p-navigation__link" href="` + ROUTES[i].uri + `">` + ROUTES[i].label + `</a>
+        </li>
+      `
+      lis += li
+    }
     this.innerHTML = `
       <header id="navigation" class="p-navigation">
       <div class="p-navigation__row">
         <div class="p-navigation__banner">
           <div class="p-navigation__logo">
-            <a class="p-navigation__item" href="#">
+            <a class="p-navigation__item" href="/">
               <img class="p-navigation__image" src="img/candle.png" alt="CandleBot">
             </a>
           </div>
@@ -51,24 +84,10 @@ class PageHeader extends HTMLElement {
         </div>
         <nav class="p-navigation__nav" aria-label="Example main navigation">
           <span class="u-off-screen">
-            <a href="#main-content">Jump to main content</a>
+            <a href="/">Jump to main content</a>
           </span>
           <ul class="p-navigation__items">
-            <li class="p-navigation__item is-selected">
-              <a class="p-navigation__link" href="#">Charts</a>
-            </li>
-            <li class="p-navigation__item">
-              <a class="p-navigation__link" href="#">Backfill</a>
-            </li>
-            <li class="p-navigation__item">
-              <a class="p-navigation__link" href="#">Backtesting</a>
-            </li>
-            <li class="p-navigation__item">
-              <a class="p-navigation__link" href="#">CandleBot</a>
-            </li>
-            <li class="p-navigation__item">
-              <a class="p-navigation__link" href="#">Market</a>
-            </li>
+            ` + lis + `
           </ul>
         </nav>
       </div>

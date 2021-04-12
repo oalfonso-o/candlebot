@@ -1,3 +1,6 @@
+let charts_menu = document.getElementById('menu-charts')
+charts_menu.classList.add('is-selected')
+
 class Charter {
   strategy_endpoint = 'ema'
   endpoint = ENV.api.host + ':' + ENV.api.port + '/' + 'strategies' + '/' + this.strategy_endpoint
@@ -6,7 +9,7 @@ class Charter {
   charts_container
 
   constructor() {
-    this.charts_container = document.getElementById('page-container');
+    this.charts_container = document.getElementById('page-container-charter');
     this.charts_container.style.position = 'relative'
   }
 
