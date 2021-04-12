@@ -2,14 +2,70 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="css/vanilla-framework.min.css">
     <link rel="stylesheet" href="css/style.css">
     <title>Candlebot Charter</title>
 </head>
 <body>
+  <div class="l-application app-demo" role="presentation">
+    <div class="l-navigation-bar">
+      <div class="u-clearfix"><code>l-navigation-bar</code> <button class="u-float-right js-menu-toggle is-dense u-no-margin">Menu</button></div>
+    </div>
+
+    <header class="l-navigation">
+      <div class="l-navigation__drawer">
+        <p class="demo-controls u-hide--large u-align--right">
+          <button class="js-menu-pin is-dense u-no-margin u-hide--small">Pin</button>
+          <button class="js-menu-close is-dense u-no-margin u-hide--medium">Close</button>
+        </p>
+        <form>
+          <label for="exampleSelect">Strategy</label>
+          <select name="exampleSelect" id="exampleSelect" class="is-dense">
+            <option value="ema1" default>EMA1</option>
+          </select>
+          <label for="exampleSelect">Symbol</label>
+          <select name="exampleSelect" id="exampleSelect" class="is-dense">
+            <option value="etheur" default>ETHEUR</option>
+            <option value="btceur">BTCEUR</option>
+          </select>
+          <label for="exampleSelect">Interval</label>
+          <select name="exampleSelect" id="exampleSelect" class="is-dense">
+            <option value="1d" default>1d</option>
+            <option value="1h">1h</option>
+            <option value="15m">15m</option>
+            <option value="1m">1m</option>
+          </select>
+          <button type="submit" name="submit">Submit</button>
+        </form>
+        <footer class="p-strip--light">
+          <p>
+            <button class="js-aside-open">Open aside panel</button>
+          </p>
+        </footer>
+      </div>
+    </header>
+
+    <main class="l-main l-site">
+      <div id="chartsContainer"></div>
+    </main>
+
+    <aside class="l-aside is-collapsed" id="aside-panel">
+      <p>
+        <button class="js-aside-close is-dense">Close</button>
+      </p>
+      <p><code>l-aside</code></p>
+      <p>Panel width: <button class="is-inline is-dense js-aside-resize" data-resize-class="is-narrow" aria-controls="aside-panel">narrow</button> <button class="is-dense is-inline js-aside-resize" data-resize-class="" aria-controls="aside-panel">default</button> <button class="is-dense is-inline js-aside-resize" data-resize-class="is-wide" aria-controls="aside-panel">wide</button></p>
+    </aside>
+
+    <aside class="l-status">
+      <code>l-status</code>
+    </aside>
+  </div>
 </body>
 <footer>
     <script src="js/chartview.js.min"></script>
     <script src="js/axios.js.min"></script>
+    <script src="js/vanilla-framework-layout.js"></script>
     <script src="js/app.js"></script>
 </footer>
 </html>

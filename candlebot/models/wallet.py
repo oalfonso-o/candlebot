@@ -1,6 +1,9 @@
+import logging
 from typing import List
 
 from candlebot.models.position import Position
+
+logger = logging.getLogger(__name__)
 
 
 class Wallet:
@@ -22,7 +25,8 @@ class Wallet:
         self.balance_long = balance_long
         self.balance_short = balance_short
         self.transaction_fee = transaction_fee
-        self.positions: List[Position] = []
+        self.positions_long: List[Position] = []
+        self.positions_short: List[Position] = []
 
     def open_pos(
         self,
@@ -52,8 +56,10 @@ class Wallet:
             balance_long=self.balance_long,
             balance_short=self.balance_short,
         )
-        self.positions.append(position)
-        return position
+        positions_type_fieldname = f'positions_{type_}'
+        prev_positions = getattr(self, positions_type_fieldname)
+        prev_positions.append(position)
+        setattr(self, positions_type_fieldname, prev_positions)
 
     def close_pos(
         self,
@@ -68,6 +74,12 @@ class Wallet:
             raise ValueError(f'Type {type_} not in {self.position_types}')
         balance_type_fieldname = f'balance_{type_}'
         prev_open_balance = getattr(self, balance_type_fieldname)
+        if prev_open_balance <= 0:
+            logger.warning(
+                f'Trying to close position with {percentage}% with an open '
+                f'balance of {prev_open_balance}. Aborting close.'
+            )
+            return
         close_amount = prev_open_balance / 100 * percentage
         close_amount_w_fee = (
             close_amount - (close_amount * self.transaction_fee)
@@ -86,25 +98,7 @@ class Wallet:
             balance_long=self.balance_long,
             balance_short=self.balance_short,
         )
-        self.positions.append(position)
-        return position
-
-    def chart_data(self):
-        data = {
-            'balance_origin': [],
-            'balance_long': [],
-            'balance_short': [],
-            'open_positions': [],
-            'close_positions': [],
-        }
-        for p in self.positions:
-            t = p.timestamp
-            data['balance_origin'].append(
-                {'time': t, 'value': p.balance_origin})
-            data['balance_long'].append(
-                {'time': t, 'value': p.balance_long})
-            data['balance_short'].append(
-                {'time': t, 'value': p.balance_short})
-            data[f'{p.action}_positions'].append(
-                {'time': t, 'value': p.price})
-        return data
+        positions_type_fieldname = f'positions_{type_}'
+        prev_positions = getattr(self, positions_type_fieldname)
+        prev_positions.append(position)
+        setattr(self, positions_type_fieldname, prev_positions)

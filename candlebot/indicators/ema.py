@@ -15,9 +15,9 @@ class IndicatorEMA:
             span=settings.BT['indicators'][cls._id]['span'],
             adjust=settings.BT['indicators'][cls._id]['adjust'],
         ).mean()
-        df = dropna(df)
-        df = add_all_ta_features(
-            df, open="open", high="high", low="low", close="close",
-            volume="volume", fillna=True
-        )
+        # df = dropna(df)
+        # df = add_all_ta_features(
+        #     df, open="open", high="high", low="low", close="close",
+        #     volume="volume", fillna=True
+        # )
         return df

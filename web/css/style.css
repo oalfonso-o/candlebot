@@ -6,3 +6,17 @@
 	pointer-events: none;
 	top: -10;
 }
+body { margin: 0; }
+
+/* example structure styling to make panels visible */
+.app-demo > .l-navigation-bar,
+.app-demo > .l-main,
+.app-demo > .l-navigation .l-navigation__drawer,
+.app-demo > .l-aside,
+.app-demo > .l-status {
+background-color: #fff;
+border: 1px solid #d9d9d9;
+padding: 0.5rem;
+}
+
+table {width: initial !important}

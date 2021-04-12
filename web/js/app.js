@@ -2,9 +2,11 @@ class Charter {
   endpoint = 'http://localhost:12345/ema'
   charts = []
   data = []
+  charts_container
 
   constructor() {
-    document.body.style.position = 'relative'
+    this.charts_container = document.getElementById('chartsContainer');
+    this.charts_container.style.position = 'relative'
   }
 
   init(data) {
@@ -20,7 +22,7 @@ class Charter {
       let chartData = this.data[i]
       let container = document.createElement('div')
       container.style.position = 'relative';
-      document.body.appendChild(container)
+      this.charts_container.appendChild(container)
       const chart = LightweightCharts.createChart(container, { width: chartData['width'], height: chartData['height'] })
       chart.applyOptions({crosshair: {mode: 0}})
       chartData['series'].forEach(function (serie) {
@@ -44,6 +46,7 @@ class Charter {
         }
       });
       this.charts.push({'chart': chart, 'container': container, 'id': chartData.id})
+      chart.timeScale()
     }
   }
 
