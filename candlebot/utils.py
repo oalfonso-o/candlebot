@@ -18,3 +18,7 @@ def datetime_to_timestamp(date):
 def timestamp_to_date(timestamp):
     parsed_timestamp = int(timestamp) / constants.DATE_MILIS_PRODUCT
     return datetime.datetime.fromtimestamp(parsed_timestamp)
+
+
+def timestamp_to_str_date(timestamp):
+    return timestamp_to_date(timestamp).strftime('%Y/%m/%d')

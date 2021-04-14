@@ -31,7 +31,7 @@ def fill(symbol, date_from, interval):
 
 
 def fill_all():
-    logging.info(f'Filling all')
+    logging.info('Filling all')
     Crawler.fill_backtesting()
 
 
@@ -39,7 +39,7 @@ def backtesting(bt_test_id):
     if not bt_test_id:
         raise ValueError(
             'Parameter --bt-test-id is required for backtesting command')
-    logging.info(f'Running Backtesting')
+    logging.info('Running Backtesting')
     bt = Backtesting(bt_test_id)
     bt.test()
 

@@ -127,21 +127,25 @@ class MenuLeft extends HTMLElement {
             <button class="js-menu-close is-dense u-no-margin u-hide--medium">Close</button>
           </p>
           <form>
-            <label for="exampleSelect">Strategy</label>
-            <select name="exampleSelect" id="exampleSelect">
-              <option value="ema1" default>EMA1</option>
-            </select>
-            <label for="exampleSelect">Symbol</label>
-            <select name="exampleSelect" id="exampleSelect">
+          <label for="date_from">Date From</label>
+          <input type="date" id="date_from" name="date_from">
+          <label for="date_to">Date To</label>
+          <input type="date" id="date_to" name="date_to">
+            <label for="symbol">Symbol</label>
+            <select name="symbol" id="symbol">
               <option value="etheur" default>ETHEUR</option>
               <option value="btceur">BTCEUR</option>
             </select>
-            <label for="exampleSelect">Interval</label>
-            <select name="exampleSelect" id="exampleSelect">
+            <label for="interval">Interval</label>
+            <select name="interval" id="interval">
               <option value="1d" default>1d</option>
               <option value="1h">1h</option>
               <option value="15m">15m</option>
               <option value="1m">1m</option>
+            </select>
+            <label for="strategy">Strategy</label>
+            <select name="strategy" id="strategy">
+              <option value="ema1" default>EMA1</option>
             </select>
             <button type="submit" name="submit">Submit</button>
           </form>

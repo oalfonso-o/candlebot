@@ -18,11 +18,6 @@ class Crawler:
     )
     crawl_limit = 1
     fill_limit = 1000
-    symbols = [
-        # constants.SYMBOL_CARDANO_USDT,
-        # constants.SYMBOL_BITCOIN_USDT,
-        constants.SYMBOL_ETHEREUM_USDT,
-    ]
     intervals = ['1d']
 
     @classmethod
@@ -78,9 +73,9 @@ class Crawler:
 
     @classmethod
     def fill_backtesting(cls):
-        for symbol in cls.symbols:
-            for interval in cls.intervals:
-                date_from = '20170101'
+        for symbol in constants.TRADING_SYMBOLS:
+            for interval in constants.INTERVALS:
+                date_from = '20000101'
                 date_from = utils.date_to_timestamp(date_from)
                 while date_from:
                     date_from = cls.fill(
