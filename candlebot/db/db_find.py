@@ -24,3 +24,19 @@ def find_backfill_data(coll_name):
         }
         return backfill
     return {}
+
+
+def available_symbols():
+    colls = Settings.MONGO_CONN[Settings.MONGO_DATABASE].collection_names()
+    return list({
+        coll_name.split('_')[0]
+        for coll_name in colls
+    })
+
+
+def available_intervals():
+    colls = Settings.MONGO_CONN[Settings.MONGO_DATABASE].collection_names()
+    return list({
+        coll_name.split('_')[1]
+        for coll_name in colls
+    })

@@ -112,67 +112,55 @@ class PageHeaderMenu extends HTMLElement {
 customElements.define('page-header-menu', PageHeaderMenu);
 
 
-class MenuLeft extends HTMLElement {
-  constructor() {super();}
+(async() => {
+  let endpoint_symbols = ENV.api.host + ':' + ENV.api.port + '/' + 'forms' + '/' + 'symbols'
+  let endpoint_intervals = ENV.api.host + ':' + ENV.api.port + '/' + 'forms' + '/' + 'intervals'
+  let response_symbols = await axios.get(endpoint_symbols, {params: {}})
+  let response_intervals = await axios.get(endpoint_intervals, {params: {}})
+  load_form(response_symbols, response_intervals)
+})();
 
-  connectedCallback() {
-    this.innerHTML = `
-      <div class="l-navigation-bar">
-        <div class="u-clearfix"><code>l-navigation-bar</code> <button class="u-float-right js-menu-toggle is-dense u-no-margin">Menu</button></div>
+
+function load_form(symbols, intervals) {
+  let form = `
+    <div class="l-navigation-bar">
+      <div class="u-clearfix"><code>l-navigation-bar</code> <button class="u-float-right js-menu-toggle is-dense u-no-margin">Menu</button></div>
+    </div>
+    <header class="l-navigation">
+      <div class="l-navigation__drawer">
+        <p class="demo-controls u-hide--large u-align--right">
+          <button class="js-menu-pin is-dense u-no-margin u-hide--small">Pin</button>
+          <button class="js-menu-close is-dense u-no-margin u-hide--medium">Close</button>
+        </p>
+        <form>
+        <label for="date_from">Date From</label>
+        <input type="date" id="date_from" name="date_from">
+        <label for="date_to">Date To</label>
+        <input type="date" id="date_to" name="date_to">
+          <label for="symbol">Symbol</label>
+          <select name="symbol" id="symbol">
+            <option value="etheur" default>ETHEUR</option>
+            <option value="btceur">BTCEUR</option>
+          </select>
+          <label for="interval">Interval</label>
+          <select name="interval" id="interval">
+            <option value="1d" default>1d</option>
+            <option value="1h">1h</option>
+            <option value="15m">15m</option>
+            <option value="1m">1m</option>
+          </select>
+          <label for="strategy">Strategy</label>
+          <select name="strategy" id="strategy">
+            <option value="ema1" default>EMA1</option>
+          </select>
+          <button type="submit" name="submit">Submit</button>
+        </form>
       </div>
-      <header class="l-navigation">
-        <div class="l-navigation__drawer">
-          <p class="demo-controls u-hide--large u-align--right">
-            <button class="js-menu-pin is-dense u-no-margin u-hide--small">Pin</button>
-            <button class="js-menu-close is-dense u-no-margin u-hide--medium">Close</button>
-          </p>
-          <form>
-          <label for="date_from">Date From</label>
-          <input type="date" id="date_from" name="date_from">
-          <label for="date_to">Date To</label>
-          <input type="date" id="date_to" name="date_to">
-            <label for="symbol">Symbol</label>
-            <select name="symbol" id="symbol">
-              <option value="etheur" default>ETHEUR</option>
-              <option value="btceur">BTCEUR</option>
-            </select>
-            <label for="interval">Interval</label>
-            <select name="interval" id="interval">
-              <option value="1d" default>1d</option>
-              <option value="1h">1h</option>
-              <option value="15m">15m</option>
-              <option value="1m">1m</option>
-            </select>
-            <label for="strategy">Strategy</label>
-            <select name="strategy" id="strategy">
-              <option value="ema1" default>EMA1</option>
-            </select>
-            <button type="submit" name="submit">Submit</button>
-          </form>
-          <footer class="p-strip--light">
-            <p>
-              <button class="js-aside-open">Open aside panel</button>
-            </p>
-          </footer>
-        </div>
-      </header>
-    `;
+    </header>
+  `
+  class MenuLeft extends HTMLElement {
+    constructor() {super();}
+    connectedCallback() {this.innerHTML = form}
   }
+  customElements.define('menu-left', MenuLeft);
 }
-customElements.define('menu-left', MenuLeft);
-
-
-class AsideContent extends HTMLElement {
-  constructor() {super();}
-
-  connectedCallback() {
-    this.innerHTML = `
-      <p>
-        <button class="js-aside-close is-dense">Close</button>
-      </p>
-      <p><code>l-aside</code></p>
-      <p>Panel width: <button class="is-inline is-dense js-aside-resize" data-resize-class="is-narrow" aria-controls="aside-panel">narrow</button> <button class="is-dense is-inline js-aside-resize" data-resize-class="" aria-controls="aside-panel">default</button> <button class="is-dense is-inline js-aside-resize" data-resize-class="is-wide" aria-controls="aside-panel">wide</button></p>
-    `;
-  }
-}
-customElements.define('aside-content', AsideContent);

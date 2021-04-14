@@ -10,7 +10,7 @@ def calc():
     now = datetime.datetime.now()
     two_ago = datetime.datetime.now() - datetime.timedelta(days=356 * 2)
     candles_cursor = CandleRetriever.get(
-        'ETHUSDT',
+        'ETHEUR',
         '1d',
         utils.datetime_to_timestamp(two_ago),
         utils.datetime_to_timestamp(now),
