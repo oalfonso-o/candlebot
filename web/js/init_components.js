@@ -117,11 +117,20 @@ customElements.define('page-header-menu', PageHeaderMenu);
   let endpoint_intervals = ENV.api.host + ':' + ENV.api.port + '/' + 'forms' + '/' + 'intervals'
   let response_symbols = await axios.get(endpoint_symbols, {params: {}})
   let response_intervals = await axios.get(endpoint_intervals, {params: {}})
-  load_form(response_symbols, response_intervals)
+  load_form(response_symbols.data, response_intervals.data)
 })();
 
 
 function load_form(symbols, intervals) {
+  let symbol_options = []
+  let interval_options = []
+  var i
+  for (i = 0;  i < symbols.length; i++) {
+    symbol_options.push('<option value="' + symbols[i] + '" default>' + symbols[i] + '</option>')
+  }
+  for (i = 0;  i < intervals.length; i++) {
+    interval_options.push('<option value="' + intervals[i] + '" default>' + intervals[i] + '</option>')
+  }
   let form = `
     <div class="l-navigation-bar">
       <div class="u-clearfix"><code>l-navigation-bar</code> <button class="u-float-right js-menu-toggle is-dense u-no-margin">Menu</button></div>
@@ -138,17 +147,13 @@ function load_form(symbols, intervals) {
         <label for="date_to">Date To</label>
         <input type="date" id="date_to" name="date_to">
           <label for="symbol">Symbol</label>
-          <select name="symbol" id="symbol">
-            <option value="etheur" default>ETHEUR</option>
-            <option value="btceur">BTCEUR</option>
-          </select>
+          <select name="symbol" id="symbol">`
+          + symbol_options +
+          `</select>
           <label for="interval">Interval</label>
-          <select name="interval" id="interval">
-            <option value="1d" default>1d</option>
-            <option value="1h">1h</option>
-            <option value="15m">15m</option>
-            <option value="1m">1m</option>
-          </select>
+          <select name="interval" id="interval">`
+          + interval_options +
+          `</select>
           <label for="strategy">Strategy</label>
           <select name="strategy" id="strategy">
             <option value="ema1" default>EMA1</option>

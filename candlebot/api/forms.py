@@ -11,12 +11,12 @@ router = APIRouter(
 
 @router.get("/symbols")
 async def get_symbols():
-    return db_find.available_symbols
+    return db_find.available_symbols()
 
 
 @router.get("/intervals")
 async def get_intervals():
-    return db_find.available_intervals
+    return db_find.available_intervals()
 
 
 @router.get("/strategies")
