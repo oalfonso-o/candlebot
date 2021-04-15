@@ -11,11 +11,11 @@ def find_backfill_data(coll_name):
     count = mongo_coll.estimated_document_count()
     if count:
         first_doc = mongo_coll.find_one(
-            {}, {'timestamp': 1}, sort=[('timestamp', 1)]) or {}
+            {}, {'_id': 1}, sort=[('_id', 1)]) or {}
         last_doc = mongo_coll.find_one(
-            {}, {'timestamp': 1}, sort=[('timestamp', -1)]) or {}
-        date_from = first_doc.get('timestamp')
-        date_to = last_doc.get('timestamp')
+            {}, {'_id': 1}, sort=[('_id', -1)]) or {}
+        date_from = first_doc.get('_id')
+        date_to = last_doc.get('_id')
         backfill = {
             'id': coll_name.split('_')[1],
             'date_from': utils.timestamp_to_str_date(date_from),
