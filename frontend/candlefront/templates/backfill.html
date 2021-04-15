@@ -1,34 +1,8 @@
-<html lang="en">
-  <head>
-    <script src="js/.env.js"></script>
-    <script src="js/lib/axios.js.min"></script>
-    <script src="js/init_components.js"></script>
-    <head-content></head-content>
-  </head>
-<body>
-  <div id="page" style="display: none;">
-    <page-header></page-header>
-    <div class="l-application app-candlebot" role="presentation">
-      <page-header-menu></page-header-menu>
-      <header class="l-navigation">
-        <menu-left></menu-left>
-      </header>
+{% extends "index.html" %}
 
-      <main class="l-main l-site">
-        <div id="page-container-backfill"></div>
-      </main>
-    </div>
-  </div>
-  <div id="loading">
-    <div class="p-card u-vertically-center" style="min-height: 100%;">
-      <center><i class="p-icon--spinner u-animation--spin"></i></center>
-    </div>
-  </div>
-</body>
-<footer>
-  <script src="js/lib/chartview.js.min"></script>
-  <script src="js/lib/vanilla-framework-layout.js"></script>
-  <script src="js/.env.js"></script>
+{% block page_content %}
+  <div id="page-container-backfill"></div>
+{% endblock %}
+{% block footer %}
   <script src="js/backfill.js"></script>
-</footer>
-</html>
+{% endblock %}

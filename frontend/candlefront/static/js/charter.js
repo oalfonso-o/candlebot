@@ -2,8 +2,6 @@ let charts_menu = document.getElementById('menu-charts')
 charts_menu.classList.add('is-selected')
 
 class Charter {
-  strategy_endpoint = 'ema'
-  endpoint = ENV.api.host + ':' + ENV.api.port + '/' + 'strategies' + '/' + this.strategy_endpoint
   charts = []
   data = []
   charts_container
@@ -11,10 +9,10 @@ class Charter {
   constructor() {
     this.charts_container = document.getElementById('page-container-charter');
     this.charts_container.style.position = 'relative'
+    this.data = JSON.parse(this.charts_container.dataset.points);
   }
 
-  init(data) {
-    this.data = data
+  init() {
     this.defineCharts()
     this.pinCharts()
     this.addChartLegends()
@@ -98,8 +96,5 @@ class Charter {
 }
 
 
-(async() => {
-  const charter = new Charter()
-  let response = await axios.get(charter.endpoint, {params: {}})
-  charter.init(response.data)
-})();
+const charter = new Charter()
+charter.init()

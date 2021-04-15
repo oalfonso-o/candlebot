@@ -3,20 +3,60 @@
     <script src="js/.env.js"></script>
     <script src="js/lib/axios.js.min"></script>
     <script src="js/init_components.js"></script>
-    <head-content></head-content>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="css/vanilla-framework.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <title>Candlebot Charter</title>
   </head>
 <body>
   <div id="page" style="display: none;">
     <page-header></page-header>
     <div class="l-application app-candlebot" role="presentation">
-      <page-header-menu></page-header-menu>
+      <div class="l-navigation-bar">
+        <div class="u-clearfix"><code>l-navigation-bar</code> <button class="u-float-right js-menu-toggle is-dense u-no-margin">Menu</button></div>
+      </div>
       <header class="l-navigation">
-        <menu-left></menu-left>
+        <div class="l-navigation-bar">
+          <div class="u-clearfix"><code>l-navigation-bar</code> <button class="u-float-right js-menu-toggle is-dense u-no-margin">Menu</button></div>
+        </div>
+        <header class="l-navigation">
+          <div class="l-navigation__drawer">
+            <p class="demo-controls u-hide--large u-align--right">
+              <button class="js-menu-pin is-dense u-no-margin u-hide--small">Pin</button>
+              <button class="js-menu-close is-dense u-no-margin u-hide--medium">Close</button>
+            </p>
+            <form method="post" action="/">
+            <label for="date_from">Date From</label>
+            <input type="date" id="date_from" name="date_from">
+            <label for="date_to">Date To</label>
+            <input type="date" id="date_to" name="date_to">
+              <label for="symbol">Symbol</label>
+              <select name="symbol" id="symbol">
+                {% for symbol in symbol_options %}
+                  <option value="{{ symbol }}" default>{{ symbol }}</option>
+                {% endfor %}
+              </select>
+              <label for="interval">Interval</label>
+              <select name="interval" id="interval">
+                {% for interval in interval_options %}
+                  <option value="{{ interval }}" default>{{ interval }}</option>
+                {% endfor %}
+              </select>
+              <label for="strategy">Strategy</label>
+              <select name="strategy" id="strategy">
+                <option value="ema1" default>EMA1</option>
+              </select>
+              <button type="submit" name="submit">Submit</button>
+            </form>
+          </div>
+        </header>
       </header>
-
       <main class="l-main l-site">
-        <div id="page-container-charter"></div>
-      </main>
+        {% block page_content %}
+          <div id="page-container-charter" data-points="{{ data_points }}"></div>
+        {% endblock %}
+        </main>
     </div>
   </div>
   <div id="loading">
@@ -28,6 +68,8 @@
 <footer>
   <script src="js/lib/chartview.js.min"></script>
   <script src="js/lib/vanilla-framework-layout.js"></script>
-  <script src="js/charter.js"></script>
+  {% block footer %}
+    <script src="js/charter.js"></script>
+  {% endblock %}
 </footer>
 </html>
