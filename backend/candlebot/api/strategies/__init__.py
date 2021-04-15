@@ -10,5 +10,7 @@ router = APIRouter(
 
 
 @router.get("/ema")
-async def strategy_ema():
-    return ema.calc()
+async def strategy_ema(
+    date_from=None, date_to=None, symbol='ADAEUR', interval='1d'
+):
+    return ema.calc(date_from, date_to, symbol, interval)

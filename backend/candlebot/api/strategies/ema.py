@@ -1,19 +1,20 @@
-import datetime
-
 from candlebot import utils
 from candlebot.db.candle_retriever import CandleRetriever
 from candlebot.strategist import Strategist
 from candlebot import constants
 
 
-def calc():
-    now = datetime.datetime.now()
-    two_ago = datetime.datetime.now() - datetime.timedelta(days=356 * 2)
+def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
+    if date_from and date_to:
+        date_from_no_hyphen = date_from.replace('-', '')
+        date_to_no_hyphen = date_to.replace('-', '')
+        date_from = utils.date_to_timestamp(date_from_no_hyphen)
+        date_to = utils.date_to_timestamp(date_to_no_hyphen)
     candles_cursor = CandleRetriever.get(
-        'ETHEUR',
-        '1d',
-        utils.datetime_to_timestamp(two_ago),
-        utils.datetime_to_timestamp(now),
+        symbol,
+        interval,
+        date_from,
+        date_to,
     )
     candles = list(candles_cursor)
     strat_df, wallet = Strategist.calc(candles, 'ema')
