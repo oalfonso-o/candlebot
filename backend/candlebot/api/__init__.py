@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -5,6 +7,15 @@ from candlebot.settings import Settings
 from candlebot.api import strategies
 from candlebot.api import backfill
 from candlebot.api import forms
+
+logging.basicConfig(
+    level=logging.INFO,
+    format=(
+        '%(asctime)s %(name)16.16s %(funcName)10.10s %(levelname)7s: '
+        '%(message)s'
+    ),
+    force=True,
+)
 
 app = FastAPI()
 

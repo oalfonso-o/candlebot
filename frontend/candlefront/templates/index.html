@@ -26,11 +26,11 @@
               <button class="js-menu-pin is-dense u-no-margin u-hide--small">Pin</button>
               <button class="js-menu-close is-dense u-no-margin u-hide--medium">Close</button>
             </p>
-            <form method="post" action="/">
-            <label for="date_from">Date From</label>
-            <input type="date" id="date_from" name="date_from">
-            <label for="date_to">Date To</label>
-            <input type="date" id="date_to" name="date_to">
+            <form method="post" action="{{ submit_endpoint }}">
+              <label for="date_from">Date From</label>
+              <input type="date" id="date_from" name="date_from" value="{{ date_from }}">
+              <label for="date_to">Date To</label>
+              <input type="date" id="date_to" name="date_to" value="{{ date_to }}">
               <label for="symbol">Symbol</label>
               <select name="symbol" id="symbol">
                 {% for symbol in symbol_options %}
@@ -43,12 +43,20 @@
                   <option value="{{ interval }}" default>{{ interval }}</option>
                 {% endfor %}
               </select>
-              <label for="strategy">Strategy</label>
-              <select name="strategy" id="strategy">
-                <option value="ema1" default>EMA1</option>
-              </select>
-              <button type="submit" name="submit">Submit</button>
+              {% if submit_button_text != "Backfill" %}
+                <label for="strategy">Strategy</label>
+                <select name="strategy" id="strategy">
+                  <option value="ema1" default>EMA1</option>
+                </select>
+              {% endif %}
+              <button type="submit" name="submit">{{ submit_button_text }}</button>
             </form>
+            {% if form_response %}
+            <span>{{ form_response }}</span>
+            {% endif %}
+            {% if submit_button_text == "Backfill" %}
+              <form action="/backfill"><button>Reload</button></action>
+            {% endif %}
           </div>
         </header>
       </header>
