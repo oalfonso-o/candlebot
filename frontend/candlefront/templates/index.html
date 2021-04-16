@@ -1,113 +1,25 @@
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="css/vanilla-framework.min.css">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="preload" as="font" href="https://assets.ubuntu.com/v1/e8c07df6-Ubuntu-L_W.woff2" type="font/woff2" crossorigin="anonymous">
-    <link rel="preload" as="font" href="https://assets.ubuntu.com/v1/fff37993-Ubuntu-R_W.woff2" type="font/woff2" crossorigin="anonymous">
-    <title>Candlebot Charter</title>
-  </head>
-<body>
-  <div id="page">
-    <header id="navigation" class="p-navigation">
-      <div class="p-navigation__row">
-        <div class="p-navigation__banner">
-          <div class="p-navigation__logo">
-            <a class="p-navigation__item" href="/">
-              <img class="p-navigation__image" src="img/candle.png" alt="CandleBot">
-            </a>
-          </div>
-          <a href="#navigation" class="p-navigation__toggle--open" title="menu">Main Menu</a>
-          <a href="#navigation-closed" class="p-navigation__toggle--close" title="close menu">Close menu</a>
-        </div>
-        <nav class="p-navigation__nav" aria-label="Example main navigation">
-          <span class="u-off-screen">
-            <a href="/">Jump to main content</a>
-          </span>
-          <ul class="p-navigation__items">
-            {% for route in routes %}
-              <li class="p-navigation__item" id="menu-{{ route.label }}">
-                <a class="p-navigation__link" href="{{ route.uri }}">{{ route.label }}</a>
-              </li>
-            {% endfor %}
-          </ul>
-        </nav>
-      </div>
-    </header>
-    <div class="l-application app-candlebot" role="presentation">
-      <div class="l-navigation-bar">
-        <div class="u-clearfix"><button class="u-float-right js-menu-toggle is-dense u-no-margin">Left Menu</button></div>
-      </div>
-      <header class="l-navigation">
-        <div class="l-navigation__drawer">
-          <p class="demo-controls u-hide--large u-align--right">
-            <button class="js-menu-pin is-dense u-no-margin u-hide--small pin-button-margin">Pin</button>
-            <button class="js-menu-close is-dense u-no-margin u-hide--medium">Close</button>
-          </p>
-          <form method="post" action="{{ submit_endpoint }}" class="left-menu-form">
-            <label for="date_from">Date From</label>
-            <input type="date" id="date_from" name="date_from" value="{{ date_from }}">
-            <label for="date_to">Date To</label>
-            <input type="date" id="date_to" name="date_to" value="{{ date_to }}">
-            <label for="symbol">Symbol</label>
-            <select name="symbol" id="symbol">
-              {% for symbol in symbol_options %}
-                <option value="{{ symbol }}" default>{{ symbol }}</option>
-              {% endfor %}
-            </select>
-            <label for="interval">Interval</label>
-            <select name="interval" id="interval">
-              {% for interval in interval_options %}
-                <option value="{{ interval }}" default>{{ interval }}</option>
-              {% endfor %}
-            </select>
-            {% if submit_button_text == "Charts" %}
-              <label for="strategy">Strategy</label>
-              <select name="strategy" id="strategy">
-                <option value="ema1" default>EMA1</option>
-              </select>
-            {% endif %}
-            <button type="submit" name="submit">{{ submit_button_text }}</button>
-          </form>
-          {% if form_response %}
-            <span>{{ form_response }}</span>
-          {% endif %}
-          {% if submit_button_text == "Backfill" %}
-            <form action="/backfill"><button>Reload</button></action>
-          {% endif %}
-        </div>
-      </header>
-      <main class="l-main l-site">
-        {% block page_content %}
-          <div class="row">
-            <div class="col-2">
-              <p class="p-heading--3">{{ strategy_params.symbol }}</p>
-            </div>
-            <div class="col-2">
-              <div class="u-align-text--small-to-default p-text--small">from: {{ strategy_params.date_from }}</div>
-            </div>
-            <div class="col-2" style="text-align: center;">
-              <p class="p-text--x-small-capitalised u-align-text--x-small-to-default" style="font-weight: 700">{{ strategy_params.strategy }}</p>
-            </div>
-            <div class="col-2">
-              <div class="u-align-text--small-to-default p-text--small">to: {{ strategy_params.date_to }}</div>
-            </div>
-            <div class="col-4">
-              <p class="p-text--x-small-capitalised u-align-text--x-small-to-default">Interval: {{ strategy_params.interval }}</p>
-            </div>
-          </div>
-          <div id="page-container-charter" data-points="{{ data_points }}"></div>
-        {% endblock %}
-        </main>
+{% extends "base.html" %}
+
+{% block page_content %}
+    <div class="row">
+    <div class="col-2">
+        <p class="p-heading--3">{{ strategy_params.symbol }}</p>
     </div>
-  </div>
-</body>
-<footer>
-  <script src="js/lib/chartview.js.min"></script>
-  <script src="js/lib/vanilla-framework-layout.js"></script>
-  {% block footer %}
-    <script src="js/charter.js"></script>
-  {% endblock %}
-</footer>
-</html>
+    <div class="col-2">
+        <div class="u-align-text--small-to-default p-text--small">from: {{ strategy_params.date_from }}</div>
+    </div>
+    <div class="col-2" style="text-align: center;">
+        <p class="p-text--x-small-capitalised u-align-text--x-small-to-default" style="font-weight: 700">{{ strategy_params.strategy }}</p>
+    </div>
+    <div class="col-2">
+        <div class="u-align-text--small-to-default p-text--small">to: {{ strategy_params.date_to }}</div>
+    </div>
+    <div class="col-4">
+        <p class="p-text--x-small-capitalised u-align-text--x-small-to-default">Interval: {{ strategy_params.interval }}</p>
+    </div>
+    </div>
+    <div id="page-container-charter" data-points="{{ data_points }}"></div>
+{% endblock %}
+{% block footer %}
+  <script src="js/charter.js"></script>
+{% endblock %}

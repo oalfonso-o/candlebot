@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block form_left %}
+  <form method="post" action="{{ submit_endpoint }}" class="left-menu-form">
+    <label for="date_from">Date From</label>
+    <input type="date" id="date_from" name="date_from" value="{{ date_from }}">
+    <label for="date_to">Date To</label>
+    <input type="date" id="date_to" name="date_to" value="{{ date_to }}">
+    <label for="symbol">Symbols</label>
+    <select name="symbols" id="symbols">
+    {% for symbol in symbol_options %}
+      <option value="{{ symbol }}" default>{{ symbol }}</option>
+    {% endfor %}
+    </select>
+    <label for="intervals">Intervals</label>
+    <select name="intervals" id="intervals">
+    {% for interval in interval_options %}
+      <option value="{{ interval }}" default>{{ interval }}</option>
+    {% endfor %}
+    </select>
+    <label for="strategy">Strategy</label>
+    <select name="strategy" id="strategy">
+        <option value="ema1" default>EMA1</option>
+    </select>
+    <button type="submit" name="submit">{{ submit_button_text }}</button>
+  </form>
+  {% if form_response %}
+    <span>{{ form_response }}</span>
+  {% endif %}
+  <form action="/backfill"><button>Reload</button></action>
+{% endblock %}
+{% block page_content %}
+  <div id="page-container-backtesting">
+    <p>Backtests</p>
+  </div>
+{% endblock %}
+{% block footer %}
+  <script src="js/backtesting.js"></script>
+{% endblock %}

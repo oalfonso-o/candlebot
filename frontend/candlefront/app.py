@@ -36,7 +36,7 @@ app = Flask(
 
 
 @app.route('/', methods=['GET', 'POST'])
-def get_charts():
+def charts():
     strategy_params = {
         'date_from': datetime.date(year=2000, month=1, day=1),
         'date_to': datetime.date.today(),
@@ -107,6 +107,23 @@ def backfill():
         form_response=response.text if response else '',
         routes=ROUTES,
         backfill=backfill.json(),
+    )
+
+
+@app.route('/backtesting', methods=['GET', 'POST'])
+def backtesting():
+    symbols = requests.get('/'.join([API, 'forms', 'symbols']))
+    intervals = requests.get('/'.join([API, 'forms', 'intervals']))
+    return render_template(
+        'backtesting.html',
+        symbol_options=symbols.json(),
+        interval_options=intervals.json(),
+        date_from=datetime.date(year=2000, month=1, day=1),
+        date_to=datetime.date.today(),
+        routes=ROUTES,
+        submit_button_text='Backtest',
+        submit_endpoint='/backtesting',
+        show_strategy=True,
     )
 
 
