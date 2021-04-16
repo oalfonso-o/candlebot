@@ -1,5 +1,4 @@
 .env
-.env.js
 *.egg-info
 __pycache__
 temp-plot.html

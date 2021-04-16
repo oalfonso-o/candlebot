@@ -92,6 +92,7 @@ def backfill():
         if response.status_code != 200:
             logger.error(response.json())
             response.raise_for_status()
+    backfill = requests.get('/'.join([API, 'backfill', 'list']))
     symbols = requests.get('/'.join([API, 'forms', 'symbols', 'all']))
     intervals = requests.get('/'.join([API, 'forms', 'intervals', 'all']))
     return render_template(
@@ -105,6 +106,7 @@ def backfill():
         submit_endpoint='/backfill',
         form_response=response.text if response else '',
         routes=ROUTES,
+        backfill=backfill.json(),
     )
 
 

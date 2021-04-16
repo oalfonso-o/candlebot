@@ -1,7 +1,39 @@
 {% extends "index.html" %}
 
 {% block page_content %}
-  <div id="page-container-backfill"></div>
+  <div id="page-container-backfill">
+    <p>Historic backfills</p>
+
+    <aside class="p-accordion">
+      <ul class="p-accordion__list">
+      {% for symbol in backfill %}
+        <li class="p-accordion__group">
+          <div role="heading" aria-level="3" class="p-accordion__heading">
+            <button type="button" class="p-accordion__tab" id="tab{{loop.index}}" aria-controls="tab{{loop.index}}-section" aria-expanded="true">{{ symbol.name }}</button>
+          </div>
+          <section class="p-accordion__panel" id="tab{{loop.index}}-section" aria-hidden="false" aria-labelledby="tab{{loop.index}}">
+          {% for interval in symbol.intervals %}
+            <div class="row">
+              <div class="col-2">
+                <span><b>{{ interval.id }}</b></span>
+              </div>
+              <div class="col-4">
+                <span>min: {{ interval.date_from }}</span>
+              </div>
+              <div class="col-4">
+                <span>max: {{ interval.date_to }}</span>
+              </div>
+              <div class="col-2">
+                <span style="float:right;">klines: {{ interval.count }}</span>
+              </div>
+            </div>
+          {% endfor %}
+          </section>
+        </li>
+      {% endfor %}
+      </ul>
+    </aside>
+  </div>
 {% endblock %}
 {% block footer %}
   <script src="js/backfill.js"></script>
