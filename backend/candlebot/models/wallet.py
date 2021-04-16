@@ -19,6 +19,7 @@ class Wallet:
         balance_short: float = 0,
         transaction_fee: float = 0.00075,
     ):
+        self.balance_origin_start = balance_origin
         self.balance_origin = balance_origin
         self.amount_to_open = amount_to_open
         self.percentage_to_close = percentage_to_close

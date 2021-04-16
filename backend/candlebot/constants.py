@@ -48,7 +48,7 @@ MONGO_COLLS = {
     symbol: {i: f'{symbol}_{i}' for i in INTERVALS}
     for symbol in TRADING_SYMBOLS
 }
-MONGO_COLL_BACKFILL_PLAYS = 'backtesting_plays'
+MONGO_COLL_BACKTESTING = 'backtesting'
 
 COMMAND_CRAWL = 'crawl'
 COMMAND_CHARTS = 'charts'

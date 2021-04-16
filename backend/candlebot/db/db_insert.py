@@ -31,12 +31,7 @@ def crawled_symbols(symbol, docs, interval):
     logger.info(f'DB Bulk Insert: {coll_name} - {result_dict}')
 
 
-def backtesting_play(doc):
-    coll_name = constants.MONGO_COLL_BACKFILL_PLAYS
-    mongo_coll = Settings.MONGO_CONN[Settings.MONGO_DATABASE][coll_name]
-    mongo_coll.insert_one(doc)
-
-
-def backtest(doc, coll_name):
+def backtest(doc):
+    coll_name = constants.MONGO_COLL_BACKTESTING
     mongo_coll = Settings.MONGO_CONN[Settings.MONGO_DATABASE][coll_name]
     mongo_coll.insert_one(doc)

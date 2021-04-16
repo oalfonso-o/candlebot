@@ -35,7 +35,7 @@ class StrategyEMA:
                     row['_id'].to_pydatetime()
                 )
                 self.wallet.open_pos('long', row['close'], timestamp)
-                self.wallet.close_pos('short', row['close'], timestamp)
+                # self.wallet.close_pos('short', row['close'], timestamp)
                 direction = 1
                 highest = row
             elif self._must_close_long_open_short(row, highest, direction):
@@ -43,7 +43,7 @@ class StrategyEMA:
                     row['_id'].to_pydatetime()
                 )
                 self.wallet.close_pos('long', row['close'], timestamp)
-                self.wallet.open_pos('short', row['close'], timestamp)
+                # self.wallet.open_pos('short', row['close'], timestamp)
                 direction = -1
                 lowest = row
             if (row['ema'] - highest['ema']) > 0:

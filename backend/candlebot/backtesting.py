@@ -1,4 +1,5 @@
 import csv
+import copy
 import logging
 import datetime
 import itertools
@@ -16,21 +17,31 @@ logger = logging.getLogger(__name__)
 
 class Backtesting:
     generic_header = [
+        'test_id',
         'strategy',
         'symbol',
         'interval',
         'df',
         'dt',
+        'test_date',
     ]
-    wallet_data_header = [
-        'balance_origin',
+    wallet_header = [
+        'balance_origin_start',
+        'balance_origin_end',
+        'amount_to_open',
         'balance_long',
+        'open_positions_long',
+        'close_positions_long',
+        'total_earned_long',
         'balance_short',
-        'open_positions',
-        'close_positions',
+        'open_positions_short',
+        'close_positions_short',
+        'total_earned_short',
     ]
 
     def __init__(self, test_id):
+        self.test_id = test_id
+        self.test_date = datetime.datetime.utcnow()
         self.output_rows = []
         date = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
         self.output_mongo_coll = f'bt_{test_id}_{date}'
@@ -38,9 +49,19 @@ class Backtesting:
         self.test_specific_header = self.bt_config['header']
         self.output_header = (
             self.generic_header
-            + self.wallet_data_header
+            + self.wallet_header
             + self.test_specific_header
         )
+
+    def test_from_web(self):
+        # TODO:
+        # output csv false
+        # output mongo true
+        # receive a test params and parse them to a "test" dict like in backtesting.yml -> tests: ema1:
+        # override self.bt_config with this new config dict
+        # --- now everything is setup like if a test was already defined in backtesting.yml, we can do the test
+        # call self.test
+        pass
 
     def test(self):
         generic_fields = [
@@ -60,15 +81,15 @@ class Backtesting:
                 if not candles:
                     logging.warning('No klines')
                     continue
-                _, wallet_data = Strategist.calc(  # TODO FIX, NO WALLET DATA ANYMORE, USE POSITIONS
-                    candles, self.bt_config['strategy'])
-                self._parse_output(wallet_data, s, i, d)
+                _, wallet = Strategist.calc(
+                    candles, self.bt_config['strategy'])  # TODO FIX, NO WALLET DATA ANYMORE, USE POSITIONS
+                self._parse_output(wallet, s, i, d)
 
         self._persist_output()
 
     @staticmethod
     def _config(test_id):
-        bt_config = Settings.BT
+        bt_config = copy.deepcopy(Settings.BT)
         bt_test = bt_config['tests'][test_id]
         bt_config.update(bt_test['override'])
         bt_config['strategy'] = bt_test['strategy']
@@ -118,39 +139,56 @@ class Backtesting:
         self.bt_config[s_i][id_][field] = specific_field_value
         self.bt_config[specific_field_key] = specific_field_value
 
-    def _parse_output(self, wallet_data, symbol, interval, date):
-        row = self._prepare_output_row(wallet_data, symbol, interval, date)
+    def _parse_output(self, wallet, symbol, interval, date):
+        row = self._prepare_output_row(wallet, symbol, interval, date)
         if self.bt_config['output']['csv']['active']:
             self.output_rows.append(row)
         if self.bt_config['output']['mongo']['active']:
-            db_insert.backtest(row, self.output_mongo_coll)
+            db_insert.backtest(row)
 
-    def _prepare_output_row(self, wallet_data, symbol, interval, date):
+    def _prepare_output_row(self, wallet, symbol, interval, date):
         specific_fields = {
             header: self.bt_config[header]
             for header in self.test_specific_header
         }
-        balance_origin = wallet_data.get('balance_origin') or []
-        balance_long = wallet_data.get('balance_long') or []
-        balance_short = wallet_data.get('balance_short') or []
-        open_positions = wallet_data.get('open_positions') or []
-        close_positions = wallet_data.get('close_positions') or []
-        balance_origin = sum([p['value'] for p in balance_origin]) / len(balance_origin) if balance_origin else 0  # noqa
-        balance_long = sum([p['value'] for p in balance_long]) / len(balance_long) if balance_long else 0  # noqa
-        balance_short = sum([p['value'] for p in balance_short]) / len(balance_short) if balance_short else 0  # noqa
-        open_positions = sum([p['value'] for p in open_positions]) / len(open_positions) if open_positions else 0  # noqa
-        close_positions = sum([p['value'] for p in close_positions]) / len(close_positions) if close_positions else 0  # noqa
+        open_positions_long = 0
+        close_positions_long = 0
+        open_positions_short = 0
+        close_positions_short = 0
+        total_earned_long = 0
+        total_earned_long = 0
+        total_earned_short = 0
+        for position in wallet.positions_long:
+            if position.action == 'open':
+                open_positions_long += 1
+            elif position.action == 'close':
+                close_positions_long += 1
+                total_earned_long += position.amount - wallet.amount_to_open
+        for position in wallet.positions_short:
+            if position.action == 'open':
+                open_positions_short += 1
+            elif position.action == 'close':
+                close_positions_short += 1
+                total_earned_short += position.amount - wallet.amount_to_open
         row = {
+            'test_id': self.test_id,
             'strategy': self.bt_config['strategy'],
             'symbol': symbol,
             'interval': interval,
             'df': str(utils.timestamp_to_date(date['df'])).split(' ')[0],
             'dt': str(utils.timestamp_to_date(date['dt'])).split(' ')[0],
-            'balance_origin': balance_origin or 0,
-            'balance_long': balance_long or 0,
-            'balance_short': balance_short or 0,
-            'open_positions': open_positions or 0,
-            'close_positions': close_positions or 0,
+            'test_date': self.test_date,
+            'balance_origin_start': wallet.balance_origin_start,
+            'balance_origin_end': wallet.balance_origin,
+            'amount_to_open': wallet.amount_to_open,
+            'balance_long': wallet.balance_long,
+            'open_positions_long': open_positions_long,
+            'close_positions_long': close_positions_long,
+            'total_earned_long': total_earned_long,
+            'balance_short': wallet.balance_short,
+            'open_positions_short': open_positions_short,
+            'close_positions_short': close_positions_short,
+            'total_earned_short': total_earned_short,
             **specific_fields,
         }
         return row
@@ -162,7 +200,7 @@ class Backtesting:
                 csvdict.writeheader()
                 rows = sorted(
                     self.output_rows,
-                    key=lambda r: r['balance_origin'],
+                    key=lambda r: r['balance_origin_end'],
                     reverse=True,
                 )
                 csvdict.writerows(rows)
