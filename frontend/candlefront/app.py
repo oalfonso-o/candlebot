@@ -11,6 +11,7 @@ from flask import render_template
 from flask import send_from_directory
 
 from candlebot import constants as apiconstants
+from candlefront.routes import ROUTES
 
 logging.basicConfig(
     level=logging.INFO,
@@ -70,6 +71,7 @@ def get_charts():
         date_from=datetime.date(year=2000, month=1, day=1),
         date_to=datetime.date.today(),
         strategy_params=strategy_params,
+        routes=ROUTES,
     )
 
 
@@ -102,6 +104,7 @@ def backfill():
         date_to=datetime.date.today(),
         submit_endpoint='/backfill',
         form_response=response.text if response else '',
+        routes=ROUTES,
     )
 
 

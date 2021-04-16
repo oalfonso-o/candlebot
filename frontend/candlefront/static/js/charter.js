@@ -1,4 +1,4 @@
-let charts_menu = document.getElementById('menu-charts')
+let charts_menu = document.getElementById('menu-Charts')
 charts_menu.classList.add('is-selected')
 
 class Charter {
