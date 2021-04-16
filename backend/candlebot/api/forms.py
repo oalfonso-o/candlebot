@@ -12,22 +12,22 @@ router = APIRouter(
 
 @router.get("/symbols")
 async def get_symbols():
-    return db_find.available_symbols()
+    return sorted(db_find.available_symbols())
 
 
 @router.get("/symbols/all")
 async def get_symbols_all():
-    return constants.TRADING_SYMBOLS
+    return sorted(constants.TRADING_SYMBOLS)
 
 
 @router.get("/intervals")
 async def get_intervals():
-    return db_find.available_intervals()
+    return sorted(db_find.available_intervals())
 
 
 @router.get("/intervals/all")
 async def get_intervals_all():
-    return constants.INTERVALS
+    return sorted(constants.INTERVALS)
 
 
 @router.get("/strategies")

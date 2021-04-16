@@ -17,6 +17,8 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
         date_to,
     )
     candles = list(candles_cursor)
+    if not candles:
+        return []
     strat_df, wallet = Strategist.calc(candles, 'ema')
     candles = []
     ema = []

@@ -10,6 +10,8 @@ from flask import Flask
 from flask import render_template
 from flask import send_from_directory
 
+from candlebot import constants as apiconstants
+
 logging.basicConfig(
     level=logging.INFO,
     format=(
@@ -34,7 +36,12 @@ app = Flask(
 
 @app.route('/', methods=['GET', 'POST'])
 def get_charts():
-    strategy_params = {}
+    strategy_params = {
+        'date_from': datetime.date(year=2000, month=1, day=1),
+        'date_to': datetime.date.today(),
+        'symbol': apiconstants.SYMBOL_BITCOIN_EURO,
+        'interval': '1d',
+    }
     if flask.request.method == 'POST':
         strategy_params = {
             'date_from': flask.request.form['date_from'],
@@ -51,6 +58,7 @@ def get_charts():
     if data_points_response.status_code != 200:
         logger.error(data_points_response.json())
         data_points_response.raise_for_status()
+    strategy_params['strategy'] = 'ema'
     return render_template(
         'index.html',
         symbol_options=symbols.json(),
@@ -61,6 +69,7 @@ def get_charts():
         submit_endpoint='/',
         date_from=datetime.date(year=2000, month=1, day=1),
         date_to=datetime.date.today(),
+        strategy_params=strategy_params,
     )
 
 

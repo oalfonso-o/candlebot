@@ -40,6 +40,7 @@ class BackfillBody(BaseModel):
 @router.post("/create")
 async def backfill_create(body: BackfillBody):
     date_from_without_dash = body.date_from.replace('-', '')
-    timestamp_date_from = utils.date_to_timestamp(date_from_without_dash)
-    Crawler.fill(body.symbol, timestamp_date_from, body.interval)
+    date_from = utils.date_to_timestamp(date_from_without_dash)
+    while date_from:
+        date_from = Crawler.fill(body.symbol, date_from, body.interval)
     return 'Filled'
