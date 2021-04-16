@@ -6,13 +6,13 @@
     <label for="date_to">Date To</label>
     <input type="date" id="date_to" name="date_to" value="{{ date_to }}">
     <label for="symbol">Symbols</label>
-    <select name="symbols" id="symbols">
+    <select name="symbols" id="symbols" multiple="">
     {% for symbol in symbol_options %}
       <option value="{{ symbol }}" default>{{ symbol }}</option>
     {% endfor %}
     </select>
     <label for="intervals">Intervals</label>
-    <select name="intervals" id="intervals">
+    <select name="intervals" id="intervals" multiple="">
     {% for interval in interval_options %}
       <option value="{{ interval }}" default>{{ interval }}</option>
     {% endfor %}

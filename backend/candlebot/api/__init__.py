@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from candlebot.settings import Settings
 from candlebot.api import strategies
 from candlebot.api import backfill
+from candlebot.api import backtesting
 from candlebot.api import forms
 
 logging.basicConfig(
@@ -29,6 +30,7 @@ app.add_middleware(
 
 app.include_router(strategies.router)
 app.include_router(backfill.router)
+app.include_router(backtesting.router)
 app.include_router(forms.router)
 
 

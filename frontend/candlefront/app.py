@@ -112,6 +112,9 @@ def backfill():
 
 @app.route('/backtesting', methods=['GET', 'POST'])
 def backtesting():
+    if flask.request.method == 'POST':
+        # TODO: request to API
+        pass
     symbols = requests.get('/'.join([API, 'forms', 'symbols']))
     intervals = requests.get('/'.join([API, 'forms', 'intervals']))
     return render_template(
