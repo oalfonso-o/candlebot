@@ -7,6 +7,7 @@ import itertools
 import numpy as np
 
 from candlebot import utils
+from candlebot import constants
 from candlebot.settings import Settings
 from candlebot.db import db_insert
 from candlebot.strategist import Strategist
@@ -26,6 +27,7 @@ class Backtesting:
         'test_date',
     ]
     wallet_header = [
+        'profit_percentage',
         'balance_origin_start',
         'balance_origin_end',
         'amount_to_open',
@@ -52,6 +54,9 @@ class Backtesting:
             + self.wallet_header
             + self.test_specific_header
         )
+        self.sep = constants.BACKTESTING_STRAT_IND_SEPARATOR
+        self.strat_prefix = constants.BACKTESTING_STRAT_PREFIX
+        self.ind_prefix = constants.BACKTESTING_IND_PREFIX
 
     def test_from_web(self):
         # TODO:
@@ -117,7 +122,7 @@ class Backtesting:
         strategy_fields = self.bt_config['strategies'][strategy_id]
         for field_key, field_values in strategy_fields.items():
             fields = []
-            key = f's.{strategy_id}.{field_key}'
+            key = self.sep.join([self.strat_prefix, strategy_id, field_key])
             for field_value in field_values:
                 fields.append({key: field_value})
             specific_fields.append(fields)
@@ -126,7 +131,7 @@ class Backtesting:
             indicator_fields = self.bt_config['indicators'][indicator_id]
             for field_key, field_values in indicator_fields.items():
                 fields = []
-                key = f'i.{indicator_id}.{field_key}'
+                key = self.sep.join([self.ind_prefix, indicator_id, field_key])
                 for field_value in field_values:
                     fields.append({key: field_value})
                 specific_fields.append(fields)
@@ -134,8 +139,12 @@ class Backtesting:
 
     def _adapt_config(self, specific_field_key, specific_field_value):
         '''Adapts config before calculating the strategy with the new values'''
-        str_or_ind, id_, field = specific_field_key.split('.')
-        s_i = 'strategies' if str_or_ind.startswith('s') else 'indicators'
+        str_or_ind, id_, field = specific_field_key.split(self.sep)
+        s_i = (
+            'strategies'
+            if str_or_ind.startswith(self.strat_prefix)
+            else 'indicators'
+        )
         self.bt_config[s_i][id_][field] = specific_field_value
         self.bt_config[specific_field_key] = specific_field_value
 
@@ -170,6 +179,15 @@ class Backtesting:
             elif position.action == 'close':
                 close_positions_short += 1
                 total_earned_short += position.amount - wallet.amount_to_open
+        profit_percentage = (
+            (
+                wallet.balance_origin
+                - total_earned_long
+                + total_earned_short
+            )
+            / wallet.balance_origin
+            * 100
+        )
         row = {
             'test_id': self.test_id,
             'strategy': self.bt_config['strategy'],
@@ -178,6 +196,7 @@ class Backtesting:
             'df': str(utils.timestamp_to_date(date['df'])).split(' ')[0],
             'dt': str(utils.timestamp_to_date(date['dt'])).split(' ')[0],
             'test_date': self.test_date,
+            'profit_percentage': profit_percentage,
             'balance_origin_start': wallet.balance_origin_start,
             'balance_origin_end': wallet.balance_origin,
             'amount_to_open': wallet.amount_to_open,

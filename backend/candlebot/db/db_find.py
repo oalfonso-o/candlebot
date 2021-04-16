@@ -31,6 +31,7 @@ def available_symbols():
     return list({
         coll_name.split('_')[0]
         for coll_name in colls
+        if '_' in coll_name
     })
 
 
@@ -39,4 +40,5 @@ def available_intervals():
     return list({
         coll_name.split('_')[1]
         for coll_name in colls
+        if '_' in coll_name
     })
