@@ -41,6 +41,7 @@
     {% for ind_id, ind_fields in strategies[selected_strategy]['indicators'].items() %}
       Indicator {{ ind_id }} fields:
       {% for field in ind_fields %}
+        <label for="{{field.name}}">{{field.name}} - {{field.type}}</label>
         {% if field.type == 'num'%}
           <input type="text" id="{{field.name}}_from" name="{{field.name}}_from" value="0">
           <input type="text" id="{{field.name}}_to" name="{{field.name}}_to" value="0">
