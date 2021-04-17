@@ -21,14 +21,13 @@ table th {
   padding: 10;
   z-index: 20;
   background-color: #f7f7f7;
-  overflow-y: hidden !important;
 }
 .l-navigation-bar {
   width: 100%;
 }
 .p-navigation {
   background-color: #aae8fb;
-  overflow-y: hidden;
+  overflow-y: auto;
   padding: 0 5;
 }
 .p-navigation .p-navigation__row {

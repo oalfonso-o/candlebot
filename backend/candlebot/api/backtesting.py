@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from candlebot import utils
 from candlebot.backtesting import Backtesting
 from candlebot.db import db_find
+from candlebot.strategist import Strategist
 
 
 router = APIRouter(
@@ -16,6 +17,21 @@ router = APIRouter(
 @router.get("/list")
 async def backtest_list():
     return db_find.find_backtests()
+
+
+@router.get("/strategies")
+async def backtest_strategies():
+    strategies = {
+        s_id: {
+            'variables': Strategy.variables,
+            'indicators': {
+                Indicator._id: Indicator.variables
+                for Indicator in Strategy.indicators
+            },
+        }
+        for s_id, Strategy in Strategist.strategies.items()
+    }
+    return strategies
 
 
 class BacktestBody(BaseModel):

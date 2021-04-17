@@ -135,11 +135,8 @@ def backfill():
     )
 
 
-@app.route('/backtesting', methods=['GET', 'POST'])
+@app.route('/backtesting')
 def backtesting():
-    if flask.request.method == 'POST':
-        # TODO: request to API
-        pass
     backtests_response = requests.get('/'.join([API, 'backtesting', 'list']))
     # key: strategy, value: dict with "tests" and "header"
     backtests_to_table = defaultdict(dict)
@@ -160,6 +157,10 @@ def backtesting():
         backtests_to_table[strategy]['header'] = header
     symbols = requests.get('/'.join([API, 'forms', 'symbols']))
     intervals = requests.get('/'.join([API, 'forms', 'intervals']))
+    strategies = requests.get('/'.join([API, 'backtesting', 'strategies']))
+    strategies_json = strategies.json()
+    first_strat = list(strategies_json.keys())[0]
+    selected_strategy = flask.request.args.get('strategy') or first_strat
     return render_template(
         'backtesting.html',
         symbol_options=symbols.json(),
@@ -172,6 +173,8 @@ def backtesting():
         show_strategy=True,
         backtests=backtests_to_table,
         backtesting_header_map=backtesting_header_map,
+        strategies=strategies_json,
+        selected_strategy=selected_strategy,
     )
 
 

@@ -11,7 +11,7 @@ from candlebot.models.wallet import Wallet
 logger = logging.getLogger(__name__)
 
 
-class StrategyEMA:
+class StrategyHammer:
     indicators = [IndicatorEMA]
     variables = [
         {'name': 'drop_factor', 'type': 'num'},
