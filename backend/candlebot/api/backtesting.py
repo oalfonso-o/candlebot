@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 from candlebot import utils
 from candlebot.backtesting import Backtesting
+from candlebot.db import db_find
 
 
 router = APIRouter(
@@ -10,6 +11,11 @@ router = APIRouter(
     tags=["backtesting"],
     responses={404: {"description": "Not found"}},
 )
+
+
+@router.get("/list")
+async def backtest_list():
+    return db_find.find_backtests()
 
 
 class BacktestBody(BaseModel):
@@ -20,7 +26,7 @@ class BacktestBody(BaseModel):
     strategy: str
 
 
-@router.post("/")
+@router.post("/create")
 async def backtest_create(body: BacktestBody):
     date_from_without_dash = body.date_from.replace('-', '')
     date_from = utils.date_to_timestamp(date_from_without_dash)

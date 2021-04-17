@@ -29,8 +29,33 @@
   <form action="/backfill"><button>Reload</button></action>
 {% endblock %}
 {% block page_content %}
-  <div id="page-container-backtesting">
-    <p>Backtests</p>
+  <div class="backtesting-tables">
+    {% for strat, backtest_data in backtests.items() %}
+      <p>{{ strat }}</p>
+      <table>
+        <thead>
+          <tr>
+            {% for header, header_tooltip in backtest_data.header %}
+              <th class="p-tooltip--top-center" aria-describedby="tp-cntr">
+                {{ header }}
+                {% if header_tooltip %}<span class="p-tooltip__message" role="tooltip" id="tp-cntr">{{ header_tooltip }}</span>{% endif %}
+              </th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for backtest in backtest_data.tests %}
+            <tr>
+              {% for field in backtest %}
+                <td>
+                  {{ field }}
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endfor %}
   </div>
 {% endblock %}
 {% block footer %}

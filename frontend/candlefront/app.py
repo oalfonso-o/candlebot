@@ -1,8 +1,10 @@
-import logging
 import os
-import requests
 import json
+import logging
+import requests
 import datetime
+import itertools
+from collections import defaultdict, OrderedDict
 from dotenv import load_dotenv
 
 import flask
@@ -11,6 +13,7 @@ from flask import render_template
 from flask import send_from_directory
 
 from candlebot import constants as apiconstants
+from candlebot import utils
 from candlefront.routes import ROUTES
 
 logging.basicConfig(
@@ -33,6 +36,28 @@ app = Flask(
     static_folder='static',
     template_folder='templates',
 )
+
+backtesting_header_map = OrderedDict({
+    'strategy': 'st',
+    'symbol': 'sy',
+    'interval': 'i',
+    'profit_percentage': '+%',
+    'balance_origin_start': 'bos',
+    'balance_origin_end': 'boe',
+    'amount_to_open': 'o',
+    'balance_long': 'bl',
+    'open_positions_long': 'opl',
+    'close_positions_long': 'cpl',
+    'total_earned_long': 'tel',
+    'balance_short': 'bs',
+    'open_positions_short': 'ops',
+    'close_positions_short': 'cps',
+    'total_earned_short': 'tes',
+    'df': 'df',
+    'dt': 'dt',
+    'test_date': 'd',
+    'test_id': 'id',
+})
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -115,6 +140,24 @@ def backtesting():
     if flask.request.method == 'POST':
         # TODO: request to API
         pass
+    backtests_response = requests.get('/'.join([API, 'backtesting', 'list']))
+    # key: strategy, value: dict with "tests" and "header"
+    backtests_to_table = defaultdict(dict)
+    backtests = itertools.groupby(
+        backtests_response.json(),
+        key=lambda r: r['strategy']
+    )
+    for strategy, rows in backtests:
+        rows_list = list(rows)
+        header_keys = backtesting_header_map.keys()
+        header_values = list(backtesting_header_map.values())
+        for key in rows_list[0].keys():
+            if key not in header_keys:
+                header_values.append(key.split('-')[-1])
+        tests = [sort_row_with_header(row, header_keys) for row in rows_list]
+        header = itertools.zip_longest(header_values, header_keys)
+        backtests_to_table[strategy]['tests'] = tests
+        backtests_to_table[strategy]['header'] = header
     symbols = requests.get('/'.join([API, 'forms', 'symbols']))
     intervals = requests.get('/'.join([API, 'forms', 'intervals']))
     return render_template(
@@ -127,6 +170,8 @@ def backtesting():
         submit_button_text='Backtest',
         submit_endpoint='/backtesting',
         show_strategy=True,
+        backtests=backtests_to_table,
+        backtesting_header_map=backtesting_header_map,
     )
 
 
@@ -137,3 +182,18 @@ def favicon():
         'favicon.ico',
         mimetype='image/vnd.microsoft.icon',
     )
+
+
+def sort_row_with_header(row, header):
+    parsed_row = []
+    for h in header:
+        v = row[h]
+        if isinstance(v, float):
+            v = round(v, 4)
+        if h == 'test_date':
+            v = utils.str_datetime_to_datetime(v).date()
+        parsed_row.append(v)
+    for row_key in row:
+        if row_key not in header:
+            parsed_row.append(row[row_key])
+    return parsed_row

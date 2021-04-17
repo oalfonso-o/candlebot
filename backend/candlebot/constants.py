@@ -75,6 +75,7 @@ MAPPING_KLINES = [
 KLINE_FIELDS = {'open': 1, 'high': 1, 'low': 1, 'close': 1, 'volume': 1}
 
 DATE_ARG_FORMAT = '%Y%m%d'
+DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%f'
 DATE_MILIS_PRODUCT = 1000
 
 BACKTESTING_STRAT_IND_SEPARATOR = '-'

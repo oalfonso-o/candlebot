@@ -1,7 +1,8 @@
 import logging
 
-from candlebot.settings import Settings
 from candlebot import utils
+from candlebot import constants
+from candlebot.settings import Settings
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,23 @@ def find_backfill_data(coll_name):
         }
         return backfill
     return {}
+
+
+def find_backtests():
+    mongo_coll = (
+        Settings.MONGO_CONN[Settings.MONGO_DATABASE]
+        [constants.MONGO_COLL_BACKTESTING]
+    )
+    sort = [
+        ('test_date', 1),
+        ('profit_percentage', 1),
+        ('test_id', 1),
+        ('strategy', 1),
+        ('symbol', 1),
+        ('interval', 1),
+    ]
+    backtests = list(mongo_coll.find({}, {'_id': 0}, sort=sort))
+    return backtests
 
 
 def available_symbols():
