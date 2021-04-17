@@ -26,14 +26,14 @@
     <button type="submit" name="submit">Load Strategy Fields</button>
     Strategy fields:
     {% for var_field in strategies[selected_strategy]['variables'] %}
-      <label for="{{var_field.name}}">{{var_field.name}} - {{var_field.type}}</label>
+      <b><label for="{{var_field.name}}">{{var_field.name}} - {{var_field.type}}</label></b>
       {% if var_field.type == 'num'%}
-        <input type="text" id="{{var_field.name}}_from" name="{{var_field.name}}_from" value="0">
-        <input type="text" id="{{var_field.name}}_to" name="{{var_field.name}}_to" value="0">
-        <input type="text" id="{{var_field.name}}_step" name="{{var_field.name}}_step" value="0">
+        start <input type="text" id="{{var_field.name}}_from" name="{{var_field.name}}_from" value="0" class="backtest_input">
+        end &nbsp;<input type="text" id="{{var_field.name}}_to" name="{{var_field.name}}_to" value="0" class="backtest_input">
+        step <input type="text" id="{{var_field.name}}_step" name="{{var_field.name}}_step" value="0" class="backtest_input">
       {% elif var_field.type == 'bool'%}
         <label class="p-checkbox">
-          <input type="checkbox" aria-labelledby="{{var_field.name}}" class="p-checkbox__input">
+          <input type="checkbox" aria-labelledby="{{var_field.name}}" class="p-checkbox__input backtest_input">
           <span class="p-checkbox__label" id="{{var_field.name}}">{{var_field.name}}</span>
         </label>
       {% endif %}
@@ -41,14 +41,14 @@
     {% for ind_id, ind_fields in strategies[selected_strategy]['indicators'].items() %}
       Indicator {{ ind_id }} fields:
       {% for field in ind_fields %}
-        <label for="{{field.name}}">{{field.name}} - {{field.type}}</label>
+        <b><label for="{{field.name}}">{{field.name}} - {{field.type}}</label></b>
         {% if field.type == 'num'%}
-          <input type="text" id="{{field.name}}_from" name="{{field.name}}_from" value="0">
-          <input type="text" id="{{field.name}}_to" name="{{field.name}}_to" value="0">
-          <input type="text" id="{{field.name}}_step" name="{{field.name}}_step" value="0">
+          start <input type="text" id="{{field.name}}_from" name="{{field.name}}_from" value="0" class="backtest_input">
+          end &nbsp;<input type="text" id="{{field.name}}_to" name="{{field.name}}_to" value="0" class="backtest_input">
+          step <input type="text" id="{{field.name}}_step" name="{{field.name}}_step" value="0" class="backtest_input">
         {% elif field.type == 'bool'%}
           <label class="p-checkbox">
-            <input type="checkbox" aria-labelledby="{{field.name}}" class="p-checkbox__input">
+            <input type="checkbox" aria-labelledby="{{field.name}}" class="p-checkbox__input backtest_input">
             <span class="p-checkbox__label" id="{{field.name}}">{{field.name}}</span>
           </label>
         {% endif %}
