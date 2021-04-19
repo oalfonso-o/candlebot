@@ -33,8 +33,8 @@ def find_backtests():
         [constants.MONGO_COLL_BACKTESTING]
     )
     sort = [
+        ('profit_percentage', -1),
         ('test_date', 1),
-        ('profit_percentage', 1),
         ('test_id', 1),
         ('strategy', 1),
         ('symbol', 1),

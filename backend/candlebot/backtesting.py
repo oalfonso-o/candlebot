@@ -155,10 +155,14 @@ class Backtesting:
             db_insert.backtest(row)
 
     def _prepare_output_row(self, wallet, symbol, interval, date):
-        specific_fields = {
-            header: self.bt_config[header]
-            for header in self.test_specific_header
-        }
+        specific_fields = {}
+        for header in self.test_specific_header:
+            value = self.bt_config[header]
+            if type(value) == np.float64:
+                value = float(value)
+            if type(value) == np.int64:
+                value = int(value)
+            specific_fields[header] = value
         open_positions_long = 0
         close_positions_long = 0
         open_positions_short = 0
@@ -180,7 +184,7 @@ class Backtesting:
                 total_earned_short += position.amount - wallet.amount_to_open
         profit_percentage = (
             total_earned_long  # TODO: short
-            / wallet.balance_origin
+            / wallet.balance_origin_start
             * 100
         )
         row = {
