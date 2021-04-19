@@ -1,5 +1,4 @@
 import csv
-import copy
 import logging
 import datetime
 import itertools
@@ -94,7 +93,7 @@ class Backtesting:
 
     @staticmethod
     def _config(test_id):
-        bt_config = copy.deepcopy(Settings.BT)
+        bt_config = Settings.BT
         bt_test = bt_config['tests'][test_id]
         bt_config.update(bt_test['override'])
         bt_config['strategy'] = bt_test['strategy']
@@ -180,11 +179,7 @@ class Backtesting:
                 close_positions_short += 1
                 total_earned_short += position.amount - wallet.amount_to_open
         profit_percentage = (
-            (
-                wallet.balance_origin
-                - total_earned_long
-                + total_earned_short
-            )
+            total_earned_long  # TODO: short
             / wallet.balance_origin
             * 100
         )
