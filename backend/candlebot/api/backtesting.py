@@ -2,8 +2,8 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from candlebot import utils
-from candlebot.backtesting import Backtesting
 from candlebot.db import db_find
+from candlebot.backtesting import Backtesting
 from candlebot.strategist import Strategist
 
 

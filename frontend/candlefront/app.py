@@ -3,9 +3,6 @@ import json
 import logging
 import requests
 import datetime
-import itertools
-from collections import defaultdict, OrderedDict
-from dotenv import load_dotenv
 
 import flask
 from flask import Flask
@@ -13,8 +10,10 @@ from flask import render_template
 from flask import send_from_directory
 
 from candlebot import constants as apiconstants
-from candlebot import utils
+
+from candlefront import config
 from candlefront.routes import ROUTES
+from candlefront.backtesting import backtesting_bp
 
 logging.basicConfig(
     level=logging.INFO,
@@ -26,38 +25,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-load_dotenv(override=True)
-
-API = os.getenv('CANDLEFRONT_API_ENDPOINT')
-
 app = Flask(
     __name__,
     static_url_path='',
     static_folder='static',
     template_folder='templates',
 )
-
-backtesting_header_map = OrderedDict({
-    'strategy': 'st',
-    'symbol': 'sy',
-    'interval': 'i',
-    'profit_percentage': '+%',
-    'balance_origin_start': 'bos',
-    'balance_origin_end': 'boe',
-    'amount_to_open': 'o',
-    'balance_long': 'bl',
-    'open_positions_long': 'opl',
-    'close_positions_long': 'cpl',
-    'total_earned_long': 'tel',
-    'balance_short': 'bs',
-    'open_positions_short': 'ops',
-    'close_positions_short': 'cps',
-    'total_earned_short': 'tes',
-    'df': 'df',
-    'dt': 'dt',
-    'test_date': 'd',
-    'test_id': 'id',
-})
+app.register_blueprint(backtesting_bp)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -75,10 +49,10 @@ def charts():
             'symbol': flask.request.form['symbol'],
             'interval': flask.request.form['interval'],
         }
-    symbols = requests.get('/'.join([API, 'forms', 'symbols']))
-    intervals = requests.get('/'.join([API, 'forms', 'intervals']))
+    symbols = requests.get('/'.join([config.API, 'forms', 'symbols']))
+    intervals = requests.get('/'.join([config.API, 'forms', 'intervals']))
     data_points_response = requests.get(
-        '/'.join([API, 'strategies', 'ema']),
+        '/'.join([config.API, 'strategies', 'ema']),
         params=strategy_params,
     )
     if data_points_response.status_code != 200:
@@ -111,15 +85,16 @@ def backfill():
             'interval': flask.request.form['interval'],
         }
         response = requests.post(
-            '/'.join([API, 'backfill', 'create']),
+            '/'.join([config.API, 'backfill', 'create']),
             data=json.dumps(data),
         )
         if response.status_code != 200:
             logger.error(response.json())
             response.raise_for_status()
-    backfill = requests.get('/'.join([API, 'backfill', 'list']))
-    symbols = requests.get('/'.join([API, 'forms', 'symbols', 'all']))
-    intervals = requests.get('/'.join([API, 'forms', 'intervals', 'all']))
+    backfill = requests.get('/'.join([config.API, 'backfill', 'list']))
+    symbols = requests.get('/'.join([config.API, 'forms', 'symbols', 'all']))
+    intervals = requests.get(
+        '/'.join([config.API, 'forms', 'intervals', 'all']))
     return render_template(
         'backfill.html',
         symbol_options=symbols.json(),
@@ -135,49 +110,6 @@ def backfill():
     )
 
 
-@app.route('/backtesting')
-def backtesting():
-    backtests_response = requests.get('/'.join([API, 'backtesting', 'list']))
-    # key: strategy, value: dict with "tests" and "header"
-    backtests_to_table = defaultdict(dict)
-    backtests = itertools.groupby(
-        backtests_response.json(),
-        key=lambda r: r['strategy']
-    )
-    for strategy, rows in backtests:
-        rows_list = list(rows)
-        header_keys = backtesting_header_map.keys()
-        header_values = list(backtesting_header_map.values())
-        for key in rows_list[0].keys():
-            if key not in header_keys:
-                header_values.append(key.split('-')[-1])
-        tests = [sort_row_with_header(row, header_keys) for row in rows_list]
-        header = itertools.zip_longest(header_values, header_keys)
-        backtests_to_table[strategy]['tests'] = tests
-        backtests_to_table[strategy]['header'] = header
-    symbols = requests.get('/'.join([API, 'forms', 'symbols']))
-    intervals = requests.get('/'.join([API, 'forms', 'intervals']))
-    strategies = requests.get('/'.join([API, 'backtesting', 'strategies']))
-    strategies_json = strategies.json()
-    first_strat = list(strategies_json.keys())[0]
-    selected_strategy = flask.request.args.get('strategy') or first_strat
-    return render_template(
-        'backtesting.html',
-        symbol_options=symbols.json(),
-        interval_options=intervals.json(),
-        date_from=datetime.date(year=2000, month=1, day=1),
-        date_to=datetime.date.today(),
-        routes=ROUTES,
-        submit_button_text='Backtest',
-        submit_endpoint='/backtesting',
-        show_strategy=True,
-        backtests=backtests_to_table,
-        backtesting_header_map=backtesting_header_map,
-        strategies=strategies_json,
-        selected_strategy=selected_strategy,
-    )
-
-
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(
@@ -185,18 +117,3 @@ def favicon():
         'favicon.ico',
         mimetype='image/vnd.microsoft.icon',
     )
-
-
-def sort_row_with_header(row, header):
-    parsed_row = []
-    for h in header:
-        v = row[h]
-        if isinstance(v, float):
-            v = round(v, 4)
-        if h == 'test_date':
-            v = utils.str_datetime_to_datetime(v).date()
-        parsed_row.append(v)
-    for row_key in row:
-        if row_key not in header:
-            parsed_row.append(row[row_key])
-    return parsed_row
