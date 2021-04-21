@@ -1,7 +1,9 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
+from typing import Optional, List
 
 from candlebot import utils
+from candlebot import constants
 from candlebot.db import db_find
 from candlebot.backtesting import Backtesting
 from candlebot.strategist import Strategist
@@ -21,39 +23,48 @@ async def backtest_list():
 
 @router.get("/strategies")
 async def backtest_strategies():
-    strategies = {
-        s_id: {
-            'variables': Strategy.variables,
-            'indicators': {
-                Indicator._id: Indicator.variables
-                for Indicator in Strategy.indicators
-            },
+    strategies = {}
+    for s_id, Strategy in Strategist.strategies.items():
+        s_variables = []
+        indicators = {}
+        for v in Strategy.variables:
+            v['id'] = constants.BACKTESTING_STRAT_IND_SEPARATOR.join([
+                constants.BACKTESTING_STRAT_PREFIX, Strategy._id, v['name']
+            ])
+            s_variables.append(v)
+        for Indicator in Strategy.indicators:
+            i_variables = []
+            for v in Indicator.variables:
+                v['id'] = constants.BACKTESTING_STRAT_IND_SEPARATOR.join([
+                    constants.BACKTESTING_IND_PREFIX, Indicator._id, v['name']
+                ])
+                i_variables.append(v)
+            indicators[Indicator._id] = i_variables
+        strategies[s_id] = {
+            'variables': s_variables,
+            'indicators': indicators,
         }
-        for s_id, Strategy in Strategist.strategies.items()
-    }
     return strategies
 
 
-class BacktestBody(BaseModel):
+class BacktestArgs(BaseModel):
     date_from: str
     date_to: str
-    symbols: str
-    intervals: str
     strategy: str
+    symbols: List[str]
+    intervals: List[str]
+    strategy_fields: List[dict]
+    indicators_fields: List[dict]
 
 
 @router.post("/create")
-async def backtest_create(body: BacktestBody):
-    date_from_without_dash = body.date_from.replace('-', '')
+async def backtest_create(args: BacktestArgs):
+    date_from_without_dash = args.date_from.replace('-', '')
     date_from = utils.date_to_timestamp(date_from_without_dash)
-    date_to_without_dash = body.date_to.replace('-', '')
+    date_to_without_dash = args.date_to.replace('-', '')
     date_to = utils.date_to_timestamp(date_to_without_dash)
-    bt = Backtesting(
-        date_from,
-        date_to,
-        body.symbols,
-        body.intervals,
-        body.strategy,
-    )
-    response = bt.test()
-    return response
+    args.date_from = date_from
+    args.date_to = date_to
+    bt = Backtesting(args.strategy)
+    bt.test_from_web(args)
+    return {}

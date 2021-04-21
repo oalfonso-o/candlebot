@@ -7,6 +7,8 @@ from collections import defaultdict, OrderedDict
 import flask
 from flask import Blueprint, render_template
 
+from candlebot import constants as apiconstants
+
 from candlefront import config
 from candlebot import utils
 from candlefront.routes import ROUTES
@@ -41,6 +43,8 @@ backtesting_bp = Blueprint('backtesting', __name__)
 
 @backtesting_bp.route('/backtesting')
 def backtesting():
+    if flask.request.args.get('create_test_checkbox'):
+        create_backtest()
     backtests_response = requests.get(
         '/'.join([config.API, 'backtesting', 'list']))
     backtests_to_table = get_backtests(backtests_response)
@@ -63,6 +67,47 @@ def backtesting():
         strategies=strategies_json,
         args=form_args,
     )
+
+
+def create_backtest():
+    form_args = dict(flask.request.args)
+    symbols = []
+    intervals = []
+    strategy_fields = []
+    indicators_fields = []
+    strat_var_prefix = (
+        apiconstants.BACKTESTING_STRAT_PREFIX
+        + apiconstants.BACKTESTING_STRAT_IND_SEPARATOR
+    )
+    ind_var_prefix = (
+        apiconstants.BACKTESTING_STRAT_PREFIX
+        + apiconstants.BACKTESTING_STRAT_IND_SEPARATOR
+    )
+    for arg_key, arg_value in form_args.items():
+        if arg_key.startswith('symbol'):
+            symbols.append(arg_key)
+        elif arg_key.startswith('interval'):
+            intervals.append(arg_key)
+        elif arg_key.startswith(strat_var_prefix):
+            strategy_fields.append({arg_key: arg_value})
+        elif arg_key.startswith(ind_var_prefix):
+            indicators_fields.append({arg_key: arg_value})
+    args = {
+        'date_from': form_args['date_from'],
+        'date_to': form_args['date_to'],
+        'strategy': form_args['strategy'],
+        'symbols': symbols,
+        'intervals': intervals,
+        'strategy_fields': strategy_fields,
+        'indicators_fields': indicators_fields,
+    }
+    create_backtest_response = requests.post(
+        '/'.join([config.API, 'backtesting', 'create']),
+        json=args,
+    )
+    if create_backtest_response.status_code == 422:
+        logger.error(create_backtest_response.json())
+    create_backtest_response.raise_for_status()
 
 
 def get_backtests(backtests_response):

@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class StrategyHammer:
+    _id = 'hammer'
     indicators = [IndicatorEMA]
     variables = [
         {'name': 'drop_factor', 'type': 'num'},

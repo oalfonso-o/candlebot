@@ -44,8 +44,6 @@ class Backtesting:
         self.test_id = test_id
         self.test_date = datetime.datetime.utcnow()
         self.output_rows = []
-        date = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-        self.output_mongo_coll = f'bt_{test_id}_{date}'
         self.bt_config = self._config(test_id)
         self.test_specific_header = self.bt_config['header']
         self.output_header = (
@@ -57,12 +55,14 @@ class Backtesting:
         self.strat_prefix = constants.BACKTESTING_STRAT_PREFIX
         self.ind_prefix = constants.BACKTESTING_IND_PREFIX
 
-    def test_from_web(self):
+    def test_from_web(self, args):
+        import pudb;pu.db
         # TODO:
         # output csv false
         # output mongo true
         # receive a test params and parse them to a "test" dict like in backtesting.yml -> tests: ema1:
         # override self.bt_config with this new config dict
+        self.bt_config = self._config(self.test_id)
         # --- now everything is setup like if a test was already defined in backtesting.yml, we can do the test
         # call self.test
         pass
