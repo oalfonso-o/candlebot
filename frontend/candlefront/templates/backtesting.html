@@ -47,7 +47,7 @@
         </table>
       {% elif var_field.type == 'bool'%}
         <label>
-          <input type="checkbox" aria-labelledby="{{var_field.name}}" id="var_field.name" name="var_field.name" value="true" class="p-checkbox__input backtest_input" {% if var_field.name in args %} checked {% endif %}>
+          <input type="checkbox"  name="{{var_field.name}}" id="{{var_field.name}}" value="true" class="p-checkbox__input" aria-labelledby="{{var_field.name}}" {% if var_field.name in args %} checked {% endif %}>
           <span class="p-checkbox__label" id="{{var_field.name}}">{{var_field.name}}</span>
         </label>
       {% endif %}
@@ -73,7 +73,7 @@
           </table>
         {% elif field.type == 'bool'%}
           <label>
-            <input type="checkbox" aria-labelledby="{{field.name}}" id="field.name" name="field.name" value="true" class="p-checkbox__input backtest_input" {% if field.name in args %} checked {% endif %}>
+            <input type="checkbox"  name="{{field.name}}" id="{{field.name}}" value="true" class="p-checkbox__input" aria-labelledby="{{field.name}}" {% if field.name in args %} checked {% endif %}>
             <span class="p-checkbox__label" id="{{field.name}}">{{field.name}}</span>
           </label>
         {% endif %}
@@ -91,7 +91,6 @@
   {% endif %}
 {% endblock %}
 {% block page_content %}
-{{args}}
   <div class="backtesting-tables">
     {% for strat, backtest_data in backtests.items() %}
       <p>{{ strat }}</p>

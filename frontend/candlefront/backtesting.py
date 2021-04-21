@@ -98,9 +98,9 @@ def sort_row_with_header(row, header):
 
 def get_form_args(strategies):
     args = dict(flask.request.args)
-    date_from = datetime.date(year=2000, month=1, day=1),
+    date_from = datetime.date(year=2000, month=1, day=1)
     args['date_from'] = args.get('date_from') or date_from
-    date_to = datetime.date.today(),
+    date_to = datetime.date.today()
     args['date_to'] = args.get('date_to') or date_to
     first_strat = list(strategies.keys())[0]
     args['strategy'] = args.get('strategy') or first_strat
