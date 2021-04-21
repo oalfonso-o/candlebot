@@ -59,12 +59,6 @@ class BacktestArgs(BaseModel):
 
 @router.post("/create")
 async def backtest_create(args: BacktestArgs):
-    date_from_without_dash = args.date_from.replace('-', '')
-    date_from = utils.date_to_timestamp(date_from_without_dash)
-    date_to_without_dash = args.date_to.replace('-', '')
-    date_to = utils.date_to_timestamp(date_to_without_dash)
-    args.date_from = date_from
-    args.date_to = date_to
-    bt = Backtesting(args.strategy)
+    bt = Backtesting()
     bt.test_from_web(args)
     return {}

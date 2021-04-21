@@ -2,6 +2,7 @@ import csv
 import logging
 import datetime
 import itertools
+from collections import defaultdict
 
 import numpy as np
 
@@ -39,35 +40,104 @@ class Backtesting:
         'close_positions_short',
         'total_earned_short',
     ]
+    range_sufixes = ['_from', '_to', '_step']
 
-    def __init__(self, test_id):
-        self.test_id = test_id
+    def __init__(self):
         self.test_date = datetime.datetime.utcnow()
         self.output_rows = []
-        self.bt_config = self._config(test_id)
-        self.test_specific_header = self.bt_config['header']
-        self.output_header = (
-            self.generic_header
-            + self.wallet_header
-            + self.test_specific_header
-        )
         self.sep = constants.BACKTESTING_STRAT_IND_SEPARATOR
         self.strat_prefix = constants.BACKTESTING_STRAT_PREFIX
         self.ind_prefix = constants.BACKTESTING_IND_PREFIX
 
     def test_from_web(self, args):
-        import pudb;pu.db
-        # TODO:
-        # output csv false
-        # output mongo true
-        # receive a test params and parse them to a "test" dict like in backtesting.yml -> tests: ema1:
-        # override self.bt_config with this new config dict
-        self.bt_config = self._config(self.test_id)
-        # --- now everything is setup like if a test was already defined in backtesting.yml, we can do the test
-        # call self.test
-        pass
+        strategy = args.strategy
+        date_from_without_dash = args.date_from.replace('-', '')
+        date_to_without_dash = args.date_to.replace('-', '')
+        Settings.BT['output']['csv']['active'] = False
+        Settings.BT['output']['mongo']['active'] = True
+        Settings.BT['dates'] = [
+            {'df': date_from_without_dash, 'dt': date_to_without_dash}
+        ]
+        header = []
 
-    def test(self):
+        override_strategies = {strategy: {}}
+        strategies_ranges_dict = defaultdict(dict)
+        for f in args.strategy_fields:
+            key = f['key'].split(self.sep)[-1]
+            if not any([s in key for s in self.range_sufixes]):
+                header.append(f['key'])
+                value = True if f['value'] == 'true' else f['value']
+                override_strategies[strategy][key] = [value]
+            else:
+                suffix = key.split('_')[-1]
+                key = '_'.join(key.split('_')[:-1])
+                strategies_ranges_dict[key][suffix] = f['value']
+
+        override_indicators = defaultdict(dict)
+        indicators_ranges_dict = defaultdict(lambda: defaultdict(dict))
+        for f in args.indicators_fields:
+            key_parts = f['key'].split(self.sep)
+            key = key_parts[-1]
+            ind = key_parts[1]
+            if not any([s in key for s in self.range_sufixes]):
+                header.append(f['key'])
+                value = True if f['value'] == 'true' else f['value']
+                override_indicators[ind][key] = [value]
+            else:
+                suffix = key.split('_')[-1]
+                key = '_'.join(key.split('_')[:-1])
+                indicators_ranges_dict[ind][key][suffix] = f['value']
+
+        ranges_strategies = defaultdict(dict)
+        for key, v in strategies_ranges_dict.items():
+            header_key = self.sep.join([
+                constants.BACKTESTING_STRAT_PREFIX,
+                strategy,
+                key,
+            ])
+            header.append(header_key)
+            ranges_strategies[strategy][key] = [
+                float(v['from']),
+                float(v['to']),
+                float(v['step']),
+            ]
+
+        ranges_indicators = defaultdict(dict)
+        for ind, ranges in indicators_ranges_dict.items():
+            for key, v in ranges.items():
+                header_key = self.sep.join([
+                    constants.BACKTESTING_IND_PREFIX,
+                    ind,
+                    key,
+                ])
+                header.append(header_key)
+                ranges_indicators[ind][key] = [
+                    float(v['from']),
+                    float(v['to']),
+                    float(v['step']),
+                ]
+
+        test_id = f'{strategy}_web'
+        test_config = {}
+        Settings.BT['tests'][test_id] = test_config
+        test_config['strategy'] = strategy
+        test_config['header'] = header
+        test_config['override'] = {
+            'intervals': args.intervals,
+            'symbols': args.symbols,
+            'strategies': override_strategies,
+            'indicators': override_indicators,
+        }
+        test_config['ranges'] = {
+            'strategies': ranges_strategies,
+            'indicators': ranges_indicators,
+        }
+        self.test(test_id)
+
+    def test(self, test_id):
+        self.test_id = test_id
+        self.bt_config = self._config(test_id)
+        self._set_header()
         generic_fields = [
             self.bt_config['symbols'],
             self.bt_config['intervals'],
@@ -113,6 +183,14 @@ class Backtesting:
                         range_values
                     )
         return bt_config
+
+    def _set_header(self):
+        self.test_specific_header = self.bt_config['header']
+        self.output_header = (
+            self.generic_header
+            + self.wallet_header
+            + self.test_specific_header
+        )
 
     def _specific_fields(self):
         specific_fields = []

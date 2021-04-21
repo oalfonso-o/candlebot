@@ -80,18 +80,20 @@ def create_backtest():
         + apiconstants.BACKTESTING_STRAT_IND_SEPARATOR
     )
     ind_var_prefix = (
-        apiconstants.BACKTESTING_STRAT_PREFIX
+        apiconstants.BACKTESTING_IND_PREFIX
         + apiconstants.BACKTESTING_STRAT_IND_SEPARATOR
     )
     for arg_key, arg_value in form_args.items():
         if arg_key.startswith('symbol'):
-            symbols.append(arg_key)
+            symbol = arg_key.split('_')[-1]
+            symbols.append(symbol)
         elif arg_key.startswith('interval'):
-            intervals.append(arg_key)
+            interval = arg_key.split('_')[-1]
+            intervals.append(interval)
         elif arg_key.startswith(strat_var_prefix):
-            strategy_fields.append({arg_key: arg_value})
+            strategy_fields.append({'key': arg_key, 'value': arg_value})
         elif arg_key.startswith(ind_var_prefix):
-            indicators_fields.append({arg_key: arg_value})
+            indicators_fields.append({'key': arg_key, 'value': arg_value})
     args = {
         'date_from': form_args['date_from'],
         'date_to': form_args['date_to'],

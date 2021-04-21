@@ -40,8 +40,8 @@ def backtesting(bt_test_id):
         raise ValueError(
             'Parameter --bt-test-id is required for backtesting command')
     logging.info('Running Backtesting')
-    bt = Backtesting(bt_test_id)
-    bt.test()
+    bt = Backtesting()
+    bt.test(bt_test_id)
 
 
 if __name__ == '__main__':
