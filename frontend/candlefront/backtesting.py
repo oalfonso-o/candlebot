@@ -43,23 +43,7 @@ backtesting_bp = Blueprint('backtesting', __name__)
 def backtesting():
     backtests_response = requests.get(
         '/'.join([config.API, 'backtesting', 'list']))
-    # key: strategy, value: dict with "tests" and "header"
-    backtests_to_table = defaultdict(dict)
-    backtests = itertools.groupby(
-        backtests_response.json(),
-        key=lambda r: r['strategy']
-    )
-    for strategy, rows in backtests:
-        rows_list = list(rows)
-        header_keys = backtesting_header_map.keys()
-        header_values = list(backtesting_header_map.values())
-        for key in rows_list[0].keys():
-            if key not in header_keys:
-                header_values.append(key.split('-')[-1])
-        tests = [sort_row_with_header(row, header_keys) for row in rows_list]
-        header = itertools.zip_longest(header_values, header_keys)
-        backtests_to_table[strategy]['tests'] = tests
-        backtests_to_table[strategy]['header'] = header
+    backtests_to_table = get_backtests(backtests_response)
     symbols = requests.get('/'.join([config.API, 'forms', 'symbols']))
     intervals = requests.get('/'.join([config.API, 'forms', 'intervals']))
     strategies = requests.get(
@@ -79,6 +63,26 @@ def backtesting():
         strategies=strategies_json,
         args=form_args,
     )
+
+
+def get_backtests(backtests_response):
+    backtests_to_table = defaultdict(dict)
+    backtests = itertools.groupby(
+        backtests_response.json(),
+        key=lambda r: r['strategy']
+    )
+    for strategy, rows in backtests:
+        rows_list = list(rows)
+        header_keys = backtesting_header_map.keys()
+        header_values = list(backtesting_header_map.values())
+        for key in rows_list[0].keys():
+            if key not in header_keys:
+                header_values.append(key.split('-')[-1])
+        tests = [sort_row_with_header(row, header_keys) for row in rows_list]
+        header = itertools.zip_longest(header_values, header_keys)
+        backtests_to_table[strategy]['tests'] = tests
+        backtests_to_table[strategy]['header'] = header
+    return backtests_to_table
 
 
 def sort_row_with_header(row, header):
