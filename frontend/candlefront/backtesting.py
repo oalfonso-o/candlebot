@@ -65,14 +65,11 @@ def backtesting():
     strategies = requests.get(
         '/'.join([config.API, 'backtesting', 'strategies']))
     strategies_json = strategies.json()
-    first_strat = list(strategies_json.keys())[0]
-    selected_strategy = flask.request.args.get('strategy') or first_strat
+    form_args = get_form_args(strategies_json)
     return render_template(
         'backtesting.html',
         symbol_options=symbols.json(),
         interval_options=intervals.json(),
-        date_from=datetime.date(year=2000, month=1, day=1),
-        date_to=datetime.date.today(),
         routes=ROUTES,
         submit_button_text='Backtest',
         submit_endpoint='/backtesting',
@@ -80,7 +77,7 @@ def backtesting():
         backtests=backtests_to_table,
         backtesting_header_map=backtesting_header_map,
         strategies=strategies_json,
-        selected_strategy=selected_strategy,
+        args=form_args,
     )
 
 
@@ -97,3 +94,17 @@ def sort_row_with_header(row, header):
         if row_key not in header:
             parsed_row.append(row[row_key])
     return parsed_row
+
+
+def get_form_args(strategies_json):
+    args = {
+        'symbols': [],
+        'intervals': [],
+    }
+    date_from = datetime.date(year=2000, month=1, day=1),
+    args['date_from'] = flask.request.args.get('date_from') or date_from
+    date_to = datetime.date.today(),
+    args['date_to'] = flask.request.args.get('date_to') or date_to
+    first_strat = list(strategies_json.keys())[0]
+    args['strategy'] = flask.request.args.get('strategy') or first_strat
+    return flask.request.args

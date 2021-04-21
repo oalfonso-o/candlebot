@@ -2,35 +2,49 @@
 {% block form_left %}
   <form method="GET" action="{{ submit_endpoint }}" class="left-menu-form">
     <label for="date_from">Date From</label>
-    <input type="date" id="date_from" name="date_from" value="{{ date_from }}">
+    <input type="date" id="date_from" name="date_from" value="{{ args.date_from }}">
     <label for="date_to">Date To</label>
-    <input type="date" id="date_to" name="date_to" value="{{ date_to }}">
-    <label for="symbol">Symbols</label>
-    <select name="symbols" id="symbols" multiple="">
+    <input type="date" id="date_to" name="date_to" value="{{ args.date_to }}">
+    <label for="symbol" class="is-required">Symbols</label>
     {% for symbol in symbol_options %}
-      <option value="{{ symbol }}" default>{{ symbol }}</option>
+      <label>
+        <input type="checkbox" name="symbol_{{ symbol }}" id="symbol_{{ symbol }}" value="true" class="p-checkbox__input" aria-labelledby="symbols_label_{{ symbol }}" {% if 'symbol_' + symbol in args %} checked {% endif %}>
+        <span class="p-checkbox__label" id="symbols_label_{{ symbol }}">{{ symbol }}</span>
+      </label>
     {% endfor %}
     </select>
-    <label for="intervals">Intervals</label>
-    <select name="intervals" id="intervals" multiple="">
+    <label for="intervals" class="is-required">Intervals</label>
     {% for interval in interval_options %}
-      <option value="{{ interval }}" default>{{ interval }}</option>
+      <label>
+        <input type="checkbox" name="interval_{{ interval }}" id="interval_{{ interval }}" value="true" class="p-checkbox__input" aria-labelledby="intervals_label_{{ interval }}" {% if 'interval_' + interval in args %} checked {% endif %}>
+        <span class="p-checkbox__label" id="intervals_label_{{ interval }}">{{ interval }}</span>
+      </label>
     {% endfor %}
-    </select>
     <label for="strategy">Strategy</label>
     <select name="strategy" id="strategy">
       {% for s_id in strategies %}
-        <option value="{{s_id}}" {% if s_id == selected_strategy %} selected="selected"{% endif %}>{{s_id}}</option>
+        <option value="{{s_id}}" {% if s_id == args.strategy %} selected="selected"{% endif %}>{{s_id}}</option>
       {% endfor %}
     </select>
     <button type="submit" name="submit">Load Strategy Fields</button>
     Strategy fields:
-    {% for var_field in strategies[selected_strategy]['variables'] %}
+    {% for var_field in strategies[args.strategy]['variables'] %}
       <b><label for="{{var_field.name}}">{{var_field.name}} - {{var_field.type}}</label></b>
       {% if var_field.type == 'num'%}
-        start <input type="text" id="{{var_field.name}}_from" name="{{var_field.name}}_from" value="0" class="backtest_input">
-        end &nbsp;<input type="text" id="{{var_field.name}}_to" name="{{var_field.name}}_to" value="0" class="backtest_input">
-        step <input type="text" id="{{var_field.name}}_step" name="{{var_field.name}}_step" value="0" class="backtest_input">
+        <table>
+          <tr>
+            <td>start</td>
+            <td><input type="text" id="{{var_field.name}}_from" name="{{var_field.name}}_from" value="0" class="backtest_input"></td>
+          </tr>
+          <tr>
+            <td>end</td>
+            <td><input type="text" id="{{var_field.name}}_to" name="{{var_field.name}}_to" value="0" class="backtest_input"></td>
+          </tr>
+          <tr>
+            <td>step</td>
+            <td><input type="text" id="{{var_field.name}}_step" name="{{var_field.name}}_step" value="0" class="backtest_input"></td>
+          </tr>
+        </table>
       {% elif var_field.type == 'bool'%}
         <label class="p-checkbox">
           <input type="checkbox" aria-labelledby="{{var_field.name}}" class="p-checkbox__input backtest_input">
@@ -38,14 +52,25 @@
         </label>
       {% endif %}
     {% endfor %}
-    {% for ind_id, ind_fields in strategies[selected_strategy]['indicators'].items() %}
+    {% for ind_id, ind_fields in strategies[args.strategy]['indicators'].items() %}
       Indicator {{ ind_id }} fields:
       {% for field in ind_fields %}
         <b><label for="{{field.name}}">{{field.name}} - {{field.type}}</label></b>
         {% if field.type == 'num'%}
-          start <input type="text" id="{{field.name}}_from" name="{{field.name}}_from" value="0" class="backtest_input">
-          end &nbsp;<input type="text" id="{{field.name}}_to" name="{{field.name}}_to" value="0" class="backtest_input">
-          step <input type="text" id="{{field.name}}_step" name="{{field.name}}_step" value="0" class="backtest_input">
+          <table>
+            <tr>
+              <td>start</td>
+              <td><input type="text" id="{{field.name}}_from" name="{{field.name}}_from" value="0" class="backtest_input"></td>
+            </tr>
+            <tr>
+              <td>end</td>
+              <td><input type="text" id="{{field.name}}_to" name="{{field.name}}_to" value="0" class="backtest_input"></td>
+            </tr>
+            <tr>
+              <td>step</td>
+              <td><input type="text" id="{{field.name}}_step" name="{{field.name}}_step" value="0" class="backtest_input"></td>
+            </tr>
+          </table>
         {% elif field.type == 'bool'%}
           <label class="p-checkbox">
             <input type="checkbox" aria-labelledby="{{field.name}}" class="p-checkbox__input backtest_input">
@@ -56,17 +81,17 @@
     {% endfor %}
     <hr class="is-muted">
     <label class="p-checkbox">
-      <input type="checkbox" aria-labelledby="create_test" class="p-checkbox__input">
+      <input type="checkbox" aria-labelledby="create_test" class="p-checkbox__input" id="create_test_checkbox">
       <span class="p-checkbox__label" id="create_test">CREATE TEST</span>
     </label>
-    <button type="submit" name="submit">{{ submit_button_text }}</button>
+    <button type="submit" id="create_test_submit_button" name="submit" disabled>{{ submit_button_text }}</button>
   </form>
   {% if form_response %}
     <span>{{ form_response }}</span>
   {% endif %}
-  <form action="{{ submit_endpoint }}"><button>Reload</button></action>
 {% endblock %}
 {% block page_content %}
+{{args}}
   <div class="backtesting-tables">
     {% for strat, backtest_data in backtests.items() %}
       <p>{{ strat }}</p>
