@@ -113,9 +113,10 @@ def create_backtest():
 
 
 def get_backtests(backtests_response):
+    json_response = backtests_response.json()
     backtests_to_table = defaultdict(dict)
     backtests = itertools.groupby(
-        backtests_response.json(),
+        json_response['last_backtests'],
         key=lambda r: r['strategy']
     )
     for strategy, rows in backtests:
