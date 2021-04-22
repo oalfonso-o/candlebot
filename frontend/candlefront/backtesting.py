@@ -120,11 +120,19 @@ def get_backtests(backtests_response):
     )
     for strategy, rows in backtests:
         rows_list = list(rows)
-        header_keys = backtesting_header_map.keys()
+        header_keys = list(backtesting_header_map.keys())
         header_values = list(backtesting_header_map.values())
+        header_specific_fields = []
         for key in rows_list[0].keys():
             if key not in header_keys:
-                header_values.append(key.split('-')[-1])
+                header_specific_fields.append(
+                    {'mongo_key': key, 'output_key': key.split('-')[-1]})
+        specific_header_values = sorted(
+            [k['output_key'] for k in header_specific_fields])
+        header_values += specific_header_values
+        specific_header_keys = sorted(
+            [k['mongo_key'] for k in header_specific_fields])
+        header_keys += specific_header_keys
         tests = [sort_row_with_header(row, header_keys) for row in rows_list]
         header = itertools.zip_longest(header_values, header_keys)
         backtests_to_table[strategy]['tests'] = tests
@@ -155,4 +163,5 @@ def get_form_args(strategies):
     args['date_to'] = args.get('date_to') or date_to
     first_strat = list(strategies.keys())[0]
     args['strategy'] = args.get('strategy') or first_strat
+    args.pop('create_test_checkbox', None)
     return args
