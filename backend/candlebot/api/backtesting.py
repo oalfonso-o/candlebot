@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from typing import List, TypedDict, Optional
+from typing import List, Optional
 
 from candlebot import constants
 from candlebot import utils
@@ -16,33 +16,35 @@ router = APIRouter(
 )
 
 
-class BacktestListKwargs(TypedDict):
-    test_id: Optional[str] = ''
-    strategy: Optional[str] = ''
-    symbol: Optional[str] = ''
-    interval: Optional[str] = ''
-    sort_field: Optional[str] = 'profit_percentage'
-    sort_direction: Optional[int] = -1
-    test_date_from: Optional[str] = ''
-    test_date_to: Optional[str] = ''
-    limit: Optional[int] = 15
-
-
-backtest_list_kwargs = BacktestListKwargs()
-
-
 @router.get("/list")
-async def backtest_list(**backtest_list_kwargs):
-    date_from_without_dash = backtest_list_kwargs.date_from.replace('-', '')
-    date_to_without_dash = backtest_list_kwargs.date_to.replace('-', '')
+async def backtest_list(
+    test_id: Optional[str] = '',
+    strategy: Optional[str] = '',
+    symbol: Optional[str] = '',
+    interval: Optional[str] = '',
+    sort_field: Optional[str] = 'profit_percentage',
+    sort_direction: Optional[int] = -1,
+    date_from: Optional[str] = '',
+    date_to: Optional[str] = '',
+    limit: Optional[int] = 15,
+):
+    date_from_without_dash = date_from.replace('-', '')
+    date_to_without_dash = date_to.replace('-', '')
     date_from = utils.str_to_date(date_from_without_dash)
     date_to = utils.str_to_date(date_to_without_dash)
-    backtest_list_kwargs['test_date_from'] = date_from
-    backtest_list_kwargs['test_date_to'] = date_to
     last_backtests = db_find.find_last_backtests()
     best_backtests = db_find.find_best_backtests()
     filtered_backtests = db_find.find_filtered_backtests(
-        **backtest_list_kwargs)
+        test_id,
+        strategy,
+        symbol,
+        interval,
+        sort_field,
+        sort_direction,
+        date_from,
+        date_to,
+        limit,
+    )
     return {
         'last_backtests': last_backtests,
         'best_backtests': best_backtests,

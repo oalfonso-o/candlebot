@@ -74,6 +74,7 @@ class Backtesting:
                 strategies_ranges_dict[key][suffix] = f['value']
 
         override_indicators = defaultdict(dict)
+        override_indicators.update(Settings.BT['indicators'])
         indicators_ranges_dict = defaultdict(lambda: defaultdict(dict))
         for f in args.indicators_fields:
             key_parts = f['key'].split(self.sep)

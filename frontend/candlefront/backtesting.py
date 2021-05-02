@@ -45,15 +45,26 @@ backtesting_bp = Blueprint('backtesting', __name__)
 def backtesting():
     if flask.request.args.get('create_test_checkbox'):
         create_backtest()
-    backtests_response = requests.get(
-        '/'.join([config.API, 'backtesting', 'list']))
-    backtests_to_table = get_backtests(backtests_response)
     symbols = requests.get('/'.join([config.API, 'forms', 'symbols']))
     intervals = requests.get('/'.join([config.API, 'forms', 'intervals']))
     strategies = requests.get(
         '/'.join([config.API, 'backtesting', 'strategies']))
     strategies_json = strategies.json()
     form_args = get_form_args(strategies_json)
+    backtests_response = requests.get(
+        '/'.join([config.API, 'backtesting', 'list']),
+        params=form_args,
+    )
+    backtests_json_response = backtests_response.json()
+    last_backtests = get_backtests(backtests_json_response['last_backtests'])
+    best_backtests = get_backtests(backtests_json_response['best_backtests'])
+    filtered_backtests = get_backtests(
+        backtests_json_response['filtered_backtests'])
+    all_backtests = {
+        'last_backtests': last_backtests,
+        'best_backtests': best_backtests,
+        'filtered_backtests': filtered_backtests,
+    }
     return render_template(
         'backtesting.html',
         symbol_options=symbols.json(),
@@ -62,7 +73,7 @@ def backtesting():
         submit_button_text='Backtest',
         submit_endpoint='/backtesting',
         show_strategy=True,
-        backtests=backtests_to_table,
+        all_backtests=all_backtests,
         backtesting_header_map=backtesting_header_map,
         strategies=strategies_json,
         args=form_args,
@@ -112,11 +123,10 @@ def create_backtest():
     create_backtest_response.raise_for_status()
 
 
-def get_backtests(backtests_response):
-    json_response = backtests_response.json()
+def get_backtests(response_backtests):
     backtests_to_table = defaultdict(dict)
     backtests = itertools.groupby(
-        json_response['last_backtests'],
+        response_backtests,
         key=lambda r: r['strategy']
     )
     for strategy, rows in backtests:

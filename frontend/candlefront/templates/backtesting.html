@@ -92,31 +92,34 @@
 {% endblock %}
 {% block page_content %}
   <div class="backtesting-tables">
-    {% for strat, backtest_data in backtests.items() %}
-      <p>{{ strat }}</p>
-      <table>
-        <thead>
-          <tr>
-            {% for header, header_tooltip in backtest_data.header %}
-              <th class="p-tooltip--top-center" aria-describedby="tp-cntr">
-                {{ header }}
-                {% if header_tooltip %}<span class="p-tooltip__message" role="tooltip" id="tp-cntr">{{ header_tooltip }}</span>{% endif %}
-              </th>
-            {% endfor %}
-          </tr>
-        </thead>
-        <tbody>
-          {% for backtest in backtest_data.tests %}
+    {% for backtests_type, backtests in all_backtests.items() %}
+      <p>{{ backtests_type }}</p>
+      {% for strat, backtest_data in backtests.items() %}
+        <p>{{ strat }}</p>
+        <table>
+          <thead>
             <tr>
-              {% for field in backtest %}
-                <td>
-                  {{ field }}
-                </td>
+              {% for header, header_tooltip in backtest_data.header %}
+                <th class="p-tooltip--top-center" aria-describedby="tp-cntr">
+                  {{ header }}
+                  {% if header_tooltip %}<span class="p-tooltip__message" role="tooltip" id="tp-cntr">{{ header_tooltip }}</span>{% endif %}
+                </th>
               {% endfor %}
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {% for backtest in backtest_data.tests %}
+              <tr>
+                {% for field in backtest %}
+                  <td>
+                    {{ field }}
+                  </td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endfor %}
     {% endfor %}
   </div>
 {% endblock %}
