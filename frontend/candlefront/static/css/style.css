@@ -24,8 +24,13 @@ table th {
   padding-left: 20px;
   z-index: 20;
   background-color: #f7f7f7;
+  height: 100%;
 }
 .l-navigation-bar {
+  width: 100%;
+}
+.l-application {
+  overflow:inherit;
   width: 100%;
 }
 .p-navigation {
@@ -40,10 +45,8 @@ table th {
   overflow-y: hidden;
 }
 .pin-button-margin {margin-right: 30px;}
-.l-main {padding-left: 20px;}
-.backtesting-tables {
-  overflow: auto;
-}
+.l-main {padding-left: 20px; overflow:inherit;}
+.backtesting-tables {}
 .left-menu-form {
   width: 220px;
 }

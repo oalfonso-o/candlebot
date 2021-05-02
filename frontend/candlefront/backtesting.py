@@ -51,9 +51,24 @@ def backtesting():
         '/'.join([config.API, 'backtesting', 'strategies']))
     strategies_json = strategies.json()
     form_args = get_form_args(strategies_json)
+    backtest_list_params = {
+        'strategy': form_args['strategy'],
+        'symbols': [],
+        'intervals': [],
+        'date_from': form_args['date_from'],
+        'date_to': form_args['date_to'],
+    }
+    for arg in form_args:
+        if arg.startswith('interval'):
+            backtest_list_params['intervals'].append(arg.split('_')[1])
+        if arg.startswith('symbol'):
+            backtest_list_params['symbols'].append(arg.split('_')[1])
+    backtest_list_params['symbols'] = ','.join(backtest_list_params['symbols'])
+    backtest_list_params['intervals'] = ','.join(
+        backtest_list_params['intervals'])
     backtests_response = requests.get(
         '/'.join([config.API, 'backtesting', 'list']),
-        params=form_args,
+        params=backtest_list_params,
     )
     backtests_json_response = backtests_response.json()
     last_backtests = get_backtests(backtests_json_response['last_backtests'])

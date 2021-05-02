@@ -20,8 +20,8 @@ router = APIRouter(
 async def backtest_list(
     test_id: Optional[str] = '',
     strategy: Optional[str] = '',
-    symbol: Optional[str] = '',
-    interval: Optional[str] = '',
+    symbols: Optional[str] = '',
+    intervals: Optional[str] = '',
     sort_field: Optional[str] = 'profit_percentage',
     sort_direction: Optional[int] = -1,
     date_from: Optional[str] = '',
@@ -34,11 +34,13 @@ async def backtest_list(
     date_to = utils.str_to_date(date_to_without_dash)
     last_backtests = db_find.find_last_backtests()
     best_backtests = db_find.find_best_backtests()
+    symbols = symbols.split(',') if symbols else []
+    intervals = intervals.split(',') if intervals else []
     filtered_backtests = db_find.find_filtered_backtests(
         test_id,
         strategy,
-        symbol,
-        interval,
+        symbols,
+        intervals,
         sort_field,
         sort_direction,
         date_from,

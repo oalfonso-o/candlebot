@@ -1,6 +1,6 @@
 import logging
 import datetime
-from typing import Optional
+from typing import Optional, List
 
 from candlebot import utils
 from candlebot import constants
@@ -66,8 +66,8 @@ def find_best_backtests():
 def find_filtered_backtests(
     test_id: Optional[str] = '',
     strategy: Optional[str] = '',
-    symbol: Optional[str] = '',
-    interval: Optional[str] = '',
+    symbols: List[str] = None,
+    intervals: List[str] = None,
     sort_field: Optional[str] = 'profit_percentage',
     sort_direction: Optional[int] = -1,
     test_date_from: Optional[datetime.datetime] = None,
@@ -84,10 +84,10 @@ def find_filtered_backtests(
         query['test_id'] = test_id
     if strategy:
         query['strategy'] = strategy
-    if symbol:
-        query['symbol'] = symbol
-    if interval:
-        query['interval'] = interval
+    if symbols:
+        query['symbol'] = {'$in': symbols}
+    if intervals:
+        query['interval'] = {'$in': intervals}
     if test_date_from or test_date_to:
         query['test_date'] = {}
         if test_date_from:
