@@ -45,7 +45,7 @@ backtesting_bp = Blueprint('backtesting', __name__)
 def backtesting():
     if flask.request.args.get('create_test_checkbox'):
         create_backtest()
-    symbols = requests.get('/'.join([config.API, 'forms', 'symbols']))
+    symbols = requests.get('/'.join([config.API, 'forms', 'symbols', 'all']))
     intervals = requests.get('/'.join([config.API, 'forms', 'intervals']))
     strategies = requests.get(
         '/'.join([config.API, 'backtesting', 'strategies']))

@@ -66,14 +66,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '-s',
         '--symbol',
-        choices=[
-            constants.SYMBOL_CARDANO_EURO,
-            constants.SYMBOL_BITCOIN_EURO,
-            constants.SYMBOL_ETHEREUM_EURO,
-            constants.SYMBOL_CARDANO_USDT,
-            constants.SYMBOL_BITCOIN_USDT,
-            constants.SYMBOL_ETHEREUM_USDT,
-        ],
+        choices=constants.TRADING_SYMBOLS,
     )
     parser.add_argument(
         '-i',
