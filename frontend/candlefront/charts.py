@@ -6,8 +6,6 @@ import datetime
 import flask
 from flask import render_template, Blueprint
 
-from candlebot import constants as apiconstants
-
 from candlefront import config
 from candlefront.routes import ROUTES
 
@@ -21,7 +19,7 @@ def charts():
     strategy_params = {
         'date_from': datetime.date(year=2000, month=1, day=1),
         'date_to': datetime.date.today(),
-        'symbol': apiconstants.SYMBOL_BITCOIN_EURO,
+        'symbol': 'ADAUSDT',
         'interval': '1d',
     }
     if flask.request.method == 'POST':
