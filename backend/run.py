@@ -4,6 +4,7 @@ import time
 
 from candlebot.crawler import Crawler
 from candlebot.backtesting import Backtesting
+from candlebot.market import Market
 from candlebot import constants
 from candlebot import utils
 
@@ -44,6 +45,11 @@ def backtesting(bt_test_id):
     bt.test(bt_test_id)
 
 
+def market():
+    market_status = Market.compare()
+    logging.info(market_status)
+
+
 if __name__ == '__main__':
     logging.basicConfig(
         level=logging.INFO,
@@ -61,6 +67,7 @@ if __name__ == '__main__':
             constants.COMMAND_FILL,
             constants.COMMAND_FILL_ALL,
             constants.COMMAND_BACKTESTING,
+            constants.COMMAND_MARKET,
         ],
     )
     parser.add_argument(
@@ -100,4 +107,6 @@ if __name__ == '__main__':
         fill_all()
     elif args.command == constants.COMMAND_BACKTESTING:
         backtesting(args.bt_test_id)
+    elif args.command == constants.COMMAND_MARKET:
+        market()
     logging.info(f'Command {args.command} finished.')
