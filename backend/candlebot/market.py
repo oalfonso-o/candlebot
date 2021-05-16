@@ -33,7 +33,7 @@ class Crypto:
         response_data = response.json()
         symbols = [
             symbol['instrument_name']
-            for symbol in response_data['result']['instruments'][:10]
+            for symbol in response_data['result']['instruments'][:3]
             if 'USDT' in symbol['instrument_name']
         ]
         return symbols
@@ -50,11 +50,23 @@ class Poloniex:
         return market_values
 
 
+class Wazirx:
+    @staticmethod
+    def parse_price(response, symbol=None):
+        market_values = {}
+        response_data = response.json()
+        for symbol, data in response_data.items():
+            if 'usdt' in symbol:
+                market_values[symbol] = data['last']
+        return market_values
+
+
 class Market:
 
     BINANCE = 'binance'
     CRYPTO = 'crypto'
     POLONIEX = 'poloniex'
+    WAZIRX = 'wazirx'
 
     APIS = {
         BINANCE: {
@@ -74,6 +86,13 @@ class Market:
         POLONIEX: {
             'price_endpoint': 'https://poloniex.com/public?command=returnTicker',  # noqa
             'price_parser': Poloniex.parse_price,
+            'symbols_endpoint': '',
+            'symbols_parser': None,
+            'symbols': [],
+        },
+        WAZIRX: {
+            'price_endpoint': 'https://api.wazirx.com/api/v2/tickers',  # noqa
+            'price_parser': Wazirx.parse_price,
             'symbols_endpoint': '',
             'symbols_parser': None,
             'symbols': [],
@@ -130,9 +149,7 @@ class Market:
 
     @staticmethod
     def _normalize_pair(pair):
-        nrmlzd_pair = pair.replace('_', '')
-        if nrmlzd_pair.startswith('USDT'):
-            nrmlzd_pair = nrmlzd_pair[4:] + nrmlzd_pair[:4]
+        nrmlzd_pair = pair.replace('_', '').upper()
         return nrmlzd_pair
 
     @staticmethod
