@@ -13,6 +13,8 @@ def is_trackable_symbol(symbol, banned_symbols=None):
         'usdt' in symbol
         and 'bear' not in symbol
         and 'bull' not in symbol
+        and '3l' not in symbol
+        and '3s' not in symbol
         and symbol not in banned_symbols
     )
 
@@ -39,7 +41,7 @@ class Binance:
 
 class Crypto:
 
-    BANNED_SYMBOLS = ['scusdt']
+    BANNED_SYMBOLS = ['sc_usdt']
 
     @classmethod
     def parse_prices(cls, response, symbol=None):
@@ -86,7 +88,7 @@ class Wazirx:
 
 class Gateio:
 
-    BANNED_SYMBOLS = ['bifiusdt']
+    BANNED_SYMBOLS = ['bifi_usdt']
 
     @classmethod
     def parse_prices(cls, response, symbol=None):
@@ -106,7 +108,7 @@ class Gateio:
 
 class Bitmart:
 
-    BANNED_SYMBOLS = ['linausdt', 'truusdt']
+    BANNED_SYMBOLS = ['lina_usdt', 'tru_usdt', 'xym_usdt']
 
     @classmethod
     def parse_prices(cls, response, symbol=None):
@@ -119,9 +121,24 @@ class Bitmart:
         return market_values
 
 
+class Digifinex:
+
+    BANNED_SYMBOLS = ['salt_usdt', 'eps_usdt', 'grs_usdt']
+
+    @classmethod
+    def parse_prices(cls, response, symbol=None):
+        market_values = {}
+        response_data = response.json()
+        for data in response_data['ticker']:
+            symbol = data['symbol']
+            if is_trackable_symbol(symbol, cls.BANNED_SYMBOLS):
+                market_values[symbol] = float(data['last'])
+        return market_values
+
+
 class Market:
 
-    MIN_BEST_PERCENT = 2
+    MIN_BEST_PERCENT = 4
 
     BINANCE = 'binance'
     CRYPTO = 'crypto'
@@ -129,6 +146,7 @@ class Market:
     WAZIRX = 'wazirx'
     GATEIO = 'gateio'
     BITMART = 'bitmart'
+    DIGIFINEX = 'digifinex'
 
     APIS = {
         BINANCE: {  # symbol example: ADAUSDT
@@ -168,6 +186,11 @@ class Market:
         BITMART: {  # symbol example: ADA_USDT
             'prices_endpoint': 'https://api-cloud.bitmart.com/spot/v1/ticker',
             'prices_parser': Bitmart.parse_prices,
+            'single_price_endpoint': '',
+        },
+        DIGIFINEX: {  # symbol example: ada_usdt
+            'prices_endpoint': 'https://openapi.digifinex.com/v3/ticker',
+            'prices_parser': Digifinex.parse_prices,
             'single_price_endpoint': '',
         },
     }
