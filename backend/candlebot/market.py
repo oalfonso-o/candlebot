@@ -183,16 +183,16 @@ class Market:
             'single_price_parser': Gateio.parse_single_price,
             'single_price_endpoint_symbol_separator': '_',
         },
-        BITMART: {  # symbol example: ADA_USDT
-            'prices_endpoint': 'https://api-cloud.bitmart.com/spot/v1/ticker',
-            'prices_parser': Bitmart.parse_prices,
-            'single_price_endpoint': '',
-        },
-        DIGIFINEX: {  # symbol example: ada_usdt
-            'prices_endpoint': 'https://openapi.digifinex.com/v3/ticker',
-            'prices_parser': Digifinex.parse_prices,
-            'single_price_endpoint': '',
-        },
+        # BITMART: {  # symbol example: ADA_USDT
+        #     'prices_endpoint': 'https://api-cloud.bitmart.com/spot/v1/ticker',
+        #     'prices_parser': Bitmart.parse_prices,
+        #     'single_price_endpoint': '',
+        # },
+        # DIGIFINEX: {  # symbol example: ada_usdt
+        #     'prices_endpoint': 'https://openapi.digifinex.com/v3/ticker',
+        #     'prices_parser': Digifinex.parse_prices,
+        #     'single_price_endpoint': '',
+        # },
     }
 
     @classmethod
