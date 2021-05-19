@@ -48,12 +48,16 @@ def backtesting(bt_test_id):
 def market():
     market_status = Market.compare()
     for ms in market_status:
-        logging.info(
+        low = ms['best']['low']
+        high = ms['best']['high']
+        print(
             f"{ms['symbol']}\t{round(float(ms['best_percent']), 2)} -\t"
-            f"Low {ms['best']['low']['cex']} \t"
-            f"High {ms['best']['high']['cex']}"
+            f"Low {low['cex']} \t"
+            f"High {high['cex']}"
         )
-    logging.info(market_status)
+        print(f"\tLow\t{low['exchange_endpoint']}")
+        print(f"\tHigh\t{high['exchange_endpoint']}")
+    print(market_status)
 
 
 if __name__ == '__main__':

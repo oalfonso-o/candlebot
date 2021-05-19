@@ -212,27 +212,31 @@ class Market:
             'prices_parser': Binance.parse_prices,
             'single_price_endpoint': 'https://api3.binance.com/api/v3/avgPrice?symbol={symbol}',  # noqa
             'single_price_parser': Binance.parse_single_price,
-            'single_price_endpoint_symbol_separator': '',
+            'symbol_separator': '',
             'vol_endpoint': 'https://api3.binance.com/api/v3/ticker/24hr',
+            'exchange_endpoint': 'https://www.binance.com/es/trade/{symbol}?type=spot',  # noqa
         },
         CRYPTO: {  # symbol example: ADA_USDT
             'prices_endpoint': 'https://api.crypto.com/v2/public/get-ticker',
             'prices_parser': Crypto.parse_prices,
             'single_price_endpoint': 'https://api.crypto.com/v2/public/get-ticker?instrument_name={symbol}',  # noqa
             'single_price_parser': Crypto.parse_single_price,
-            'single_price_endpoint_symbol_separator': '_',
+            'symbol_separator': '_',
+            'exchange_endpoint': 'https://crypto.com/exchange/trade/spot/{symbol}',  # noqa
         },
         POLONIEX: {  # symbol example: ADA_USDT
             'prices_endpoint': 'https://poloniex.com/public?command=returnTicker',  # noqa
             'prices_parser': Poloniex.parse_prices,
             'single_price_endpoint': '',
+            'symbol_separator': '_',
+            'exchange_endpoint': 'https://poloniex.com/exchange/{symbol}',
         },
         # WAZIRX: {  # symbol example: adausdt
         #     'prices_endpoint': 'https://api.wazirx.com/api/v2/tickers',
         #     'prices_parser': Wazirx.parse_prices,
         #     'single_price_endpoint': 'https://api.wazirx.com/api/v2/trades?market={symbol}&limit=1',  # noqa
         #     'single_price_parser': Wazirx.parse_single_price,
-        #     'single_price_endpoint_symbol_separator': '',
+        #     'symbol_separator': '',
         #     'single_price_endpoint_symbol_transform': str.lower,
         # },
         GATEIO: {  # symbol example: ADA_USDT
@@ -240,27 +244,36 @@ class Market:
             'prices_parser': Gateio.parse_prices,
             'single_price_endpoint': 'https://api.gateio.ws/api/v4/spot/tickers?currency_pair={symbol}',  # noqa
             'single_price_parser': Gateio.parse_single_price,
-            'single_price_endpoint_symbol_separator': '_',
+            'symbol_separator': '_',
+            'exchange_endpoint': 'https://www.gate.io/en/trade/{symbol}',
         },
         BITMART: {  # symbol example: ADA_USDT
             'prices_endpoint': 'https://api-cloud.bitmart.com/spot/v1/ticker',  # noqa
             'prices_parser': Bitmart.parse_prices,
             'single_price_endpoint': '',
+            'symbol_separator': '_',
+            'exchange_endpoint': 'https://www.bitmart.com/trade/en?symbol={symbol}&layout=basic',  # noqa
         },
         # DIGIFINEX: {  # symbol example: ada_usdt
         #     'prices_endpoint': 'https://openapi.digifinex.com/v3/ticker',
         #     'prices_parser': Digifinex.parse_prices,
         #     'single_price_endpoint': '',
+        #     'symbol_separator': '/',
+        #     'exchange_endpoint': 'https://www.digifinex.com/en-ww/trade/{symbol}',  # noqa
         # },
         HOTBIT: {  # symbol example: ADA_USDT
             'prices_endpoint': 'https://api.hotbit.io/api/v1/allticker',
             'prices_parser': Hotbit.parse_prices,
             'single_price_endpoint': '',
+            'symbol_separator': '_',
+            'exchange_endpoint': 'https://www.hotbit.io/exchange?symbol={symbol}',  # noqa
         },
         KUCOIN: {  # symbol example: ADA-USDT
             'prices_endpoint': 'https://api.kucoin.com/api/v1/market/allTickers',  # noqa
             'prices_parser': Kucoin.parse_prices,
             'single_price_endpoint': '',
+            'symbol_separator': '-',
+            'exchange_endpoint': 'https://trade.kucoin.com/{symbol}',  # noqa
         },
     }
 
@@ -276,6 +289,7 @@ class Market:
             market_status[name] = market_values
         reconciled_prices = cls._reconcile_prices(market_status)
         compared_prices = cls._compare_reconciled_prices(reconciled_prices)
+        cls._add_exchange_endpoints(compared_prices)
         return compared_prices
 
     @classmethod
@@ -365,7 +379,7 @@ class Market:
         if low_endpoint:
             low_symbol = compared_price['symbol']
             low_symbol_separator = (
-                low_cex_map['single_price_endpoint_symbol_separator'])
+                low_cex_map['symbol_separator'])
             if low_symbol_separator:
                 low_symbol = low_symbol_separator.join([
                     low_symbol[:-4], low_symbol[-4:]
@@ -383,7 +397,7 @@ class Market:
         if high_endpoint:
             high_symbol = compared_price['symbol']
             high_symbol_separator = (
-                high_cex_map['single_price_endpoint_symbol_separator'])
+                high_cex_map['symbol_separator'])
             if high_symbol_separator:
                 high_symbol = high_symbol_separator.join([
                     high_symbol[:-4], high_symbol[-4:]
@@ -399,4 +413,23 @@ class Market:
         if low_price and high_price:
             compared_price['best_percent'] = cls._calc_percentage(
                 high_price, low_price
+            )
+
+    @classmethod
+    def _add_exchange_endpoints(cls, compared_prices):
+        for price in compared_prices:
+            symbol = price['symbol']
+            low = price['best']['low']
+            high = price['best']['high']
+            symbol_separator_low = cls.APIS[low['cex']]['symbol_separator']
+            symbol_separator_high = cls.APIS[high['cex']]['symbol_separator']
+            symbol_low = symbol[:-4] + symbol_separator_low + symbol[-4:]
+            symbol_high = symbol[:-4] + symbol_separator_high + symbol[-4:]
+            low['exchange_endpoint'] = (
+                cls.APIS[low['cex']]['exchange_endpoint'].format(
+                    symbol=symbol_low)
+            )
+            high['exchange_endpoint'] = (
+                cls.APIS[high['cex']]['exchange_endpoint'].format(
+                    symbol=symbol_high)
             )
