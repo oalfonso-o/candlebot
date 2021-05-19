@@ -5,12 +5,16 @@ from collections import defaultdict
 logger = logging.getLogger(__name__)
 
 
-def is_trackable_symbol(symbol, banned_symbols=None):
+MIN_24H_VOL = 500000
+
+
+def is_trackable_symbol(symbol, volume, banned_symbols=None):
     if not banned_symbols:
         banned_symbols = []
     symbol = symbol.lower()
     return (
-        'usdt' in symbol
+        volume >= MIN_24H_VOL
+        and 'usdt' in symbol
         and 'bear' not in symbol
         and 'bull' not in symbol
         and '3l' not in symbol
@@ -21,17 +25,25 @@ def is_trackable_symbol(symbol, banned_symbols=None):
 
 class Binance:
 
-    BANNED_SYMBOLS = ['bchsvusdt', 'hcusdt']
+    BANNED_SYMBOLS = ['bchsvusdt', 'hcusdt', 'bccusdt']
 
     @classmethod
-    def parse_prices(cls, response, symbol=None):
+    def parse_prices(cls, prices_response, symbol=None):
         market_values = {}
-        response_data = response.json()
-        for data in response_data:
+        prices_response_data = prices_response.json()
+        vol_endpoint = Market.APIS[Market.BINANCE]['vol_endpoint']
+        vol_response = requests.get(vol_endpoint)
+        vol_response_data = vol_response.json()
+        valid_market_values = {}
+        for data in prices_response_data:
             symbol = data['symbol']
-            if is_trackable_symbol(symbol, cls.BANNED_SYMBOLS):
-                market_values[symbol] = float(data['price'])
-        return market_values
+            market_values[symbol] = float(data['price'])
+        for data in vol_response_data:
+            symbol = data['symbol']
+            vol = float(data['quoteVolume'])
+            if is_trackable_symbol(symbol, vol, cls.BANNED_SYMBOLS):
+                valid_market_values[symbol] = market_values[symbol]
+        return valid_market_values
 
     @staticmethod
     def parse_single_price(response):
@@ -49,8 +61,10 @@ class Crypto:
         response_data = response.json()
         for data in response_data['result']['data']:
             symbol = data['i']
-            if is_trackable_symbol(symbol, cls.BANNED_SYMBOLS):
-                market_values[symbol] = float(data['a'])
+            price = float(data['a'])
+            vol = float(data['v']) * price
+            if is_trackable_symbol(symbol, vol, cls.BANNED_SYMBOLS):
+                market_values[symbol] = price
         return market_values
 
     @staticmethod
@@ -65,7 +79,7 @@ class Poloniex:
         market_values = {}
         response_data = response.json()
         for symbol, data in response_data.items():
-            if is_trackable_symbol(symbol):
+            if is_trackable_symbol(symbol, float(data['quoteVolume'])):
                 market_values[symbol] = float(data['last'])
         return market_values
 
@@ -76,8 +90,10 @@ class Wazirx:
         market_values = {}
         response_data = response.json()
         for symbol, data in response_data.items():
-            if is_trackable_symbol(symbol):
-                market_values[symbol] = float(data['last'])
+            price = float(data['last'])
+            vol = price * float(data['volume'])
+            if is_trackable_symbol(symbol, vol):
+                market_values[symbol] = price
         return market_values
 
     @staticmethod
@@ -88,7 +104,7 @@ class Wazirx:
 
 class Gateio:
 
-    BANNED_SYMBOLS = ['bifi_usdt']
+    BANNED_SYMBOLS = ['bifi_usdt', 'safemoon_usdt']
 
     @classmethod
     def parse_prices(cls, response, symbol=None):
@@ -96,7 +112,8 @@ class Gateio:
         response_data = response.json()
         for data in response_data:
             symbol = data['currency_pair']
-            if is_trackable_symbol(symbol, cls.BANNED_SYMBOLS):
+            vol = float(data['quote_volume'])
+            if is_trackable_symbol(symbol, vol, cls.BANNED_SYMBOLS):
                 market_values[symbol] = float(data['last'])
         return market_values
 
@@ -108,7 +125,9 @@ class Gateio:
 
 class Bitmart:
 
-    BANNED_SYMBOLS = ['lina_usdt', 'tru_usdt', 'xym_usdt']
+    BANNED_SYMBOLS = [
+        'lina_usdt', 'tru_usdt', 'xym_usdt', 'safemoon_usdt', 'cspr_usdt'
+    ]
 
     @classmethod
     def parse_prices(cls, response, symbol=None):
@@ -116,7 +135,8 @@ class Bitmart:
         response_data = response.json()
         for data in response_data['data']['tickers']:
             symbol = data['symbol']
-            if is_trackable_symbol(symbol, cls.BANNED_SYMBOLS):
+            vol = float(data['quote_volume_24h'])
+            if is_trackable_symbol(symbol, vol, cls.BANNED_SYMBOLS):
                 market_values[symbol] = float(data['last_price'])
         return market_values
 
@@ -131,14 +151,50 @@ class Digifinex:
         response_data = response.json()
         for data in response_data['ticker']:
             symbol = data['symbol']
-            if is_trackable_symbol(symbol, cls.BANNED_SYMBOLS):
-                market_values[symbol] = float(data['last'])
+            price = float(data['last'])
+            vol = price * float(data['base_vol'])
+            if is_trackable_symbol(symbol, vol, cls.BANNED_SYMBOLS):
+                market_values[symbol] = price
+        return market_values
+
+
+class Hotbit:
+
+    BANNED_SYMBOLS = ['bcc_usdt', 'atp_usdt']
+
+    @classmethod
+    def parse_prices(cls, response, symbol=None):
+        market_values = {}
+        response_data = response.json()
+        for data in response_data['ticker']:
+            symbol = data['symbol']
+            price = float(data['last'])
+            vol = float(data['vol']) * price
+            if is_trackable_symbol(symbol, vol, cls.BANNED_SYMBOLS):
+                market_values[symbol] = price
+        return market_values
+
+
+class Kucoin:
+
+    BANNED_SYMBOLS = []
+
+    @classmethod
+    def parse_prices(cls, response, symbol=None):
+        market_values = {}
+        response_data = response.json()
+        for data in response_data['data']['ticker']:
+            symbol = data['symbol']
+            price = float(data['last'])
+            vol = float(data['volValue']) * price
+            if is_trackable_symbol(symbol, vol, cls.BANNED_SYMBOLS):
+                market_values[symbol] = price
         return market_values
 
 
 class Market:
 
-    MIN_BEST_PERCENT = 4
+    MIN_BEST_PERCENT = 10
 
     BINANCE = 'binance'
     CRYPTO = 'crypto'
@@ -147,6 +203,8 @@ class Market:
     GATEIO = 'gateio'
     BITMART = 'bitmart'
     DIGIFINEX = 'digifinex'
+    HOTBIT = 'hotbit'
+    KUCOIN = 'kucoin'
 
     APIS = {
         BINANCE: {  # symbol example: ADAUSDT
@@ -155,6 +213,7 @@ class Market:
             'single_price_endpoint': 'https://api3.binance.com/api/v3/avgPrice?symbol={symbol}',  # noqa
             'single_price_parser': Binance.parse_single_price,
             'single_price_endpoint_symbol_separator': '',
+            'vol_endpoint': 'https://api3.binance.com/api/v3/ticker/24hr',
         },
         CRYPTO: {  # symbol example: ADA_USDT
             'prices_endpoint': 'https://api.crypto.com/v2/public/get-ticker',
@@ -168,14 +227,14 @@ class Market:
             'prices_parser': Poloniex.parse_prices,
             'single_price_endpoint': '',
         },
-        WAZIRX: {  # symbol example: adausdt
-            'prices_endpoint': 'https://api.wazirx.com/api/v2/tickers',
-            'prices_parser': Wazirx.parse_prices,
-            'single_price_endpoint': 'https://api.wazirx.com/api/v2/trades?market={symbol}&limit=1',  # noqa
-            'single_price_parser': Wazirx.parse_single_price,
-            'single_price_endpoint_symbol_separator': '',
-            'single_price_endpoint_symbol_transform': str.lower,
-        },
+        # WAZIRX: {  # symbol example: adausdt
+        #     'prices_endpoint': 'https://api.wazirx.com/api/v2/tickers',
+        #     'prices_parser': Wazirx.parse_prices,
+        #     'single_price_endpoint': 'https://api.wazirx.com/api/v2/trades?market={symbol}&limit=1',  # noqa
+        #     'single_price_parser': Wazirx.parse_single_price,
+        #     'single_price_endpoint_symbol_separator': '',
+        #     'single_price_endpoint_symbol_transform': str.lower,
+        # },
         GATEIO: {  # symbol example: ADA_USDT
             'prices_endpoint': 'https://api.gateio.ws/api/v4/spot/tickers',
             'prices_parser': Gateio.parse_prices,
@@ -183,16 +242,26 @@ class Market:
             'single_price_parser': Gateio.parse_single_price,
             'single_price_endpoint_symbol_separator': '_',
         },
-        # BITMART: {  # symbol example: ADA_USDT
-        #     'prices_endpoint': 'https://api-cloud.bitmart.com/spot/v1/ticker',
-        #     'prices_parser': Bitmart.parse_prices,
-        #     'single_price_endpoint': '',
-        # },
+        BITMART: {  # symbol example: ADA_USDT
+            'prices_endpoint': 'https://api-cloud.bitmart.com/spot/v1/ticker',  # noqa
+            'prices_parser': Bitmart.parse_prices,
+            'single_price_endpoint': '',
+        },
         # DIGIFINEX: {  # symbol example: ada_usdt
         #     'prices_endpoint': 'https://openapi.digifinex.com/v3/ticker',
         #     'prices_parser': Digifinex.parse_prices,
         #     'single_price_endpoint': '',
         # },
+        HOTBIT: {  # symbol example: ADA_USDT
+            'prices_endpoint': 'https://api.hotbit.io/api/v1/allticker',
+            'prices_parser': Hotbit.parse_prices,
+            'single_price_endpoint': '',
+        },
+        KUCOIN: {  # symbol example: ADA-USDT
+            'prices_endpoint': 'https://api.kucoin.com/api/v1/market/allTickers',  # noqa
+            'prices_parser': Kucoin.parse_prices,
+            'single_price_endpoint': '',
+        },
     }
 
     @classmethod
@@ -203,10 +272,7 @@ class Market:
         for name, data in cls.APIS.items():
             logger.info(f'CEX: {name}')
             response = requests.get(data['prices_endpoint'])
-            try:
-                market_values = data['prices_parser'](response)
-            except Exception:
-                logging.exception(f'Request error: {name}')
+            market_values = data['prices_parser'](response)
             market_status[name] = market_values
         reconciled_prices = cls._reconcile_prices(market_status)
         compared_prices = cls._compare_reconciled_prices(reconciled_prices)
@@ -225,6 +291,7 @@ class Market:
     @staticmethod
     def _normalize_pair(pair):
         nrmlzd_pair = pair.replace('_', '').upper()
+        nrmlzd_pair = nrmlzd_pair.replace('-', '')
         return nrmlzd_pair
 
     @classmethod
