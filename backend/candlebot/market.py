@@ -160,7 +160,7 @@ class Digifinex:
 
 class Hotbit:
 
-    BANNED_SYMBOLS = ['bcc_usdt', 'atp_usdt']
+    BANNED_SYMBOLS = ['bcc_usdt', 'atp_usdt', 'okb_usdt']
 
     @classmethod
     def parse_prices(cls, response, symbol=None):

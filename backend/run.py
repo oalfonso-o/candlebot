@@ -51,12 +51,11 @@ def market():
         low = ms['best']['low']
         high = ms['best']['high']
         print(
-            f"{ms['symbol']}\t{round(float(ms['best_percent']), 2)} -\t"
-            f"Low {low['cex']} \t"
-            f"High {high['cex']}"
+            f"{ms['symbol']} [{round(float(ms['best_percent']), 2)}]"
         )
-        print(f"\tLow\t{low['exchange_endpoint']}")
-        print(f"\tHigh\t{high['exchange_endpoint']}")
+        print(f"\t- {low['cex']}\t{low['exchange_endpoint']}")
+        print(f"\t+ {high['cex']}\t{high['exchange_endpoint']}")
+        print('')
     print(market_status)
 
 
