@@ -1,3 +1,5 @@
+import math
+
 from candlebot import utils
 from candlebot.db.candle_retriever import CandleRetriever
 from candlebot.strategist import Strategist
@@ -25,6 +27,7 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
     balance_long = []
     balance_short = []
     chart_positions_long = []
+    chart_positions_engulfing = []
     index_positions_long = 0
     for _, c in strat_df.iterrows():
         time = (
@@ -48,7 +51,7 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
                 / 1000 == time
             )
         ):
-            add_points_to_chart_positions(
+            add_open_close_points_to_chart_positions(
                 wallet.positions_long[index_positions_long],
                 balance_origin,
                 balance_long,
@@ -64,15 +67,32 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
             balance_origin.append({'time': time})
             balance_long.append({'time': time})
             balance_short.append({'time': time})
-
+        if not math.isnan(c['engulfing']):
+            add_engulfing_points_to_chart(
+                time, c['engulfing'], chart_positions_engulfing
+            )
+        else:
+            chart_positions_engulfing.append({'time': time})
     return [
         {
-            'id': 'open/close long',
+            'id': 'open/close long positions',
             'series': [
                 {
                     'type': 'candles',
                     'values': candles,
                     'markers': chart_positions_long,
+                },
+            ],
+            'width': 800,
+            'height': 250,
+        },
+        {
+            'id': 'Engulfing marks',
+            'series': [
+                {
+                    'type': 'candles',
+                    'values': candles,
+                    'markers': chart_positions_engulfing,
                 },
             ],
             'width': 800,
@@ -97,7 +117,7 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
     ]
 
 
-def add_points_to_chart_positions(
+def add_open_close_points_to_chart_positions(
     position, balance_origin, balance_long, balance_short, time,
     chart_positions
 ):
@@ -125,3 +145,24 @@ def add_points_to_chart_positions(
             'shape': 'arrowDown',
         }
         chart_positions.append(point_close_position)
+
+
+def add_engulfing_points_to_chart(time, value, chart_positions_engulfing):
+    if value > 0:
+        text = 'buy'
+        position = 'belowBar'
+        color = 'green'
+        shape = 'arrowUp'
+    else:
+        text = 'sell'
+        position = 'aboveBar'
+        color = 'red'
+        shape = 'arrowDown'
+    point_open_position = {
+        'time': time,
+        'text': text,
+        'position': position,
+        'color': color,
+        'shape': shape,
+    }
+    chart_positions_engulfing.append(point_open_position)
