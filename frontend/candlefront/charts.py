@@ -16,11 +16,13 @@ charts_bp = Blueprint('charts', __name__)
 
 @charts_bp.route('/', methods=['GET', 'POST'])
 def charts():
+    symbol_selected = 'ADAUSDT'
+    interval_selected = '1d'
     strategy_params = {
         'date_from': datetime.date(year=2000, month=1, day=1),
         'date_to': datetime.date.today(),
-        'symbol': 'ADAUSDT',
-        'interval': '1d',
+        'symbol': symbol_selected,
+        'interval': interval_selected,
     }
     if flask.request.method == 'POST':
         strategy_params = {
@@ -29,6 +31,8 @@ def charts():
             'symbol': flask.request.form['symbol'],
             'interval': flask.request.form['interval'],
         }
+        symbol_selected = strategy_params['symbol']
+        interval_selected = strategy_params['interval']
     symbols = requests.get('/'.join([config.API, 'forms', 'symbols']))
     intervals = requests.get('/'.join([config.API, 'forms', 'intervals']))
     data_points_response = requests.get(
@@ -42,6 +46,8 @@ def charts():
     return render_template(
         'index.html',
         symbol_options=symbols.json(),
+        symbol_selected=symbol_selected,
+        interval_selected=interval_selected,
         interval_options=intervals.json(),
         data_points=json.dumps(data_points_response.json()),
         show_strategy=True,

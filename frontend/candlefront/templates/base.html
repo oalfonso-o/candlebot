@@ -54,13 +54,13 @@
                 <label for="symbol">Symbol</label>
                 <select name="symbol" id="symbol">
                   {% for symbol in symbol_options %}
-                    <option value="{{ symbol }}" default>{{ symbol }}</option>
+                    <option value="{{ symbol }}" {% if symbol == symbol_selected %} selected="selected" {% endif %} >{{ symbol }}</option>
                   {% endfor %}
                 </select>
                 <label for="interval">Interval</label>
                 <select name="interval" id="interval">
                   {% for interval in interval_options %}
-                    <option value="{{ interval }}" default>{{ interval }}</option>
+                    <option value="{{ interval }}" {% if interval == interval_selected %} selected="selected" {% endif %}>{{ interval }}</option>
                   {% endfor %}
                 </select>
                 {% if show_strategy %}
