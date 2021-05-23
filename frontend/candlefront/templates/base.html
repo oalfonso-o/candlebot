@@ -66,7 +66,9 @@
                 {% if show_strategy %}
                   <label for="strategy">Strategy</label>
                   <select name="strategy" id="strategy">
-                    <option value="ema1" default>EMA1</option>
+                    {% for s_id in strategy_options %}
+                      <option value="{{s_id}}" {% if s_id == strategy_selected %} selected="selected"{% endif %}>{{s_id}}</option>
+                    {% endfor %}
                   </select>
                 {% endif %}
                 <button type="submit" name="submit">{{ submit_button_text }}</button>

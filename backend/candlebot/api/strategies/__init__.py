@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from candlebot.api.strategies import ema
+from candlebot.api.strategies import engulfing
 
 router = APIRouter(
     prefix="/strategies",
@@ -11,6 +12,13 @@ router = APIRouter(
 
 @router.get("/ema")
 async def strategy_ema(
-    date_from=None, date_to=None, symbol='ADAEUR', interval='1d'
+    date_from=None, date_to=None, symbol='ADAUSDT', interval='1d'
 ):
     return ema.calc(date_from, date_to, symbol, interval)
+
+
+@router.get("/engulfing")
+async def strategy_engulfing(
+    date_from=None, date_to=None, symbol='ADAUSDT', interval='1d'
+):
+    return engulfing.calc(date_from, date_to, symbol, interval)

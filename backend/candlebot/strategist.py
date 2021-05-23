@@ -2,7 +2,7 @@ import logging
 import pandas as pd
 
 from candlebot.strategies.ema import StrategyEMA
-from candlebot.strategies.hammer import StrategyHammer
+from candlebot.strategies.engulfing import StrategyEngulfing
 from candlebot import utils
 from candlebot import constants
 
@@ -13,7 +13,7 @@ class Strategist:
 
     strategies = {
         'ema': StrategyEMA,
-        'hammer': StrategyHammer,
+        'engulfing': StrategyEngulfing,
     }
 
     @classmethod
