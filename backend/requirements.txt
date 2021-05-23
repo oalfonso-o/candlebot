@@ -9,3 +9,4 @@ ta>=0.7,<1.0
 fastapi>=0.63,<1.0
 uvicorn>=0.13.4,<1.0
 pydantic>=3.7,<=4.0
+binance>=0.3,<0.4
