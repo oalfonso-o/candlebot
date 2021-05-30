@@ -19,7 +19,7 @@ def charts():
     symbol_selected = 'ADAUSDT'
     interval_selected = '1h'
     strategy_selected = 'triangle'
-    date_from = datetime.date.today() - datetime.timedelta(days=230)
+    date_from = datetime.date.today() - datetime.timedelta(days=40)
     date_to = datetime.date.today() + datetime.timedelta(days=1)
     strategy_params = {
         'date_from': date_from,

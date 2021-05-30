@@ -26,3 +26,7 @@ def timestamp_to_date(timestamp):
 
 def timestamp_to_str_date(timestamp):
     return timestamp_to_date(timestamp).strftime('%Y/%m/%d')
+
+
+def date_to_str_date(date):
+    return date.strftime(constants.DATE_ARG_FORMAT)

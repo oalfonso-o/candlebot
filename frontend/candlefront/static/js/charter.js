@@ -38,7 +38,7 @@ class Charter {
           chart.addLineSeries({
             color: serie['color'] || '#ccc',
             lineStyle: serie['lineStyle'] || 0,
-            lineWidth: serie['lineWidth'] || 2,
+            lineWidth: serie['lineWidth'] || 1,
             crosshairMarkerVisible: serie['crosshairMarkerVisible'] || true,
             crosshairMarkerRadius: serie['crosshairMarkerRadius'] || 1,
             crosshairMarkerBorderColor: serie['crosshairMarkerBorderColor'] || '#ffffff',
