@@ -17,10 +17,10 @@ charts_bp = Blueprint('charts', __name__)
 @charts_bp.route('/', methods=['GET', 'POST'])
 def charts():
     symbol_selected = 'ADAUSDT'
-    interval_selected = '1d'
-    strategy_selected = 'ema'
-    date_from = datetime.date(year=2000, month=1, day=1)
-    date_to = datetime.date.today()
+    interval_selected = '1h'
+    strategy_selected = 'triangle'
+    date_from = datetime.date.today() - datetime.timedelta(days=230)
+    date_to = datetime.date.today() + datetime.timedelta(days=1)
     strategy_params = {
         'date_from': date_from,
         'date_to': date_to,

@@ -55,7 +55,8 @@ class Crawler:
         response.raise_for_status()
         data = response.json()
         if not data:
-            logging.info('No more klines returned')
+            logging.info(
+                f'No more klines returned. Last timestamp: {date_from}')
             return
         candlesticks = []
         for kline in data:

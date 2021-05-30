@@ -3,6 +3,7 @@ import pandas as pd
 
 from candlebot.strategies.ema import StrategyEMA
 from candlebot.strategies.engulfing import StrategyEngulfing
+from candlebot.strategies.triangle import StrategyTriangle
 from candlebot import utils
 from candlebot import constants
 
@@ -14,6 +15,7 @@ class Strategist:
     strategies = {
         'ema': StrategyEMA,
         'engulfing': StrategyEngulfing,
+        'triangle': StrategyTriangle,
     }
 
     @classmethod
