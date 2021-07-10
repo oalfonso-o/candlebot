@@ -1,6 +1,7 @@
 import logging
 import datetime
 from typing import Tuple
+from numpy import CLIP
 
 import pandas as pd
 
@@ -20,6 +21,7 @@ class StrategyTriangle:
     indicators = [IndicatorMA200, IndicatorMA50, IndicatorMA20]
     variables = []
     BACK_CHECK_POSITIONS = 4
+    DISTANCE_TO_MERGE = 10
 
     def __init__(self, df: pd.DataFrame):
         self.df = df
@@ -61,6 +63,8 @@ class StrategyTriangle:
     def _draw_triangle_in_df(self, highs, lows):
         highs = self.remove_lower_highs(highs)
         lows = self.remove_higher_lows(lows)
+        highs = self.merge_lower_highs(highs)
+        lows = self.merge_higher_lows(lows)
         df_highs = pd.DataFrame(highs)
         df_lows = pd.DataFrame(lows)
         self.df = pd.merge(
@@ -113,6 +117,27 @@ class StrategyTriangle:
             if not low_removed:
                 break
         return lows
+
+    @classmethod
+    def merge_lower_highs(cls, highs):
+        cls.DISTANCE_TO_MERGE
+        for i, high in enumerate(list(highs)):
+            if i < len(highs):
+                next = highs[i+1]
+                seconds_diff = (
+                    next['_id'].to_pydatetime()
+                    - high['_id'].to_pydatetime()
+                ).total_seconds()
+                days_diff = seconds_diff / 3600 / 24
+                if days_diff <= cls.DISTANCE_TO_MERGE / 24:
+                    try:
+                        if high['day_highest'] < next['day_highest']:
+                            highs.remove(high)
+                        else:
+                            highs.remove(next)
+                    except Exception:
+                        logging.info('Trying to merge highest already merged')
+        return highs
 
     def _draw_triangle_continuation_projection(self, highs, lows):
         '''Check last highs and lows and project a possible triangle continuation
