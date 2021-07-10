@@ -26,7 +26,10 @@ class Charter {
       container.style.position = 'relative';
       this.charts_container.appendChild(container)
       const chart = LightweightCharts.createChart(container, { width: chartData['width'], height: chartData['height'] })
-      chart.applyOptions({crosshair: {mode: 0}})
+      chart.applyOptions({
+        crosshair: {mode: 0},
+        timeScale: {timeVisible: true}
+      })
       chartData['series'].forEach(function (serie) {
         if (serie['type'] == 'candles') {
           let candleSeries = chart.addCandlestickSeries();

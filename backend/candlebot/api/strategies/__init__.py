@@ -22,7 +22,16 @@ async def strategy_ema(
 async def strategy_engulfing(
     date_from=None, date_to=None, symbol='ADAUSDT', interval='1d'
 ):
-    return engulfing.calc(date_from, date_to, symbol, interval)
+    return engulfing.calc(
+        date_from, date_to, symbol, interval, strat='engulfing')
+
+
+@router.get("/scalping")
+async def strategy_scalping(
+    date_from=None, date_to=None, symbol='ADAUSDT', interval='1d'
+):
+    return engulfing.calc(
+        date_from, date_to, symbol, interval, strat='scalping')
 
 
 @router.get("/triangle")

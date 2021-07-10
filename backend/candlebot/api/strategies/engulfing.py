@@ -6,7 +6,10 @@ from candlebot.strategist import Strategist
 from candlebot import constants
 
 
-def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
+def calc(
+    date_from=None, date_to=None, symbol='ADAEUR', interval='1d',
+    strat='engulfing'
+):
     if date_from and date_to:
         date_from_no_hyphen = date_from.replace('-', '')
         date_to_no_hyphen = date_to.replace('-', '')
@@ -21,7 +24,7 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
     candles = list(candles_cursor)
     if not candles:
         return []
-    strat_df, wallet = Strategist.calc(candles, 'engulfing')
+    strat_df, wallet = Strategist.calc(candles, strat)
     candles = []
     balance_origin = []
     balance_long = []
