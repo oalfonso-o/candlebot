@@ -21,7 +21,7 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
     candles = list(candles_cursor)
     if not candles:
         return []
-    strat_df, wallet = Strategist.calc(candles, 'engulfing')
+    strat_df, wallet = Strategist.calc(candles, 'scalping')
     candles = []
     balance_origin = []
     balance_long = []

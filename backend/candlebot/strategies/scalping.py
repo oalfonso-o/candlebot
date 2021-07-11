@@ -6,6 +6,15 @@ import pandas as pd
 from candlebot import utils
 from candlebot.indicators.ema import IndicatorEMA
 from candlebot.indicators.engulfing import IndicatorEngulfing  # TODO: remove
+from candlebot.indicators.smma import (
+    IndicatorSMMA21,
+    IndicatorSMMA50,
+    IndicatorSMMA200,
+)
+from candlebot.indicators.william_fractal import (
+    IndicatorWilliamBullFractals,
+    IndicatorWilliamBearFractals,
+)
 from candlebot.models.wallet import Wallet
 from candlebot.utils.circular_queue import CircularQueue
 
@@ -27,6 +36,11 @@ class StrategyScalping:
     indicators = [
         IndicatorEngulfing,
         IndicatorEMA,  # EMA span: 10
+        IndicatorSMMA21,
+        IndicatorSMMA50,
+        IndicatorSMMA200,
+        IndicatorWilliamBullFractals,
+        IndicatorWilliamBearFractals,
     ]
     variables = [
         {'name': 'drop_factor', 'type': 'num'},

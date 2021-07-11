@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from candlebot.api.strategies import ema
 from candlebot.api.strategies import engulfing
 from candlebot.api.strategies import triangle
+from candlebot.api.strategies import scalping
 
 router = APIRouter(
     prefix="/strategies",
@@ -22,16 +23,14 @@ async def strategy_ema(
 async def strategy_engulfing(
     date_from=None, date_to=None, symbol='ADAUSDT', interval='1d'
 ):
-    return engulfing.calc(
-        date_from, date_to, symbol, interval, strat='engulfing')
+    return engulfing.calc(date_from, date_to, symbol, interval)
 
 
 @router.get("/scalping")
 async def strategy_scalping(
     date_from=None, date_to=None, symbol='ADAUSDT', interval='1d'
 ):
-    return engulfing.calc(
-        date_from, date_to, symbol, interval, strat='scalping')
+    return scalping.calc(date_from, date_to, symbol, interval)
 
 
 @router.get("/triangle")

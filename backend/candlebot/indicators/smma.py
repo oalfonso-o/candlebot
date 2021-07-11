@@ -7,7 +7,8 @@ class IndicatorSMMA21:
 
     @classmethod
     def apply(cls, df: pd.DataFrame) -> pd.DataFrame:
-        df = smma(df, 21, cls._id)
+        ind = smma(df, 21)
+        df[cls._id] = ind
         return df
 
 
@@ -17,7 +18,8 @@ class IndicatorSMMA50:
 
     @classmethod
     def apply(cls, df: pd.DataFrame) -> pd.DataFrame:
-        df = smma(df, 50, cls._id)
+        ind = smma(df, 50)
+        df[cls._id] = ind
         return df
 
 
@@ -27,11 +29,12 @@ class IndicatorSMMA200:
 
     @classmethod
     def apply(cls, df: pd.DataFrame) -> pd.DataFrame:
-        df = smma(df, 200, cls._id)
+        ind = smma(df, 200)
+        df[cls._id] = ind
         return df
 
 
-def smma(df, period, column_name, apply_to='close'):
+def smma(df, period, apply_to='close'):
     """Smoothed Moving Average (SMMA)
 
     https://github.com/dmitriiweb/tapy/blob/master/tapy/indicators.py
@@ -45,6 +48,7 @@ def smma(df, period, column_name, apply_to='close'):
             **Default**: Close
         :return: None
     """
+    column_name = 'smma'
     df_tmp = df[[apply_to]]
     first_val = df_tmp[apply_to].iloc[:period].mean()
     df_tmp = df_tmp.assign(column_name=None)
@@ -59,5 +63,4 @@ def smma(df, period, column_name, apply_to='close'):
             )
             df_tmp.at[index, column_name] = smma_val
     df_tmp = df_tmp[[column_name]]
-    df = df.merge(df_tmp, left_index=True, right_index=True)
-    return df
+    return df_tmp[column_name]
