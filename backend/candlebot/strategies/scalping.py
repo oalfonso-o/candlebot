@@ -164,8 +164,8 @@ class StrategyScalping:
             # FULL_BULL_ENGULFING in row['tags']
             two_candles_ago['william_bull_fractals']
             and (
-                row['low'] > row['smma50']
-                and two_candles_ago['low'] > row['smma50']
+                row['low'] > row['smma21']
+                and two_candles_ago['low'] > row['smma21']
             )
             and self.direction == 1
         ):
