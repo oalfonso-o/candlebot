@@ -24,7 +24,10 @@ ENGULFING_MIN_DIFF_PIPS = 2
 
 class StrategyScalping:
     _id = 'scalping'
-    indicators = [IndicatorEngulfing, IndicatorEMA]  # EMA span: 10
+    indicators = [
+        IndicatorEngulfing,
+        IndicatorEMA,  # EMA span: 10
+    ]
     variables = [
         {'name': 'drop_factor', 'type': 'num'},
     ]
@@ -136,7 +139,6 @@ class StrategyScalping:
     def _must_open_long(self, row):
         if (
             FULL_BULL_ENGULFING in row['tags']
-            # and BEAR_HAMMER not in self.prev_row['tags']  # TODO: check
             and self.direction == 1
         ):
             return True
