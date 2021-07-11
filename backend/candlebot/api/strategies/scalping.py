@@ -3,6 +3,7 @@ import math
 from candlebot import utils
 from candlebot.db.candle_retriever import CandleRetriever
 from candlebot.strategist import Strategist
+from candlebot.strategies.scalping import FULL_BULL_ENGULFING
 from candlebot import constants
 
 
@@ -28,6 +29,7 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
     balance_short = []
     chart_positions_long = []
     chart_positions_fractals = []
+    chart_positions_engulfing = []
     index_positions_long = 0
     smma21 = []
     smma50 = []
@@ -87,6 +89,17 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
             )
         else:
             chart_positions_fractals.append({'time': time})
+        if c['engulfing']:
+            point_engulfing_position = {
+                'time': time,
+                'text': 'bull',
+                'position': 'belowBar',
+                'color': 'blue',
+                'shape': 'arrowUp',
+            }
+        else:
+            point_engulfing_position = {'time': time}
+        chart_positions_engulfing.append(point_engulfing_position)
     return [
         {
             'id': 'open/close long positions',
@@ -107,6 +120,21 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
                     'type': 'candles',
                     'values': candles,
                     'markers': chart_positions_fractals,
+                },
+                {'type': 'lines', 'values': smma21, 'color': '#008000'},
+                {'type': 'lines', 'values': smma50, 'color': '#0000FF'},
+                {'type': 'lines', 'values': smma200, 'color': '#FF0000'},
+            ],
+            'width': 1200,
+            'height': 300,
+        },
+        {
+            'id': 'Engulfing marks',
+            'series': [
+                {
+                    'type': 'candles',
+                    'values': candles,
+                    'markers': chart_positions_engulfing,
                 },
                 {'type': 'lines', 'values': smma21, 'color': '#008000'},
                 {'type': 'lines', 'values': smma50, 'color': '#0000FF'},

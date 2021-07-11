@@ -23,10 +23,7 @@ logger = logging.getLogger(__name__)
 BULL_HAMMER = 'bull_hammer'
 BEAR_HAMMER = 'bear_hammer'
 DOJI = 'doji'
-START_BULL_ENGULFING = 'start_bull_engulfing'
 FULL_BULL_ENGULFING = 'full_bull_engulfing'
-START_BEAR_ENGULFING = 'start_bear_engulfing'
-FULL_BEAR_ENGULFING = 'full_bear_engulfing'
 
 ENGULFING_MIN_DIFF_PIPS = 2
 
@@ -53,15 +50,17 @@ class StrategyScalping:
         self.last_open_pos_close_value = 0
         self.pips_total = 10000
         self.win_pips_margin = 20
-        self.loss_pips_margin = 30
+        self.loss_pips_margin = 50
         self.wins = 0
         self.losses = 0
         self.count_open_pos = 0
         self.prev_row = None
         self.direction = 0
         self.diff_ema_trend_pips = 5
+        self.trend_reverse_flag = False
         for indicator in self.indicators:
             self.df = indicator.apply(self.df)
+        self.df['engulfing'] = False
 
     def calc(self) -> Tuple[pd.DataFrame, dict]:
         for i, row in self.df.iterrows():
@@ -71,7 +70,7 @@ class StrategyScalping:
                 continue
             queue = self.past_candles.get_queue()
             self.prev_row = queue[0]
-            self._tag_candles(row)
+            self._tag_candles(row, i)
             self._update_direction(row)
             if self._must_open_long(row, queue):
                 timestamp = utils.datetime_to_timestamp(
@@ -96,7 +95,7 @@ class StrategyScalping:
         logger.info(f'balance % earn: {self.wallet.balance_origin / self.wallet.balance_origin_start * 100}')  # noqa
         return self.df, self.wallet
 
-    def _tag_candles(self, row):
+    def _tag_candles(self, row, index):
         tags = []
         body = row['open'] - row['close']
         is_red_candle = body > 0
@@ -131,6 +130,7 @@ class StrategyScalping:
                 pip_value = row['close'] / self.pips_total
                 if diff_body > pip_value * ENGULFING_MIN_DIFF_PIPS:
                     tags.append(FULL_BULL_ENGULFING)
+                    self.df.loc[index, 'engulfing'] = True
 
         row['tags'] = tags
         self.past_candles.enqueue(row)
@@ -143,11 +143,18 @@ class StrategyScalping:
         ):
             self.direction = 0
         elif row['smma21'] > row['smma50'] > row['smma200']:
-            self.direction = 1
+            if self.trend_reverse_flag:
+                self.direction = 1
+            else:
+                self.trend_reverse_flag = True
         elif row['smma21'] < row['smma50'] < row['smma200']:
-            self.direction = -1
+            if self.trend_reverse_flag:
+                self.direction = -1
+            else:
+                self.trend_reverse_flag = True
         else:
             self.direction = 0
+            self.trend_reverse_flag = False
 
     def _must_open_long(self, row, queue):
         two_candles_ago = queue[1] if len(queue) == 5 else None
@@ -156,6 +163,10 @@ class StrategyScalping:
         if (
             # FULL_BULL_ENGULFING in row['tags']
             two_candles_ago['william_bull_fractals']
+            and (
+                row['low'] > row['smma50']
+                and two_candles_ago['low'] > row['smma50']
+            )
             and self.direction == 1
         ):
             return True
@@ -164,20 +175,28 @@ class StrategyScalping:
     def _must_close_long(self, row, queue):
         if not self.last_open_pos_close_value:
             return 0
-        two_candles_ago = queue[1] if len(queue) == 5 else None
-        if (
-            two_candles_ago is not None
-            and self.last_open_pos_close_value
-            and two_candles_ago['william_bear_fractals']
-        ):
-            return row['close']
+        # two_candles_ago = queue[1] if len(queue) == 5 else None
         last_open_value_pips = self.last_open_pos_close_value / self.pips_total
         high_diff = last_open_value_pips * self.win_pips_margin
         low_diff = last_open_value_pips * self.loss_pips_margin
+        # # premature close because of bear fractal
+        # if (
+        #     two_candles_ago is not None
+        #     and self.last_open_pos_close_value
+        #     and two_candles_ago['william_bear_fractals']
+        # ):
+        #     margin = row['close'] - self.last_open_pos_close_value
+        #     if margin > 0 and margin > high_diff:
+        #         self.wins += 1
+        #     elif margin <= 0:
+        #         self.losses += 1
+        #     return row['close']
+        # win
         if row['high'] - self.last_open_pos_close_value > high_diff:
             close_pos = self.last_open_pos_close_value + high_diff
             self.wins += 1 * self.count_open_pos
             return close_pos
+        # lose
         elif self.last_open_pos_close_value - row['low'] > low_diff:
             close_pos = self.last_open_pos_close_value - low_diff
             self.losses += 1
