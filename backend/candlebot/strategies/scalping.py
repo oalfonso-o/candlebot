@@ -1,11 +1,11 @@
+import datetime
+import math
 import logging
 from typing import Tuple
 
 import pandas as pd
 
 from candlebot import utils
-from candlebot.indicators.ema import IndicatorEMA
-from candlebot.indicators.engulfing import IndicatorEngulfing  # TODO: remove
 from candlebot.indicators.smma import (
     IndicatorSMMA21,
     IndicatorSMMA50,
@@ -34,8 +34,6 @@ ENGULFING_MIN_DIFF_PIPS = 2
 class StrategyScalping:
     _id = 'scalping'
     indicators = [
-        IndicatorEngulfing,
-        IndicatorEMA,  # EMA span: 10
         IndicatorSMMA21,
         IndicatorSMMA50,
         IndicatorSMMA200,
@@ -67,11 +65,15 @@ class StrategyScalping:
 
     def calc(self) -> Tuple[pd.DataFrame, dict]:
         for i, row in self.df.iterrows():
+            # TODO: remove dirty testing hardcoded filter
+            day_to_test = datetime.datetime(year=2021, month=7, day=10)
+            if row['_id'] < day_to_test:
+                continue
             queue = self.past_candles.get_queue()
             self.prev_row = queue[0]
             self._tag_candles(row)
-            self._update_direction(row, queue)
-            if self._must_open_long(row):
+            self._update_direction(row)
+            if self._must_open_long(row, queue):
                 timestamp = utils.datetime_to_timestamp(
                     row['_id'].to_pydatetime()
                 )
@@ -79,7 +81,7 @@ class StrategyScalping:
                 self.last_open_pos_close_value = row['close']
                 self.count_open_pos += 1
             else:
-                close_pos = self._must_close_long(row)
+                close_pos = self._must_close_long(row, queue)
                 if close_pos:
                     timestamp = utils.datetime_to_timestamp(
                         row['_id'].to_pydatetime()
@@ -89,7 +91,7 @@ class StrategyScalping:
                     self.count_open_pos = 0
         logger.info(f'wins: {self.wins}')
         logger.info(f'losses: {self.losses}')
-        logger.info(f'win/lose: {self.wins / self.losses}')
+        logger.info(f'win/lose: {self.wins / self.losses if self.losses else str(self.wins)+":-"}')  # noqa
         logger.info(f'final balance: {self.wallet.balance_origin}')
         logger.info(f'balance % earn: {self.wallet.balance_origin / self.wallet.balance_origin_start * 100}')  # noqa
         return self.df, self.wallet
@@ -133,34 +135,42 @@ class StrategyScalping:
         row['tags'] = tags
         self.past_candles.enqueue(row)
 
-    def _update_direction(self, row, queue):
-        last = queue[-1]
-        if not isinstance(last, pd.core.series.Series):
-            return
-        diff_ema = row['ema'] - last['ema']
-        max_diff = last['ema'] / self.pips_total * self.diff_ema_trend_pips
-        if diff_ema > 0:  # upwards
-            if max_diff > diff_ema:
-                self.direction = 1
-            else:
-                self.direction = 0
-        else:  # downwards
-            if max_diff > abs(diff_ema):
-                self.direction = -1
-            else:
-                self.direction = 0
-
-    def _must_open_long(self, row):
+    def _update_direction(self, row):
         if (
-            FULL_BULL_ENGULFING in row['tags']
+            math.isnan(row['smma21'])
+            or math.isnan(row['smma50'])
+            or math.isnan(row['smma200'])
+        ):
+            self.direction = 0
+        elif row['smma21'] > row['smma50'] > row['smma200']:
+            self.direction = 1
+        elif row['smma21'] < row['smma50'] < row['smma200']:
+            self.direction = -1
+        else:
+            self.direction = 0
+
+    def _must_open_long(self, row, queue):
+        two_candles_ago = queue[1] if len(queue) == 5 else None
+        if two_candles_ago is None:
+            return False
+        if (
+            # FULL_BULL_ENGULFING in row['tags']
+            two_candles_ago['william_bull_fractals']
             and self.direction == 1
         ):
             return True
         return False
 
-    def _must_close_long(self, row):
+    def _must_close_long(self, row, queue):
         if not self.last_open_pos_close_value:
             return 0
+        two_candles_ago = queue[1] if len(queue) == 5 else None
+        if (
+            two_candles_ago is not None
+            and self.last_open_pos_close_value
+            and two_candles_ago['william_bear_fractals']
+        ):
+            return row['close']
         last_open_value_pips = self.last_open_pos_close_value / self.pips_total
         high_diff = last_open_value_pips * self.win_pips_margin
         low_diff = last_open_value_pips * self.loss_pips_margin

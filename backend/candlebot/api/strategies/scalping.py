@@ -27,8 +27,11 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
     balance_long = []
     balance_short = []
     chart_positions_long = []
-    chart_positions_engulfing = []
+    chart_positions_fractals = []
     index_positions_long = 0
+    smma21 = []
+    smma50 = []
+    smma200 = []
     for _, c in strat_df.iterrows():
         time = (
             utils.datetime_to_timestamp(c['_id'].to_pydatetime())
@@ -42,6 +45,13 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
             'low': c['low'],
             'volume': c['volume'],
         }
+        smma21_line = {'time': time, 'value': c['smma21'] if not math.isnan(c['smma21']) else 300}  # noqa
+        smma50_line = {'time': time, 'value': c['smma50'] if not math.isnan(c['smma50']) else 300}  # noqa
+        smma200_line = {'time': time, 'value': c['smma200'] if not math.isnan(c['smma200']) else 300}  # noqa
+        smma21.append(smma21_line)
+        smma50.append(smma50_line)
+        smma200.append(smma200_line)
+
         candles.append(candle)
         any_marker_shown = False
         if (
@@ -67,12 +77,16 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
             balance_origin.append({'time': time})
             balance_long.append({'time': time})
             balance_short.append({'time': time})
-        if not math.isnan(c['engulfing']):
-            add_engulfing_points_to_chart(
-                time, c['engulfing'], chart_positions_engulfing
+        if c['william_bull_fractals']:
+            add_fractals_points_to_chart(
+                time, 'bull', chart_positions_fractals
+            )
+        elif c['william_bear_fractals']:
+            add_fractals_points_to_chart(
+                time, 'bear', chart_positions_fractals
             )
         else:
-            chart_positions_engulfing.append({'time': time})
+            chart_positions_fractals.append({'time': time})
     return [
         {
             'id': 'open/close long positions',
@@ -83,27 +97,30 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
                     'markers': chart_positions_long,
                 },
             ],
-            'width': 800,
-            'height': 250,
+            'width': 1200,
+            'height': 300,
         },
         {
-            'id': 'Engulfing marks',
+            'id': 'Fractal marks',
             'series': [
                 {
                     'type': 'candles',
                     'values': candles,
-                    'markers': chart_positions_engulfing,
+                    'markers': chart_positions_fractals,
                 },
+                {'type': 'lines', 'values': smma21, 'color': '#008000'},
+                {'type': 'lines', 'values': smma50, 'color': '#0000FF'},
+                {'type': 'lines', 'values': smma200, 'color': '#FF0000'},
             ],
-            'width': 800,
-            'height': 250,
+            'width': 1200,
+            'height': 300,
         },
         {
             'id': 'balance_origin',
             'series': [
                 {'type': 'lines', 'values': balance_origin, 'color': '#39f'},
             ],
-            'width': 800,
+            'width': 1000,
             'height': 100,
         },
         {
@@ -111,7 +128,7 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
             'series': [
                 {'type': 'lines', 'values': balance_long, 'color': '#f5a'},
             ],
-            'width': 800,
+            'width': 1000,
             'height': 100,
         },
     ]
@@ -147,17 +164,17 @@ def add_open_close_points_to_chart_positions(
         chart_positions.append(point_close_position)
 
 
-def add_engulfing_points_to_chart(time, value, chart_positions_engulfing):
-    if value > 0:
-        text = 'buy'
+def add_fractals_points_to_chart(time, value, chart_positions_fractals):
+    if value == 'bull':
+        text = 'bull'
         position = 'belowBar'
-        color = 'green'
-        shape = 'arrowUp'
-    else:
-        text = 'sell'
-        position = 'aboveBar'
         color = 'red'
         shape = 'arrowDown'
+    elif value == 'bear':
+        text = 'bear'
+        position = 'aboveBar'
+        color = 'green'
+        shape = 'arrowUp'
     point_open_position = {
         'time': time,
         'text': text,
@@ -165,4 +182,4 @@ def add_engulfing_points_to_chart(time, value, chart_positions_engulfing):
         'color': color,
         'shape': shape,
     }
-    chart_positions_engulfing.append(point_open_position)
+    chart_positions_fractals.append(point_open_position)
