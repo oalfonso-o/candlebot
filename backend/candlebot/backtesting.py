@@ -34,11 +34,7 @@ class Backtesting:
         'balance_long',
         'open_positions_long',
         'close_positions_long',
-        'total_earned_long',
-        'balance_short',
-        'open_positions_short',
-        'close_positions_short',
-        'total_earned_short',
+        'fees_payed',
     ]
     range_sufixes = ['_from', '_to', '_step']
 
@@ -247,28 +243,13 @@ class Backtesting:
             specific_fields[header] = value
         open_positions_long = 0
         close_positions_long = 0
-        open_positions_short = 0
-        close_positions_short = 0
-        total_earned_long = 0
-        total_earned_long = 0
-        total_earned_short = 0
         for position in wallet.positions_long:
             if position.action == 'open':
                 open_positions_long += 1
             elif position.action == 'close':
                 close_positions_long += 1
-                total_earned_long += position.amount - wallet.amount_to_open
-        for position in wallet.positions_short:
-            if position.action == 'open':
-                open_positions_short += 1
-            elif position.action == 'close':
-                close_positions_short += 1
-                total_earned_short += position.amount - wallet.amount_to_open
-        profit_percentage = (
-            total_earned_long  # TODO: short
-            / wallet.balance_origin_start
-            * 100
-        )
+        profits = wallet.balance_origin - wallet.balance_origin_start
+        profit_percentage = profits / (wallet.balance_origin_start / 100)
         row = {
             'test_id': self.test_id,
             'strategy': self.bt_config['strategy'],
@@ -284,11 +265,7 @@ class Backtesting:
             'balance_long': wallet.balance_long,
             'open_positions_long': open_positions_long,
             'close_positions_long': close_positions_long,
-            'total_earned_long': total_earned_long,
-            'balance_short': wallet.balance_short,
-            'open_positions_short': open_positions_short,
-            'close_positions_short': close_positions_short,
-            'total_earned_short': total_earned_short,
+            'total_payed_fees': wallet.total_payed_fees,
             **specific_fields,
         }
         return row

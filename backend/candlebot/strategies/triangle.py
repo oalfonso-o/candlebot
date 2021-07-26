@@ -1,7 +1,6 @@
 import logging
 import datetime
 from typing import Tuple
-from numpy import CLIP
 
 import pandas as pd
 

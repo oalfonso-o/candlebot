@@ -3,7 +3,6 @@ import math
 from candlebot import utils
 from candlebot.db.candle_retriever import CandleRetriever
 from candlebot.strategist import Strategist
-from candlebot.strategies.scalping import FULL_BULL_ENGULFING
 from candlebot import constants
 
 

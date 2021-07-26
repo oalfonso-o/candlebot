@@ -28,6 +28,7 @@ class Wallet:
         self.transaction_fee = transaction_fee
         self.positions_long: List[Position] = []
         self.positions_short: List[Position] = []
+        self.total_payed_fees = 0
 
     def open_pos(
         self,
@@ -41,18 +42,20 @@ class Wallet:
         if type_ not in self.position_types:
             raise ValueError(f'Type {type_} not in {self.position_types}')
         balance_type_fieldname = f'balance_{type_}'
-        open_amount = amount_to_open / price
-        open_amount_w_fee = open_amount - (open_amount * self.transaction_fee)
+        second_symbol_amount = amount_to_open / price
+        fee = (second_symbol_amount * self.transaction_fee)
+        second_symbol_amount_w_fee = second_symbol_amount - fee
         prev_open_balance = getattr(self, balance_type_fieldname)
-        new_open_balance = prev_open_balance + open_amount_w_fee
+        new_open_balance = prev_open_balance + second_symbol_amount_w_fee
         setattr(self, balance_type_fieldname, new_open_balance)
         self.balance_origin -= amount_to_open
+        self.total_payed_fees += fee
         position = Position(
             type_=type_,
             action='open',
             price=price,
             timestamp=timestamp,
-            amount=amount_to_open,
+            amount=second_symbol_amount_w_fee,
             balance_origin=self.balance_origin,
             balance_long=self.balance_long,
             balance_short=self.balance_short,
@@ -82,13 +85,13 @@ class Wallet:
             )
             return
         close_amount = prev_open_balance / 100 * percentage
-        close_amount_w_fee = (
-            close_amount - (close_amount * self.transaction_fee)
-        )
+        fee = close_amount * self.transaction_fee
+        close_amount_w_fee = close_amount - fee
         new_open_balance = prev_open_balance - close_amount
         setattr(self, balance_type_fieldname, new_open_balance)
         closed_amount_to_the_origin = close_amount_w_fee * price
         self.balance_origin += closed_amount_to_the_origin
+        self.total_payed_fees += fee
         position = Position(
             type_=type_,
             action='close',

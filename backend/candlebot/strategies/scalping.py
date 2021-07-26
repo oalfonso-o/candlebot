@@ -37,9 +37,7 @@ class StrategyScalping:
         IndicatorWilliamBullFractals,
         IndicatorWilliamBearFractals,
     ]
-    variables = [
-        {'name': 'drop_factor', 'type': 'num'},
-    ]
+    variables = []
 
     def __init__(self, df: pd.DataFrame):
         self.df = df
