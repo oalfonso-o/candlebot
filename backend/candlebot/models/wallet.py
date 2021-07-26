@@ -49,7 +49,7 @@ class Wallet:
         new_open_balance = prev_open_balance + second_symbol_amount_w_fee
         setattr(self, balance_type_fieldname, new_open_balance)
         self.balance_origin -= amount_to_open
-        self.total_payed_fees += fee
+        self.total_payed_fees += fee * price
         position = Position(
             type_=type_,
             action='open',
@@ -91,7 +91,7 @@ class Wallet:
         setattr(self, balance_type_fieldname, new_open_balance)
         closed_amount_to_the_origin = close_amount_w_fee * price
         self.balance_origin += closed_amount_to_the_origin
-        self.total_payed_fees += fee
+        self.total_payed_fees += fee * price
         position = Position(
             type_=type_,
             action='close',
