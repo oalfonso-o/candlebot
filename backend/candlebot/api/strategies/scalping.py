@@ -33,6 +33,10 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
     smma21 = []
     smma50 = []
     smma200 = []
+    stochk = []
+    stochd = []
+    stoch_top = []
+    stoch_bottom = []
     for _, c in strat_df.iterrows():
         time = (
             utils.datetime_to_timestamp(c['_id'].to_pydatetime())
@@ -52,6 +56,14 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
         smma21.append(smma21_line)
         smma50.append(smma50_line)
         smma200.append(smma200_line)
+        stochk_line = {'time': time, 'value': c['stoch_rsi_k'] if not math.isnan(c['stoch_rsi_k']) else 300}  # noqa
+        stochd_line = {'time': time, 'value': c['stoch_rsi_d'] if not math.isnan(c['stoch_rsi_d']) else 300}  # noqa
+        stoch_top_line = {'time': time, 'value': 0.8}
+        stoch_bottom_line = {'time': time, 'value': 0.2}
+        stochk.append(stochk_line)
+        stochd.append(stochd_line)
+        stoch_top.append(stoch_top_line)
+        stoch_bottom.append(stoch_bottom_line)
 
         candles.append(candle)
         any_marker_shown = False
@@ -110,7 +122,7 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
                 },
             ],
             'width': 1200,
-            'height': 300,
+            'height': 250,
         },
         {
             'id': 'Fractal marks',
@@ -125,29 +137,40 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
                 {'type': 'lines', 'values': smma200, 'color': '#FF0000'},
             ],
             'width': 1200,
-            'height': 300,
+            'height': 250,
         },
         {
-            'id': 'Engulfing marks',
+            'id': 'Stoch RSI',
             'series': [
-                {
-                    'type': 'candles',
-                    'values': candles,
-                    'markers': chart_positions_engulfing,
-                },
-                {'type': 'lines', 'values': smma21, 'color': '#008000'},
-                {'type': 'lines', 'values': smma50, 'color': '#0000FF'},
-                {'type': 'lines', 'values': smma200, 'color': '#FF0000'},
+                {'type': 'lines', 'values': stochk, 'color': '#fcba03'},
+                {'type': 'lines', 'values': stochd, 'color': '#290af5'},
+                {'type': 'lines', 'values': stoch_top, 'color': '#f50a0a'},
+                {'type': 'lines', 'values': stoch_bottom, 'color': '#f50a0a'},
             ],
             'width': 1200,
-            'height': 300,
+            'height': 250,
         },
+        # {
+        #     'id': 'Engulfing marks',
+        #     'series': [
+        #         {
+        #             'type': 'candles',
+        #             'values': candles,
+        #             'markers': chart_positions_engulfing,
+        #         },
+        #         {'type': 'lines', 'values': smma21, 'color': '#008000'},
+        #         {'type': 'lines', 'values': smma50, 'color': '#0000FF'},
+        #         {'type': 'lines', 'values': smma200, 'color': '#FF0000'},
+        #     ],
+        #     'width': 1200,
+        #     'height': 300,
+        # },
         {
             'id': 'balance_origin',
             'series': [
                 {'type': 'lines', 'values': balance_origin, 'color': '#39f'},
             ],
-            'width': 1000,
+            'width': 1200,
             'height': 100,
         },
         {
@@ -155,7 +178,7 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
             'series': [
                 {'type': 'lines', 'values': balance_long, 'color': '#f5a'},
             ],
-            'width': 1000,
+            'width': 1200,
             'height': 100,
         },
     ]

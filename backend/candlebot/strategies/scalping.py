@@ -15,6 +15,10 @@ from candlebot.indicators.william_fractal import (
     IndicatorWilliamBullFractals,
     IndicatorWilliamBearFractals,
 )
+from candlebot.indicators.stochastic import (
+    IndicatorStochRSID,
+    IndicatorStochRSIK,
+)
 from candlebot.models.wallet import Wallet
 from candlebot.utils.circular_queue import CircularQueue
 
@@ -36,6 +40,8 @@ class StrategyScalping:
         IndicatorSMMA200,
         IndicatorWilliamBullFractals,
         IndicatorWilliamBearFractals,
+        IndicatorStochRSID,
+        IndicatorStochRSIK,
     ]
     variables = []
 
