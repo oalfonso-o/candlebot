@@ -142,8 +142,8 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
         {
             'id': 'Stoch RSI',
             'series': [
-                {'type': 'lines', 'values': stochk, 'color': '#fcba03'},
-                {'type': 'lines', 'values': stochd, 'color': '#290af5'},
+                {'type': 'lines', 'values': stochk, 'color': '#290af5'},
+                {'type': 'lines', 'values': stochd, 'color': '#fcba03'},
                 {'type': 'lines', 'values': stoch_top, 'color': '#f50a0a'},
                 {'type': 'lines', 'values': stoch_bottom, 'color': '#f50a0a'},
             ],

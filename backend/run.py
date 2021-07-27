@@ -20,6 +20,8 @@ def crawl(symbol, interval):
 
 
 def fill(symbol, date_from, interval):
+    if not symbol:
+        raise ValueError('Parameter --symbol is required for fill command')
     if not date_from:
         raise ValueError(
             'Parameter --fill-date-from is required for fill command')

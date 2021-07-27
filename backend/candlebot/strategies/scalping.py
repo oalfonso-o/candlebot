@@ -53,8 +53,8 @@ class StrategyScalping:
         self.past_candles = CircularQueue(5)
         self.last_open_pos_close_value = 0
         self.pips_total = 10000
-        self.win_pips_margin = 20
-        self.loss_pips_margin = 50
+        self.win_pips_margin = 25
+        self.loss_pips_margin = 200
         self.wins = 0
         self.losses = 0
         self.count_open_pos = 0
@@ -161,17 +161,43 @@ class StrategyScalping:
             self.trend_reverse_flag = False
 
     def _must_open_long(self, row, queue):
+        if self.last_open_pos_close_value:
+            return False
+        one_candle_ago = queue[0] if len(queue) == 5 else None
         two_candles_ago = queue[1] if len(queue) == 5 else None
         if two_candles_ago is None:
             return False
+        # don't open if has not been oversold previously
+        oversold = False
+        for candle_ago in queue:
+            if one_candle_ago['stoch_rsi_k'] < 0.05:
+                oversold = True
+        if not oversold:
+            return False
+        last_fractal = None
+        # don't open if last fractal found in last 5 candles is bear
+        for candle_ago in queue:
+            if candle_ago['william_bear_fractals']:
+                last_fractal = 'bear'
+                break
+            if candle_ago['william_bull_fractals']:
+                last_fractal = 'bull'
+                break
+        if last_fractal == 'bear':
+            return False
         if (
             # FULL_BULL_ENGULFING in row['tags']
-            two_candles_ago['william_bull_fractals']
-            and (
+            # two_candles_ago['william_bull_fractals']
+            (
                 row['low'] > row['smma21']
-                and two_candles_ago['low'] > row['smma21']
+                and two_candles_ago['low'] > row['smma50']
             )
             and self.direction == 1
+            and row['stoch_rsi_k'] < 0.50
+            and row['stoch_rsi_k'] > 0.20
+            and row['stoch_rsi_k'] > row['stoch_rsi_d']
+            # and row['stoch_rsi_k'] > one_candle_ago['stoch_rsi_k'] > two_candles_ago['stoch_rsi_k']  # noqa
+            and not row['william_bear_fractals']
         ):
             return True
         return False
@@ -195,14 +221,34 @@ class StrategyScalping:
         #     elif margin <= 0:
         #         self.losses += 1
         #     return row['close']
-        # win
+        # close if rsi goes back to oversold again, trend is not going up
+        # if row['stoch_rsi_k'] < 0.2 and row['close'] < self.last_open_pos_close_value:  # noqa
+        #     self._custom_close(row, 'trend not reversing')
+        #     return row['close']
+        # close if below smma200
+        if row['close'] <= row['smma200']:
+            self._custom_close(row, 'below smma200')
+            return row['close']
+        # standard win
         if row['high'] - self.last_open_pos_close_value > high_diff:
             close_pos = self.last_open_pos_close_value + high_diff
             self.wins += 1 * self.count_open_pos
             return close_pos
-        # lose
+        # standard lose
         elif self.last_open_pos_close_value - row['low'] > low_diff:
             close_pos = self.last_open_pos_close_value - low_diff
             self.losses += 1
             return close_pos
         return 0
+
+    def _custom_close(self, row, reason):
+        win_desired = (
+            self.last_open_pos_close_value
+            + (self.last_open_pos_close_value / 100 * 0.16)  # + fee
+        )
+        if row['close'] < win_desired:
+            self.losses += 1
+            logging.info(f'LOSE close because {reason}')
+        elif row['close'] >= win_desired:
+            self.wins += 1
+            logging.info(f'WIN close because {reason}')
