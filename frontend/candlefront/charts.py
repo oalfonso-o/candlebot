@@ -17,8 +17,8 @@ charts_bp = Blueprint('charts', __name__)
 @charts_bp.route('/', methods=['GET', 'POST'])
 def charts():
     symbol_selected = 'BNBUSDT'
-    interval_selected = '5m'
-    strategy_selected = 'scalping'
+    interval_selected = '15m'
+    strategy_selected = 'scalping_ema_10_20'
     date_from = datetime.date.today() - datetime.timedelta(days=40)
     date_to = datetime.date.today() + datetime.timedelta(days=1)
     strategy_params = {

@@ -61,11 +61,11 @@ class StrategyBase(Conditions):
         self.count_open_pos = 0
         self.prev_row = None
         self.direction = 0
-        self.diff_ema_trend_pips = 5
         self.trend_reverse_flag = False
         for indicator in self.indicators:
             self.df = indicator.apply(self.df)
         self.df['engulfing'] = False
+        self.stop_loss = 0
 
     def calc(self) -> Tuple[pd.DataFrame, dict]:
         for i, row in self.df.iterrows():
@@ -93,7 +93,9 @@ class StrategyBase(Conditions):
         logger.info(f'losses: {self.losses}')
         logger.info(f'win/lose: {self.wins / self.losses if self.losses else str(self.wins)+":-"}')  # noqa
         logger.info(f'final balance: {self.wallet.balance_origin}')
-        logger.info(f'balance % earn: {self.wallet.balance_origin / self.wallet.balance_origin_start * 100}')  # noqa
+        open_pos = self.wallet.amount_to_open if self.last_open_pos_close_value else 0  # noqa
+        logger.info(f'open position: {open_pos}')
+        logger.info(f'balance % earn: {(self.wallet.balance_origin + open_pos) / self.wallet.balance_origin_start * 100}')  # noqa
         return self.df, self.wallet
 
     def _tag_candles(self, row, index):
@@ -196,6 +198,8 @@ class StrategyBase(Conditions):
         if row['close'] < win_desired:
             self.losses += 1
             logging.info(f'LOSE close because {reason}')
+            return row['close']
         elif row['close'] >= win_desired:
             self.wins += 1
             logging.info(f'WIN close because {reason}')
+            return row['close']
