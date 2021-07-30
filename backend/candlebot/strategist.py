@@ -3,8 +3,9 @@ import pandas as pd
 
 from candlebot.strategies.ema import StrategyEMA
 from candlebot.strategies.engulfing import StrategyEngulfing
-from candlebot.strategies.scalping import StrategyScalping
 from candlebot.strategies.triangle import StrategyTriangle
+from candlebot.strategies.scalping import StrategyScalping
+from candlebot.strategies.scalping_ema_10_20 import StrategyScalpingEMA10_20
 from candlebot import utils
 from candlebot import constants
 
@@ -16,8 +17,9 @@ class Strategist:
     strategies = {
         'ema': StrategyEMA,
         'engulfing': StrategyEngulfing,
-        'scalping': StrategyScalping,
         'triangle': StrategyTriangle,
+        'scalping': StrategyScalping,
+        'scalping_ema_10_20': StrategyScalpingEMA10_20,
     }
 
     @classmethod

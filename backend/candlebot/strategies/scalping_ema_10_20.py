@@ -1,26 +1,45 @@
-import pandas as pd
 import logging
+import math
+import pandas as pd
 
+from candlebot.indicators.ema import (
+    IndicatorEMA10,
+    IndicatorEMA20,
+)
 from candlebot.strategies.base import StrategyBase
 
 logger = logging.getLogger(__name__)
 
 
-class StrategyScalping(StrategyBase):
-    _id = 'scalping'
+class StrategyScalpingEMA10_20(StrategyBase):
+    _id = 'scalping_ema_10_20'
     variables = []
     open_conditions = [
         'trend_long',
         'circular_queue_is_full',
-        'crow_low_gt_smma21',
-        'rsi_k_crow_lt_10',
-        'rsi_k_crow_gt_rsi_d_crow',
     ]
-    custom_indicators = []
+    custom_indicators = [
+        IndicatorEMA10,
+        IndicatorEMA20,
+    ]
 
     def __init__(self, df: pd.DataFrame):
-        self.indicators.extend(self.custom_indicators)
+        self.indicators = self.custom_indicators
         super().__init__(df)
+
+    def _update_direction(self, row):
+        if (
+            math.isnan(row['ema10'])
+            or math.isnan(row['ema20'])
+            or not self.circular_queue_is_full(row)
+        ):
+            self.direction = 0
+        elif row['ema10'] > row['ema20']:
+            self.direction = 1
+        elif row['ema10'] < row['ema20']:
+            self.direction = -1
+        else:
+            self.direction = 0
 
     def _must_open_long(self, row):
         if (
