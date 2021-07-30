@@ -104,7 +104,7 @@ class Conditions(TrendConditionsMixin, metaclass=abc.ABCMeta):
     def bull_engulfing(self, crow):
         return bool(constants.FULL_BULL_ENGULFING in crow['tags'])
 
-    def rsi_k_crow_lt_0_10(self, crow):
+    def rsi_k_crow_lt_10(self, crow):
         return bool(crow['stoch_rsi_k'] < 0.10)
 
     def rsi_k_crow_gt_rsi_d_crow(self, crow):

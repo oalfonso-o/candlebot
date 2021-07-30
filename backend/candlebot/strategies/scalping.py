@@ -35,14 +35,18 @@ ENGULFING_MIN_DIFF_PIPS = 2
 class StrategyScalping(StrategyBase):
     _id = 'scalping'
     variables = []
+    open_conditions = [
+        'trend_long',
+        'circular_queue_is_full',
+        'crow_low_gt_smma21',
+        'rsi_k_crow_lt_10',
+        'rsi_k_crow_gt_rsi_d_crow',
+    ]
 
     def _must_open_long(self, row):
         if (
             not self.last_open_pos_close_value
-            and self.trend_long(row)
-            and self.circular_queue_is_full(row)
-            and self.rsi_k_crow_is_0(row)
-            and self.crow_low_gt_smma21(row)
+            and all([getattr(self, f)(row) for f in self.open_conditions])
         ):
             return True
         return False
