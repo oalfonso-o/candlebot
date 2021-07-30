@@ -1,4 +1,3 @@
-import datetime
 import math
 import logging
 from typing import Tuple
@@ -21,6 +20,7 @@ from candlebot.indicators.stochastic import (
 )
 from candlebot.models.wallet import Wallet
 from candlebot.utils.circular_queue import CircularQueue
+from candlebot.strategies.base import StrategyBase
 
 logger = logging.getLogger(__name__)
 
@@ -32,223 +32,37 @@ FULL_BULL_ENGULFING = 'full_bull_engulfing'
 ENGULFING_MIN_DIFF_PIPS = 2
 
 
-class StrategyScalping:
+class StrategyScalping(StrategyBase):
     _id = 'scalping'
-    indicators = [
-        IndicatorSMMA21,
-        IndicatorSMMA50,
-        IndicatorSMMA200,
-        IndicatorWilliamBullFractals,
-        IndicatorWilliamBearFractals,
-        IndicatorStochRSID,
-        IndicatorStochRSIK,
-    ]
     variables = []
 
-    def __init__(self, df: pd.DataFrame):
-        self.df = df
-        for indicator in self.indicators:
-            self.df = indicator.apply(self.df)
-        self.wallet = Wallet()
-        self.past_candles = CircularQueue(5)
-        self.last_open_pos_close_value = 0
-        self.pips_total = 10000
-        self.win_pips_margin = 25
-        self.loss_pips_margin = 200
-        self.wins = 0
-        self.losses = 0
-        self.count_open_pos = 0
-        self.prev_row = None
-        self.direction = 0
-        self.diff_ema_trend_pips = 5
-        self.trend_reverse_flag = False
-        for indicator in self.indicators:
-            self.df = indicator.apply(self.df)
-        self.df['engulfing'] = False
-
-    def calc(self) -> Tuple[pd.DataFrame, dict]:
-        for i, row in self.df.iterrows():
-            # TODO: remove dirty testing hardcoded filter
-            day_to_test = datetime.datetime(year=2021, month=7, day=10)
-            if row['_id'] < day_to_test:
-                continue
-            queue = self.past_candles.get_queue()
-            self.prev_row = queue[0]
-            self._tag_candles(row, i)
-            self._update_direction(row)
-            if self._must_open_long(row, queue):
-                timestamp = utils.datetime_to_timestamp(
-                    row['_id'].to_pydatetime()
-                )
-                self.wallet.open_pos('long', row['close'], timestamp)
-                self.last_open_pos_close_value = row['close']
-                self.count_open_pos += 1
-            else:
-                close_pos = self._must_close_long(row, queue)
-                if close_pos:
-                    timestamp = utils.datetime_to_timestamp(
-                        row['_id'].to_pydatetime()
-                    )
-                    self.last_open_pos_close_value = 0
-                    self.wallet.close_pos('long', close_pos, timestamp)
-                    self.count_open_pos = 0
-        logger.info(f'wins: {self.wins}')
-        logger.info(f'losses: {self.losses}')
-        logger.info(f'win/lose: {self.wins / self.losses if self.losses else str(self.wins)+":-"}')  # noqa
-        logger.info(f'final balance: {self.wallet.balance_origin}')
-        logger.info(f'balance % earn: {self.wallet.balance_origin / self.wallet.balance_origin_start * 100}')  # noqa
-        return self.df, self.wallet
-
-    def _tag_candles(self, row, index):
-        tags = []
-        body = row['open'] - row['close']
-        is_red_candle = body > 0
-        is_green_candle = body < 0
-        body = abs(body)
-        if not body:
-            color = 'green'  # dummy color for first dogi
-            if isinstance(self.prev_row, pd.core.series.Series):
-                color = self.prev_row['color']
-            row['color'] = color
-            tags.append(DOJI)
-        elif is_red_candle:
-            row['color'] = 'red'
-            # tag bull hammer
-            low_wick = row['close'] - row['low']
-            if low_wick / 3 > body:
-                tags.append(BULL_HAMMER)
-
-        elif is_green_candle:
-            row['color'] = 'green'
-            # tag bear hammer
-            high_wick = row['high'] - row['close']
-            if high_wick / 3 > body:
-                tags.append(BEAR_HAMMER)
-            # tag bull engulfing
-            if (
-                isinstance(self.prev_row, pd.core.series.Series)
-                and self.prev_row['color'] == 'red'
-            ):
-                prev_body = self.prev_row['open'] - self.prev_row['close']
-                diff_body = body - prev_body
-                pip_value = row['close'] / self.pips_total
-                if diff_body > pip_value * ENGULFING_MIN_DIFF_PIPS:
-                    tags.append(FULL_BULL_ENGULFING)
-                    self.df.loc[index, 'engulfing'] = True
-
-        row['tags'] = tags
-        self.past_candles.enqueue(row)
-
-    def _update_direction(self, row):
+    def _must_open_long(self, row):
         if (
-            math.isnan(row['smma21'])
-            or math.isnan(row['smma50'])
-            or math.isnan(row['smma200'])
-        ):
-            self.direction = 0
-        elif row['smma21'] > row['smma50'] > row['smma200']:
-            if self.trend_reverse_flag:
-                self.direction = 1
-            else:
-                self.trend_reverse_flag = True
-        elif row['smma21'] < row['smma50'] < row['smma200']:
-            if self.trend_reverse_flag:
-                self.direction = -1
-            else:
-                self.trend_reverse_flag = True
-        else:
-            self.direction = 0
-            self.trend_reverse_flag = False
-
-    def _must_open_long(self, row, queue):
-        if self.last_open_pos_close_value:
-            return False
-        one_candle_ago = queue[0] if len(queue) == 5 else None
-        two_candles_ago = queue[1] if len(queue) == 5 else None
-        if two_candles_ago is None:
-            return False
-        # don't open if has not been oversold previously
-        oversold = False
-        for candle_ago in queue:
-            if one_candle_ago['stoch_rsi_k'] < 0.05:
-                oversold = True
-        if not oversold:
-            return False
-        last_fractal = None
-        # don't open if last fractal found in last 5 candles is bear
-        for candle_ago in queue:
-            if candle_ago['william_bear_fractals']:
-                last_fractal = 'bear'
-                break
-            if candle_ago['william_bull_fractals']:
-                last_fractal = 'bull'
-                break
-        if last_fractal == 'bear':
-            return False
-        if (
-            # FULL_BULL_ENGULFING in row['tags']
-            # two_candles_ago['william_bull_fractals']
-            (
-                row['low'] > row['smma21']
-                and two_candles_ago['low'] > row['smma50']
-            )
-            and self.direction == 1
-            and row['stoch_rsi_k'] < 0.50
-            and row['stoch_rsi_k'] > 0.20
-            and row['stoch_rsi_k'] > row['stoch_rsi_d']
-            # and row['stoch_rsi_k'] > one_candle_ago['stoch_rsi_k'] > two_candles_ago['stoch_rsi_k']  # noqa
-            and not row['william_bear_fractals']
+            not self.last_open_pos_close_value
+            and self.trend_long(row)
+            and self.circular_queue_is_full(row)
+            and self.rsi_k_crow_is_0(row)
+            and self.crow_low_gt_smma21(row)
         ):
             return True
         return False
 
-    def _must_close_long(self, row, queue):
+    def _must_close_long(self, row):
         if not self.last_open_pos_close_value:
             return 0
-        # two_candles_ago = queue[1] if len(queue) == 5 else None
         last_open_value_pips = self.last_open_pos_close_value / self.pips_total
         high_diff = last_open_value_pips * self.win_pips_margin
         low_diff = last_open_value_pips * self.loss_pips_margin
-        # # premature close because of bear fractal
-        # if (
-        #     two_candles_ago is not None
-        #     and self.last_open_pos_close_value
-        #     and two_candles_ago['william_bear_fractals']
-        # ):
-        #     margin = row['close'] - self.last_open_pos_close_value
-        #     if margin > 0 and margin > high_diff:
-        #         self.wins += 1
-        #     elif margin <= 0:
-        #         self.losses += 1
-        #     return row['close']
-        # close if rsi goes back to oversold again, trend is not going up
-        # if row['stoch_rsi_k'] < 0.2 and row['close'] < self.last_open_pos_close_value:  # noqa
-        #     self._custom_close(row, 'trend not reversing')
-        #     return row['close']
-        # close if below smma200
-        if row['close'] <= row['smma200']:
-            self._custom_close(row, 'below smma200')
-            return row['close']
         # standard win
         if row['high'] - self.last_open_pos_close_value > high_diff:
             close_pos = self.last_open_pos_close_value + high_diff
             self.wins += 1 * self.count_open_pos
+            logging.info(f'wins {self.wins} - loses {self.losses}')
             return close_pos
         # standard lose
         elif self.last_open_pos_close_value - row['low'] > low_diff:
             close_pos = self.last_open_pos_close_value - low_diff
             self.losses += 1
+            logging.info(f'wins {self.wins} - loses {self.losses}')
             return close_pos
         return 0
-
-    def _custom_close(self, row, reason):
-        win_desired = (
-            self.last_open_pos_close_value
-            + (self.last_open_pos_close_value / 100 * 0.16)  # + fee
-        )
-        if row['close'] < win_desired:
-            self.losses += 1
-            logging.info(f'LOSE close because {reason}')
-        elif row['close'] >= win_desired:
-            self.wins += 1
-            logging.info(f'WIN close because {reason}')

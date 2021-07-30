@@ -155,6 +155,7 @@ class Backtesting:
                 if not candles:
                     logging.warning('No klines')
                     continue
+                logging.info(f'Calculating test: {s} - {i}')
                 _, wallet = Strategist.calc(
                     candles, self.bt_config['strategy'])
                 self._parse_output(wallet, s, i, d)
