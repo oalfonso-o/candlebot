@@ -30,6 +30,7 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
     index_positions_long = 0
     ema10 = []
     ema20 = []
+    zigzag = []
     for _, c in strat_df.iterrows():
         time = (
             utils.datetime_to_timestamp(c['_id'].to_pydatetime())
@@ -47,6 +48,10 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
         ema20_line = {'time': time, 'value': c['ema20'] if not math.isnan(c['ema20']) else 300}  # noqa
         ema10.append(ema10_line)
         ema20.append(ema20_line)
+        zigzag_line = {'time': time}
+        if c['zigzag']:
+            zigzag_line['value'] = c['zigzag']
+        zigzag.append(zigzag_line)
 
         candles.append(candle)
         any_marker_shown = False
@@ -82,6 +87,7 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
                     'values': candles,
                     'markers': chart_positions_long,
                 },
+                {'type': 'lines', 'values': zigzag, 'color': '#000', 'lineWidth': 3},  # noqa
                 {'type': 'lines', 'values': ema10, 'color': '#008000'},
                 {'type': 'lines', 'values': ema20, 'color': '#0000FF'},
             ],

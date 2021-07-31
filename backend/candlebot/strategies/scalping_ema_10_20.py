@@ -6,6 +6,7 @@ from candlebot.indicators.ema import (
     IndicatorEMA10,
     IndicatorEMA20,
 )
+from candlebot.indicators.zigzag import IndicatorZigZag
 from candlebot.strategies.base import StrategyBase
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,8 @@ class StrategyScalpingEMA10_20(StrategyBase):
     custom_indicators = [
         IndicatorEMA10,
         IndicatorEMA20,
+        IndicatorEMA20,
+        IndicatorZigZag,
     ]
     close_win_conditions = [
         'ema10_lt_ema20',
