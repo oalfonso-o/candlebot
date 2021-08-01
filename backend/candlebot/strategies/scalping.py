@@ -1,6 +1,5 @@
 import math
 import logging
-import pandas as pd
 
 from candlebot.strategies.base import StrategyBase
 from candlebot.indicators.smma import (
@@ -39,6 +38,7 @@ class StrategyScalping(StrategyBase):
         'rsi_k_crow_lt_10',
         'rsi_k_crow_gt_rsi_d_crow',
     ]
+    trend_reverse_flag = False
 
     def _update_direction(self, row):
         if (
@@ -77,7 +77,7 @@ class StrategyScalping(StrategyBase):
         # standard win
         if row['high'] - self.last_open_pos_close_value > high_diff:
             close_pos = self.last_open_pos_close_value + high_diff
-            self.wins += 1 * self.count_open_pos
+            self.wins += 1
             logging.info(f'wins {self.wins} - loses {self.losses}')
             return close_pos
         # standard lose

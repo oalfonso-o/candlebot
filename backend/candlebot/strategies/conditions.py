@@ -87,6 +87,12 @@ class TrendConditionsMixin(metaclass=abc.ABCMeta):
     def ema20_is_not_nan(self, crow):
         return bool(not math.isnan(crow['ema20']))
 
+    def all_5_prev_rows_ema10_gt_ema20(self, crow):
+        for qrow in self.queue[:5]:
+            if not self.ema10_gt_ema20(qrow):
+                return False
+        return True
+
 
 generate_generic_trend_conditions()
 
@@ -176,11 +182,42 @@ class CandlePatternsConditionsMixin(metaclass=abc.ABCMeta):
         return bool(constants.DOJI not in crow['tags'])
 
 
+class ClosingsMixin:
+    '''Comon conditions for closing decisions'''
+
+    def cond_close_win_pips_margin(self, crow):
+        high_diff = (  # TODO: calculate only once when opening
+            self.last_open_pos_close_value
+            / self.pips_total
+            * self.win_pips_margin
+        )
+        if (
+            self.last_open_pos_close_value
+            and crow['high'] - self.last_open_pos_close_value > high_diff
+        ):
+            return True
+        return False
+
+    def cond_close_lose_pips_margin(self, crow):
+        low_diff = (  # TODO: calculate only once when opening
+            self.last_open_pos_close_value
+            / self.pips_total
+            * self.loss_pips_margin
+        )
+        if (
+            self.last_open_pos_close_value
+            and self.last_open_pos_close_value - crow['low'] > low_diff
+        ):
+            return True
+        return False
+
+
 class Conditions(
     TrendConditionsMixin,
     ColorConditionsMixin,
     StochRSIConditionsMixin,
     CandlePatternsConditionsMixin,
+    ClosingsMixin,
     metaclass=abc.ABCMeta,
 ):
     """Contains methods with default conditions to be used by strategies.

@@ -32,7 +32,15 @@ class StrategyBase(Conditions, Closings, PostOpenActions):
     post_open_actions = []
     close_win_conditions = []
     close_lose_conditions = []
+    post_close_actions = [
+        'remove_stop_loss',
+        'remove_last_open_pos_close_value',
+    ]
     len_queue = 15
+    stop_loss = 0
+    pips_total = 10000
+    win_pips_margin = 20
+    loss_pips_margin = 20
 
     def __init__(self, df: pd.DataFrame):
         self.df = df
@@ -42,14 +50,9 @@ class StrategyBase(Conditions, Closings, PostOpenActions):
         self.wallet = Wallet()
         self.past_candles = CircularQueue(self.len_queue)
         self.last_open_pos_close_value = 0
-        self.pips_total = 10000
-        self.win_pips_margin = 20
-        self.loss_pips_margin = 20
         self.wins = 0
         self.losses = 0
-        self.count_open_pos = 0
         self.direction = 0
-        self.trend_reverse_flag = False
         for indicator in self.indicators:
             self.df = indicator.apply(self.df)
         self.df['engulfing'] = False
@@ -68,16 +71,14 @@ class StrategyBase(Conditions, Closings, PostOpenActions):
                 )
                 self.wallet.open_pos('long', row['close'], timestamp)
                 self.last_open_pos_close_value = row['close']
-                self.count_open_pos += 1
             else:
                 close_pos = self._must_close_long(row)
                 if close_pos:
                     timestamp = utils.datetime_to_timestamp(
                         row['_id'].to_pydatetime()
                     )
-                    self.last_open_pos_close_value = 0
                     self.wallet.close_pos('long', close_pos, timestamp)
-                    self.count_open_pos = 0
+                    self._post_close_actions()
         logger.info(f'wins: {self.wins}')
         logger.info(f'losses: {self.losses}')
         logger.info(f'win/lose: {self.wins / self.losses if self.losses else str(self.wins)+":-"}')  # noqa
@@ -161,10 +162,24 @@ class StrategyBase(Conditions, Closings, PostOpenActions):
             self.direction = 0
 
     def _must_open_long(self, row):
-        if not self.last_open_pos_close_value:
+        if not self.last_open_pos_close_value:  # this only allows 1 open
             for f in self.open_conditions:
-                if not getattr(self, f)(row):
-                    return False
+                if type(f) == str:
+                    if not getattr(self, f)(row):
+                        return False
+                elif type(f) == list:  # multiple AND conditions in an OR list of conditions: [[1 and 2 and 3] or [4 and 5 and 6]]  # noqa
+                    one_OR_condition_met = False
+                    for or_conditions in f:
+                        if all([
+                            getattr(self, f2)(row)
+                            for f2 in or_conditions
+                        ]):
+                            one_OR_condition_met = True
+                            break
+                    if not one_OR_condition_met:
+                        return False
+                else:
+                    raise Exception('Unsupported type of open long')
             for f in self.post_open_actions:
                 getattr(self, f)(row)
             return True
@@ -181,3 +196,7 @@ class StrategyBase(Conditions, Closings, PostOpenActions):
             if getattr(self, condition)(row):
                 return getattr(self, close)(row, condition)
         return 0
+
+    def _post_close_actions(self):
+        for f in self.post_close_actions:
+            getattr(self, f)()

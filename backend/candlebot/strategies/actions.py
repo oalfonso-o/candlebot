@@ -9,4 +9,11 @@ class PostOpenActions(metaclass=abc.ABCMeta):
             if qrow['zigzag'] and qrow['zigzag'] < crow['low']:
                 self.stop_loss = qrow['zigzag']
                 return
-        raise Exception('Lower zigzag not found, no stop loss could be set')
+        self.stop_loss = crow['close'] - (crow['close'] / 100)
+        # raise Exception('Lower zigzag not found, no stop loss could be set')
+
+    def remove_stop_loss(self, crow):
+        self.stop_loss = 0
+
+    def remove_last_open_pos_close_value(self, crow):
+        self.last_open_pos_close_value = 0
