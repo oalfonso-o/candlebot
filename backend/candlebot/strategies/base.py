@@ -29,8 +29,8 @@ logger = logging.getLogger(__name__)
 FEE_PERCENT = 0.16
 
 
-class StrategyBase(Conditions):
-    _id = 'must_be_overriden'  # TODO: abstract
+class StrategyBase(Conditions):  # TODO: abstract class
+    _id = 'must_be_overriden'  # TODO: abstract property
     indicators = [
         IndicatorSMMA21,
         IndicatorSMMA50,
@@ -49,9 +49,8 @@ class StrategyBase(Conditions):
         for indicator in self.indicators:
             self.df = indicator.apply(self.df)
         self.wallet = Wallet()
-        self.len_queue = 15
+        self.len_queue = 200
         self.past_candles = CircularQueue(self.len_queue)
-        self.len_check_queue = 5
         self.last_open_pos_close_value = 0
         self.pips_total = 10000
         self.win_pips_margin = 20

@@ -29,13 +29,13 @@ def generate_generic_trend_conditions():
         method_str = f'def {name}(self, crow):op = OPS["{cond}"];return op({candle}["{candle_part}"], crow["{smma}"])'  # noqa
         exec(method_str, globals())
         setattr(TrendConditionsMixin, name, globals()[name])
-    # DEFINE METHODS FOR ALL QUEUE CANDLES
-    product = itertools.product(candle_parts, smmas, conds)
-    for candle_part, smma, cond in product:
-        name = f'all_queue_{candle_part}_{cond}_{smma}'
-        method_str = f'def {name}(self, crow):op = OPS["{cond}"];return all([op(c["{candle_part}"], c["{smma}"]) for c in self.queue])'  # noqa
-        exec(method_str, globals())
-        setattr(TrendConditionsMixin, name, globals()[name])
+    # # DEFINE METHODS FOR ALL QUEUE CANDLES  # TODO: define for las N candles
+    # product = itertools.product(candle_parts, smmas, conds)
+    # for candle_part, smma, cond in product:
+    #     name = f'all_queue_{candle_part}_{cond}_{smma}'
+    #     method_str = f'def {name}(self, crow):op = OPS["{cond}"];return all([op(c["{candle_part}"], c["{smma}"]) for c in self.queue])'  # noqa
+    #     exec(method_str, globals())
+    #     setattr(TrendConditionsMixin, name, globals()[name])
 
 
 class TrendConditionsMixin(metaclass=abc.ABCMeta):
@@ -54,6 +54,9 @@ class TrendConditionsMixin(metaclass=abc.ABCMeta):
 
     def trend_long(self, crow):
         return bool(self.direction == 1)
+
+    def zigzag_trend_long(self, crow):
+        return bool(True)  # TODO: use the full queue to check the last zigzag
 
     def all_5_prev_rows_were_not_touching_smma21(self, crow):
         for qrow in self.queue[:5]:

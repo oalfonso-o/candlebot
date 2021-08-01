@@ -17,6 +17,7 @@ class StrategyScalpingEMA10_20(StrategyBase):
     variables = []
     open_conditions = [
         'trend_long',
+        'zigzag_trend_long',
         'circular_queue_is_full',
         'ago_2_open_gt_ema10',
         'ago_2_close_lt_ema10',
