@@ -1,7 +1,21 @@
-import pandas as pd
+import math
 import logging
+import pandas as pd
 
 from candlebot.strategies.base import StrategyBase
+from candlebot.indicators.smma import (
+    IndicatorSMMA21,
+    IndicatorSMMA50,
+    IndicatorSMMA200,
+)
+from candlebot.indicators.william_fractal import (
+    IndicatorWilliamBullFractals,
+    IndicatorWilliamBearFractals,
+)
+from candlebot.indicators.stochastic import (
+    IndicatorStochRSID,
+    IndicatorStochRSIK,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -9,6 +23,15 @@ logger = logging.getLogger(__name__)
 class StrategyScalping(StrategyBase):
     _id = 'scalping'
     variables = []
+    indicators = [
+        IndicatorSMMA21,
+        IndicatorSMMA50,
+        IndicatorSMMA200,
+        IndicatorWilliamBullFractals,
+        IndicatorWilliamBearFractals,
+        IndicatorStochRSID,
+        IndicatorStochRSIK,
+    ]
     open_conditions = [
         'trend_long',
         'circular_queue_is_full',
@@ -16,19 +39,34 @@ class StrategyScalping(StrategyBase):
         'rsi_k_crow_lt_10',
         'rsi_k_crow_gt_rsi_d_crow',
     ]
-    custom_indicators = []
 
-    def __init__(self, df: pd.DataFrame):
-        self.indicators.extend(self.custom_indicators)
-        super().__init__(df)
-
-    def _must_open_long(self, row):
+    def _update_direction(self, row):
         if (
-            not self.last_open_pos_close_value
-            and all([getattr(self, f)(row) for f in self.open_conditions])
+            math.isnan(row['smma21'])
+            or math.isnan(row['smma50'])
+            or math.isnan(row['smma200'])
+            or len(self.queue) != self.len_queue
         ):
-            return True
-        return False
+            self.direction = 0
+        elif (
+            row['smma21'] > row['smma50'] > row['smma200']
+            and all((c['smma21'] > c['smma200'] for c in self.queue))
+        ):
+            if self.trend_reverse_flag:
+                self.direction = 1
+            else:
+                self.trend_reverse_flag = True
+        elif (
+            row['smma21'] < row['smma50'] < row['smma200']
+            and all((c['smma21'] < c['smma200'] for c in self.queue))
+        ):
+            if self.trend_reverse_flag:
+                self.direction = -1
+            else:
+                self.trend_reverse_flag = True
+        else:
+            self.direction = 0
+            self.trend_reverse_flag = False
 
     def _must_close_long(self, row):
         if not self.last_open_pos_close_value:

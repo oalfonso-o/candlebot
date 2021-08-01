@@ -1,55 +1,45 @@
-from abc import abstractmethod
-import math
 import logging
 from typing import Tuple
 
 import pandas as pd
 
 from candlebot import utils
-from candlebot.indicators.smma import (
-    IndicatorSMMA21,
-    IndicatorSMMA50,
-    IndicatorSMMA200,
-)
-from candlebot.indicators.william_fractal import (
-    IndicatorWilliamBullFractals,
-    IndicatorWilliamBearFractals,
-)
-from candlebot.indicators.stochastic import (
-    IndicatorStochRSID,
-    IndicatorStochRSIK,
-)
 from candlebot.models.wallet import Wallet
 from candlebot.utils.circular_queue import CircularQueue
 from candlebot.strategies.conditions import Conditions
+from candlebot.strategies.closings import Closings
+from candlebot.strategies.actions import PostOpenActions
 from candlebot.strategies import constants
 
 logger = logging.getLogger(__name__)
 
-FEE_PERCENT = 0.16
 
-
-class StrategyBase(Conditions):  # TODO: abstract class
+# TODO: abstract class
+class StrategyBase(Conditions, Closings, PostOpenActions):
     _id = 'must_be_overriden'  # TODO: abstract property
-    indicators = [
-        IndicatorSMMA21,
-        IndicatorSMMA50,
-        IndicatorSMMA200,
-        IndicatorWilliamBullFractals,
-        IndicatorWilliamBearFractals,
-        IndicatorStochRSID,
-        IndicatorStochRSIK,
-    ]
+    indicators = []
     variables = []
+    df_ready_conditions = [
+        'circular_queue_is_full',
+    ]
+    custom_df_ready_conditions = []
+    direction_conditions = {
+        'long': [],
+        'short': [],
+        'consolidation': [],
+    }
     open_conditions = []
-    close_conditions = []
+    post_open_actions = []
+    close_win_conditions = []
+    close_lose_conditions = []
+    len_queue = 15
 
     def __init__(self, df: pd.DataFrame):
         self.df = df
         for indicator in self.indicators:
             self.df = indicator.apply(self.df)
+        self.df_ready_conditions += self.custom_df_ready_conditions
         self.wallet = Wallet()
-        self.len_queue = 200
         self.past_candles = CircularQueue(self.len_queue)
         self.last_open_pos_close_value = 0
         self.pips_total = 10000
@@ -58,7 +48,6 @@ class StrategyBase(Conditions):  # TODO: abstract class
         self.wins = 0
         self.losses = 0
         self.count_open_pos = 0
-        self.prev_row = None
         self.direction = 0
         self.trend_reverse_flag = False
         for indicator in self.indicators:
@@ -69,8 +58,9 @@ class StrategyBase(Conditions):  # TODO: abstract class
     def calc(self) -> Tuple[pd.DataFrame, dict]:
         for i, row in self.df.iterrows():
             self.queue = self.past_candles.get_queue()
-            self.prev_row = self.queue[0]
             self._tag_candles(row, i)
+            if not self._df_ready(row):
+                continue
             self._update_direction(row)
             if self._must_open_long(row):
                 timestamp = utils.datetime_to_timestamp(
@@ -105,8 +95,8 @@ class StrategyBase(Conditions):  # TODO: abstract class
         body = abs(body)
         if not body:
             color = 'green'  # dummy color for first dogi
-            if isinstance(self.prev_row, pd.core.series.Series):
-                color = self.prev_row['color']
+            if isinstance(self.queue[0], pd.core.series.Series):
+                color = self.queue[0]['color']
             row['color'] = color
             tags.append(constants.DOJI)
         elif is_red_candle:
@@ -115,7 +105,6 @@ class StrategyBase(Conditions):  # TODO: abstract class
             low_wick = row['close'] - row['low']
             if low_wick / 3 > body:
                 tags.append(constants.BULL_HAMMER)
-
         elif is_green_candle:
             row['color'] = 'green'
             # tag bear hammer
@@ -124,81 +113,71 @@ class StrategyBase(Conditions):  # TODO: abstract class
                 tags.append(constants.BEAR_HAMMER)
             # tag bull engulfing
             if (
-                isinstance(self.prev_row, pd.core.series.Series)
-                and self.prev_row['color'] == 'red'
+                isinstance(self.queue[0], pd.core.series.Series)
+                and self.queue[0]['color'] == 'red'
             ):
-                prev_body = self.prev_row['open'] - self.prev_row['close']
+                prev_body = self.queue[0]['open'] - self.queue[0]['close']
                 diff_body = body - prev_body
                 pip_value = row['close'] / self.pips_total
                 if diff_body > pip_value * constants.ENGULFING_MIN_DIFF_PIPS:
                     tags.append(constants.FULL_BULL_ENGULFING)
                     self.df.loc[index, 'engulfing'] = True
-
         row['tags'] = tags
         self.past_candles.enqueue(row)
 
-    def _update_direction(self, row):
-        if (
-            math.isnan(row['smma21'])
-            or math.isnan(row['smma50'])
-            or math.isnan(row['smma200'])
-            or len(self.queue) != self.len_queue
-        ):
-            self.direction = 0
-        elif (
-            row['smma21'] > row['smma50'] > row['smma200']
-            and all((c['smma21'] > c['smma200'] for c in self.queue))
-        ):
-            if self.trend_reverse_flag:
-                self.direction = 1
-            else:
-                self.trend_reverse_flag = True
-        elif (
-            row['smma21'] < row['smma50'] < row['smma200']
-            and all((c['smma21'] < c['smma200'] for c in self.queue))
-        ):
-            if self.trend_reverse_flag:
-                self.direction = -1
-            else:
-                self.trend_reverse_flag = True
-        else:
-            self.direction = 0
-            self.trend_reverse_flag = False
+    def _df_ready(self, row):
+        for f in self.df_ready_conditions:
+            if not getattr(self, f)(row):
+                return False
+        return True
 
-    @abstractmethod
+    def _update_direction(self, row):
+        self.direction = 0
+        if all([
+            getattr(self, f)(row)
+            for f in self.direction_conditions['long']
+        ]):
+            self.direction = 1
+        if all([
+            getattr(self, f)(row)
+            for f in self.direction_conditions['short']
+        ]):
+            if self.direction:
+                raise Exception(
+                    'Direction conditions overlap between long and short')
+            self.direction = -1
+        if (
+            self.direction_conditions['consolidation']
+            and all([
+                getattr(self, f)(row)
+                for f in self.direction_conditions['consolidation']
+            ])
+        ):
+            if self.direction:
+                raise Exception(
+                    'Direction conditions overlap between long/short and '
+                    'consolidation'
+                )
+            self.direction = 0
+
     def _must_open_long(self, row):
-        ...
+        if not self.last_open_pos_close_value:
+            for f in self.open_conditions:
+                if not getattr(self, f)(row):
+                    return False
+            for f in self.post_open_actions:
+                getattr(self, f)(row)
+            return True
+        return False
 
     def _must_close_long(self, row):
         if not self.last_open_pos_close_value:
             return 0
-        last_open_value_pips = self.last_open_pos_close_value / self.pips_total
-        high_diff = last_open_value_pips * self.win_pips_margin
-        low_diff = last_open_value_pips * self.loss_pips_margin
-        # standard win
-        if row['high'] - self.last_open_pos_close_value > high_diff:
-            close_pos = self.last_open_pos_close_value + high_diff
-            self.wins += 1 * self.count_open_pos
-            logging.info(f'wins {self.wins} - loses {self.losses}')
-            return close_pos
-        # standard lose
-        elif self.last_open_pos_close_value - row['low'] > low_diff:
-            close_pos = self.last_open_pos_close_value - low_diff
-            self.losses += 1
-            logging.info(f'wins {self.wins} - loses {self.losses}')
-            return close_pos
-        return 0
-
-    def _custom_close(self, row, reason):
-        win_desired = (
-            self.last_open_pos_close_value
-            + (self.last_open_pos_close_value / 100 * FEE_PERCENT)
+        close_conditions = (
+            self.close_win_conditions
+            + self.close_lose_conditions
         )
-        if row['close'] < win_desired:
-            self.losses += 1
-            logging.info(f'LOSE close because {reason}')
-            return row['close']
-        elif row['close'] >= win_desired:
-            self.wins += 1
-            logging.info(f'WIN close because {reason}')
-            return row['close']
+        for condition, close in close_conditions:
+            if getattr(self, condition)(row):
+                return getattr(self, close)(row, condition)
+        return 0

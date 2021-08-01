@@ -1,3 +1,4 @@
+import math
 import abc
 import itertools
 import operator
@@ -56,7 +57,17 @@ class TrendConditionsMixin(metaclass=abc.ABCMeta):
         return bool(self.direction == 1)
 
     def zigzag_trend_long(self, crow):
-        return bool(True)  # TODO: use the full queue to check the last zigzag
+        '''Last 3 zigzags must be lowers than crow low'''
+        lower_zigzags = 0
+        for qrow in self.queue:
+            if qrow is not None and qrow['zigzag']:
+                if qrow['zigzag'] < crow['low']:
+                    lower_zigzags += 1
+                else:
+                    return False
+            if lower_zigzags == 3:
+                return True
+        return False
 
     def all_5_prev_rows_were_not_touching_smma21(self, crow):
         for qrow in self.queue[:5]:
@@ -64,8 +75,17 @@ class TrendConditionsMixin(metaclass=abc.ABCMeta):
                 return False
         return True
 
-    def ema10_lt_ema20(self, crow):
-        return bool(crow['ema10'] < crow['ema20'])
+    def ema10_gt_ema20(self, crow):
+        return bool(crow['ema10'] > crow['ema20'])
+
+    def ema20_gt_ema10(self, crow):
+        return bool(crow['ema20'] > crow['ema10'])
+
+    def ema10_is_not_nan(self, crow):
+        return bool(not math.isnan(crow['ema10']))
+
+    def ema20_is_not_nan(self, crow):
+        return bool(not math.isnan(crow['ema20']))
 
 
 generate_generic_trend_conditions()
@@ -186,3 +206,11 @@ class Conditions(
 
     def reached_stop_loss(self, row):
         return bool(self.stop_loss and row['low'] <= self.stop_loss)
+
+    def yes(self, row):
+        'Helper condition to allow returning an inconditional True'
+        return True
+
+    def no(self, row):
+        'Helper condition to allow returning an inconditional False'
+        return False
