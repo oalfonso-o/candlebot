@@ -1,7 +1,3 @@
-from candlebot.indicators.ema import (
-    IndicatorEMA10,
-    IndicatorEMA20,
-)
 from candlebot.strategies.base import StrategyBase
 
 

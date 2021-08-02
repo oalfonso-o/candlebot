@@ -6,6 +6,7 @@ from candlebot.strategies.engulfing import StrategyEngulfing
 from candlebot.strategies.triangle import StrategyTriangle
 from candlebot.strategies.scalping import StrategyScalping
 from candlebot.strategies.scalping_ema_10_20 import StrategyScalpingEMA10_20
+from candlebot.strategies.scalping_yolo import StrategyScalpingYolo
 from candlebot import utils
 from candlebot import constants
 
@@ -20,6 +21,7 @@ class Strategist:
         'triangle': StrategyTriangle,
         'scalping': StrategyScalping,
         'scalping_ema_10_20': StrategyScalpingEMA10_20,
+        'scalping_yolo': StrategyScalpingYolo,
     }
 
     @classmethod
