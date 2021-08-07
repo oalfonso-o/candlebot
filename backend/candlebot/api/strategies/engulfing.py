@@ -73,7 +73,7 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
             )
         else:
             chart_positions_engulfing.append({'time': time})
-    return [
+    charts = [
         {
             'id': 'open/close long positions',
             'series': [
@@ -115,6 +115,11 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
             'height': 100,
         },
     ]
+    stats = {}
+    return {
+        'charts': charts,
+        'stats': stats,
+    }
 
 
 def add_open_close_points_to_chart_positions(

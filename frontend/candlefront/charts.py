@@ -49,10 +49,11 @@ def charts():
             strategy_for_api_request = strategy_selected
     symbols = requests.get('/'.join([config.API, 'forms', 'symbols']))
     intervals = requests.get('/'.join([config.API, 'forms', 'intervals']))
-    data_points_response = requests.get(
-        '/'.join([config.API, 'strategies', strategy_for_api_request]),
-        params=strategy_params,
+    strat_response = get_strat_response(
+        strategy_for_api_request=strategy_for_api_request,
+        strategy_params=strategy_params,
     )
+    legend = get_legend(strat_response)
     strategies = requests.get(
         '/'.join([config.API, 'backtesting', 'strategies']))
     strategies = strategies.json()
@@ -60,9 +61,6 @@ def charts():
         '/'.join([config.API, 'backtesting', 'generic_strategies']))
     generic_strategies = generic_strategies.json()
     generic_strategies.insert(0, '')
-    if data_points_response.status_code != 200:
-        logger.error(data_points_response.json())
-        data_points_response.raise_for_status()
     strategy_params['strategy'] = strategy_selected
     return render_template(
         'index.html',
@@ -74,7 +72,8 @@ def charts():
         interval_options=intervals.json(),
         strategy_options=strategies,
         generic_strategy_options=generic_strategies,
-        data_points=json.dumps(data_points_response.json()),
+        data_points=json.dumps(strat_response['charts']),
+        legend=legend,
         show_strategy=True,
         submit_button_text='Charts',
         submit_endpoint='/',
@@ -83,3 +82,28 @@ def charts():
         strategy_params=strategy_params,
         routes=ROUTES,
     )
+
+
+def get_strat_response(strategy_for_api_request, strategy_params):
+    data_points_response = requests.get(
+        '/'.join([config.API, 'strategies', strategy_for_api_request]),
+        params=strategy_params,
+    )
+    if data_points_response.status_code != 200:
+        logger.error(data_points_response.json())
+        data_points_response.raise_for_status()
+    data_points = data_points_response.json()
+    return data_points
+
+
+def get_legend(strat_response):
+    indicators = {
+        serie['title']: serie['color']
+        for data in strat_response['charts']
+        for serie in data['series']
+        if serie['type'] != 'candles'
+    }
+    return {
+        'stats': strat_response['stats'],
+        'indicators': indicators,
+    }

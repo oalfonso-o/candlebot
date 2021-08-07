@@ -69,7 +69,7 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
             index_positions_long += 1
         else:
             chart_positions_long.append({'time': time})
-    return [
+    charts = [
         {
             'id': 'open/close long positions',
             'series': [
@@ -86,3 +86,8 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
             'height': 500,
         },
     ]
+    stats = {}
+    return {
+        'charts': charts,
+        'stats': stats,
+    }

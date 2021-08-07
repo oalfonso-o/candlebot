@@ -50,3 +50,8 @@ table th {
 .left-menu-form {
   width: 220px;
 }
+
+#charts_legend_stats_container {display: flex; margin: 0 auto;}
+.charts_legend_stats_title {font-size: 16px; text-align: center}
+#charts_legend {}
+#charts_stats {padding-left: 200px;}

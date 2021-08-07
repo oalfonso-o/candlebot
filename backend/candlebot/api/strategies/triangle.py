@@ -83,7 +83,7 @@ def calc(date_from=None, date_to=None, symbol='ADAUSDT', interval='1h'):
         }
         for values in projections.values()
     ]
-    return [
+    charts = [
         {
             'id': 'open/close long positions',
             'series': [
@@ -129,3 +129,8 @@ def calc(date_from=None, date_to=None, symbol='ADAUSDT', interval='1h'):
             'height': 650,
         },
     ]
+    stats = {}
+    return {
+        'charts': charts,
+        'stats': stats,
+    }

@@ -89,7 +89,7 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
             balance_long.append({'time': time})
             balance_short.append({'time': time})
 
-    return [
+    charts = [
         {
             'id': 'open/close long',
             'series': [
@@ -151,6 +151,11 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
             'height': 100,
         },
     ]
+    stats = {}
+    return {
+        'charts': charts,
+        'stats': stats,
+    }
 
 
 def add_points_to_chart_positions(

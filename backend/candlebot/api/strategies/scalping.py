@@ -102,7 +102,7 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
         else:
             point_engulfing_position = {'time': time}
         chart_positions_engulfing.append(point_engulfing_position)
-    return [
+    charts = [
         {
             'id': 'open/close long positions',
             'series': [
@@ -154,6 +154,11 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
             'height': 300,
         },
     ]
+    stats = {}
+    return {
+        'charts': charts,
+        'stats': stats,
+    }
 
 
 def add_fractals_points_to_chart(time, value, chart_positions_fractals):

@@ -19,6 +19,47 @@
     </div>
     </div>
     <div id="page-container-charter" data-points="{{ data_points }}"></div>
+    <div id=charts_legend_stats_container>
+        <div id=charts_legend>
+            <table>
+                <tr>
+                    <td colspan="2" class="charts_legend_stats_title">
+                        Indicators
+                    </td>
+                </tr>
+                {% for indicator_id, indicator_color in legend.indicators.items() %}
+                    <tr style="background-color: {{indicator_color}}">
+                        <td>
+                            {{ indicator_id }}
+                        </td>
+                        <td>
+                            {{ indicator_color }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div id=charts_stats>
+            <table>
+                <tr>
+                    <td colspan="2" class="charts_legend_stats_title">
+                        Stats
+                    </td>
+                </tr>
+                {% for stat_id, stat_value in legend.stats.items() %}
+                    <tr>
+                        <td>
+                            {{ stat_id }}
+                        </td>
+                        <td>
+                            {{ stat_value }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
 {% endblock %}
 {% block footer %}
   <script src="js/charter.js"></script>

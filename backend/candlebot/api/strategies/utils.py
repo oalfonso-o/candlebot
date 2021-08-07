@@ -25,6 +25,7 @@ def basic_charts_dict(candles, chart_positions_long, lines_series):
             'id': 'open/close long positions',
             'series': [
                 {
+                    'title': 'candles',
                     'type': 'candles',
                     'values': candles,
                     'markers': chart_positions_long,

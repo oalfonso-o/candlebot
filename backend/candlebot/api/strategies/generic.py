@@ -15,8 +15,7 @@ logger = logging.getLogger(__name__)
 
 colors = [
     'aqua', 'black', 'blue', 'fuchsia', 'gray', 'green', 'lime', 'maroon',
-    'navy', 'olive', 'orange', 'purple', 'red', 'silver', 'teal', 'white',
-    'yellow'
+    'navy', 'olive', 'orange', 'purple', 'red', 'silver', 'teal', 'yellow'
 ]
 
 
@@ -36,6 +35,7 @@ def calc(
     )
     candles = list(candles_cursor)
     if not candles:
+        logger.warning('Not candles!!!')
         return []
     strat_df, wallet = Strategist.calc(candles, strategy)
     log_wallet_stats(wallet)
@@ -66,7 +66,11 @@ def calc(
 
     lines_series = get_lines_series(lines_series_data)
     charts = basic_charts_dict(candles, chart_positions_long, lines_series)
-    return charts
+    stats = get_stats(wallet)
+    return {
+        'charts': charts,
+        'stats': stats,
+    }
 
 
 def get_time(candle):
@@ -87,7 +91,7 @@ def get_candle_dict(candle, time):
     }
 
 
-def log_wallet_stats(wallet):  # TODO: return to frontend and print in a div
+def log_wallet_stats(wallet):
     logger.info(f'wins: {wallet.stats.wins}')
     logger.info(f'losses: {wallet.stats.losses}')
     logger.info(f'win/lose: {wallet.stats.win_lose_ratio}')
@@ -131,3 +135,12 @@ def get_lines_series(lines_series_data):
         }
         series.append(serie)
     return series
+
+
+def get_stats(wallet):
+    return {
+        'wins': wallet.stats.wins,
+        'losses': wallet.stats.losses,
+        'win_lose_ratio': wallet.stats.win_lose_ratio,
+        'earn': wallet.stats.earn_percentage,
+    }
