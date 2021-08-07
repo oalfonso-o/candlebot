@@ -97,13 +97,18 @@ def get_strat_response(strategy_for_api_request, strategy_params):
 
 
 def get_legend(strat_response):
-    indicators = {
+    lines_indicators = {
         serie['title']: serie['color']
         for data in strat_response['charts']
         for serie in data['series']
         if serie['type'] != 'candles'
     }
+    markers_indicators = {
+        'title_x': {'above': 'red', 'below': 'blue'},
+        'title_y': {'above': 'magenta', 'below': 'teal'},
+    }
     return {
         'stats': strat_response['stats'],
-        'indicators': indicators,
+        'lines_indicators': lines_indicators,
+        'markers_indicators': markers_indicators,
     }

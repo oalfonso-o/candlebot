@@ -13,9 +13,9 @@ from candlebot.api.strategies.utils import (
 
 logger = logging.getLogger(__name__)
 
-colors = [
-    'aqua', 'black', 'blue', 'fuchsia', 'gray', 'green', 'lime', 'maroon',
-    'navy', 'olive', 'orange', 'purple', 'red', 'silver', 'teal', 'yellow'
+line_ind_colors = [
+    'aqua', 'blue', 'fuchsia', 'gray', 'green', 'lime', 'maroon', 'navy',
+    'olive', 'orange', 'purple', 'red', 'silver', 'teal', 'yellow'
 ]
 
 
@@ -130,7 +130,7 @@ def get_lines_series(lines_series_data):
         serie = {
             'title': id_,
             'values': data,
-            'color': random.choice(colors),
+            'color': random.choice(line_ind_colors),
             'type': 'lines',
         }
         series.append(serie)
