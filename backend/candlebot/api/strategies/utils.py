@@ -32,7 +32,7 @@ def basic_charts_dict(candles, chart_positions_long, lines_series):
                 },
                 *lines_series,
             ],
-            'width': 1200,
-            'height': 500,
+            'width': 1400,
+            'height': 600,
         },
     ]

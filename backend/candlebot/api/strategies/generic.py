@@ -13,15 +13,47 @@ from candlebot.api.strategies.utils import (
 
 logger = logging.getLogger(__name__)
 
-line_ind_colors = [
-    'aqua', 'blue', 'fuchsia', 'gray', 'green', 'lime', 'maroon', 'navy',
-    'olive', 'orange', 'purple', 'red', 'silver', 'teal', 'yellow'
+generic_colors = [
+    'darkviolet', 'plum', 'orchid', 'mediumorchid', 'darkorchid', 'purple',
+    'mediumpurple', 'mediumslateblue', 'blueviolet', 'darkmagenta',
+    'darkgoldenrod', 'antiquewhite', 'azure', 'beige', 'bisque',
+    'blanchedalmond', 'cadetblue', 'chartreuse', 'cornsilk', 'darkgray',
+    'darkgreen', 'darkgrey', 'darkkhaki', 'darkolivegreen', 'darksalmon',
+    'darkseagreen', 'dimgrey', 'floralwhite', 'forestgreen', 'gainsboro',
+    'gold', 'goldenrod', 'gray', 'green', 'greenyellow', 'grey', 'honeydew',
+    'ivory', 'khaki', 'lavender', 'lavenderblush', 'lawngreen', 'lemonchiffon',
+    'lightgoldenrodyellow', 'lightgray', 'lightgreen', 'lightgrey',
+    'lightpink', 'lightsalmon', 'lightslategray', 'lightslategrey',
+    'lightsteelblue', 'lightyellow', 'lime', 'limegreen',
+    'mediumseagreen', 'mediumspringgreen', 'mistyrose', 'moccasin',
+    'navajowhite', 'oldlace', 'olive', 'olivedrab', 'palegoldenrod',
+    'palegreen', 'papayawhip', 'peachpuff', 'peru', 'seagreen', 'seashell',
+    'silver', 'slategray', 'slategrey', 'springgreen', 'tan', 'thistle',
+    'wheat', 'yellow'
+]
+
+red_colors = [
+    'brown', 'burlywood', 'chocolate', 'coral', 'crimson', 'darkorange',
+    'darkred', 'deeppink', 'firebrick', 'fuchsia', 'hotpink', 'indianred',
+    'lightcoral', 'magenta', 'maroon', 'orange', 'orangered', 'pink', 'red',
+    'rosybrown', 'saddlebrown', 'salmon', 'sandybrown', 'sienna', 'tomato',
+    'palevioletred', 'mediumvioletred', 'violet'
+]
+
+blue_colors = [
+    'aliceblue', 'aqua', 'aquamarine', 'blue', 'cornflowerblue', 'cyan',
+    'darkblue', 'darkcyan', 'darkslateblue', 'darkslategrey', 'darkturquoise',
+    'deepskyblue', 'dodgerblue', 'indigo', 'lightblue', 'lightcyan',
+    'lightseagreen', 'lightskyblue', 'mediumaquamarine', 'mediumblue',
+    'mediumturquoise', 'midnightblue', 'navy', 'paleturquoise', 'powderblue',
+    'royalblue', 'skyblue', 'slateblue', 'steelblue', 'teal', 'turquoise'
 ]
 
 
 def calc(
     strategy, date_from=None, date_to=None, symbol='ADAEUR', interval='1d'
 ):
+    ind_used_colors = set()
     if date_from and date_to:
         date_from_no_hyphen = date_from.replace('-', '')
         date_to_no_hyphen = date_to.replace('-', '')
@@ -64,7 +96,7 @@ def calc(
             candle=c,
         )
 
-    lines_series = get_lines_series(lines_series_data)
+    lines_series = get_lines_series(lines_series_data, ind_used_colors)
     charts = basic_charts_dict(candles, chart_positions_long, lines_series)
     stats = get_stats(wallet)
     return {
@@ -124,13 +156,17 @@ def add_lines_series_data_points(indicators, lines_series_data, time, candle):
         lines_series_data[i._id].append(point)
 
 
-def get_lines_series(lines_series_data):
+def get_lines_series(lines_series_data, ind_used_colors):
     series = []
     for id_, data in lines_series_data.items():
+        color = random.choice(generic_colors)
+        while color in ind_used_colors:
+            color = random.choice(generic_colors)
+        ind_used_colors.add(color)
         serie = {
             'title': id_,
             'values': data,
-            'color': random.choice(line_ind_colors),
+            'color': color,
             'type': 'lines',
         }
         series.append(serie)
