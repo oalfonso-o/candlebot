@@ -19,7 +19,7 @@ def add_open_close_points_to_chart_positions(position, time, chart_positions):
         chart_positions.append(point_close_position)
 
 
-def basic_charts_dict(candles, chart_positions_long):
+def basic_charts_dict(candles, chart_positions_long, lines_series):
     return [
         {
             'id': 'open/close long positions',
@@ -29,6 +29,7 @@ def basic_charts_dict(candles, chart_positions_long):
                     'values': candles,
                     'markers': chart_positions_long,
                 },
+                *lines_series,
             ],
             'width': 1200,
             'height': 500,

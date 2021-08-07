@@ -70,6 +70,7 @@ def charts():
         symbol_selected=symbol_selected,
         interval_selected=interval_selected,
         strategy_selected=strategy_selected,
+        generic_strategy_selected=generic_strategy_selected,
         interval_options=intervals.json(),
         strategy_options=strategies,
         generic_strategy_options=generic_strategies,
