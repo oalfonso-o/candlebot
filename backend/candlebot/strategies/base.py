@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 class StrategyBase(Conditions, Closings, PostOpenActions):
     _id = 'must_be_overriden'  # TODO: abstract property
     indicators = []
+    markers_indicators = []
     variables = []
     df_ready_conditions = [
         'circular_queue_is_full',
@@ -44,14 +45,12 @@ class StrategyBase(Conditions, Closings, PostOpenActions):
 
     def __init__(self, df: pd.DataFrame):
         self.df = df
-        for indicator in self.indicators:
+        for indicator in self.indicators + self.markers_indicators:
             self.df = indicator.apply(self.df)
         self.df_ready_conditions += self.custom_df_ready_conditions
         self.wallet = Wallet()
         self.past_candles = CircularQueue(self.len_queue)
         self.last_open_pos_close_value = 0
-        self.wins = 0
-        self.losses = 0
         self.direction = 0
         for indicator in self.indicators:
             self.df = indicator.apply(self.df)
@@ -79,13 +78,6 @@ class StrategyBase(Conditions, Closings, PostOpenActions):
                     )
                     self.wallet.close_pos('long', close_pos, timestamp)
                     self._post_close_actions(row)
-        logger.info(f'wins: {self.wins}')
-        logger.info(f'losses: {self.losses}')
-        logger.info(f'win/lose: {self.wins / self.losses if self.losses else str(self.wins)+":-"}')  # noqa
-        logger.info(f'final balance: {self.wallet.balance_origin}')
-        open_pos = self.wallet.amount_to_open if self.last_open_pos_close_value else 0  # noqa
-        logger.info(f'open position: {open_pos}')
-        logger.info(f'balance % earn: {(self.wallet.balance_origin + open_pos) / self.wallet.balance_origin_start * 100}')  # noqa
         return self.df, self.wallet
 
     def _tag_candles(self, row, index):

@@ -1,3 +1,5 @@
+import logging
+
 from candlebot import utils
 from candlebot import constants
 from candlebot.db.candle_retriever import CandleRetriever
@@ -6,6 +8,8 @@ from candlebot.api.strategies.utils import (
     add_open_close_points_to_chart_positions,
     basic_charts_dict,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def calc(
@@ -26,12 +30,16 @@ def calc(
     if not candles:
         return []
     strat_df, wallet = Strategist.calc(candles, strategy)
+    log_wallet_stats(wallet)
+    Strategy = Strategist.all_strats[strategy]
     candles = []
     balance_origin = []
     balance_long = []
     balance_short = []
     chart_positions_long = []
     index_positions_long = 0
+    lines_indicators = Strategy.indicators
+    markers_indicators = Strategy.markers_indicators
     for _, c in strat_df.iterrows():
         time = (
             utils.datetime_to_timestamp(c['_id'].to_pydatetime())
@@ -75,3 +83,11 @@ def calc(
         candles, chart_positions_long, balance_origin, balance_long
     )
     return charts
+
+
+def log_wallet_stats(wallet):
+    logger.info(f'wins: {wallet.stats.wins}')
+    logger.info(f'losses: {wallet.stats.losses}')
+    logger.info(f'win/lose: {wallet.stats.win_lose_ratio}')
+    logger.info(f'final balance: {wallet.stats.balance}')
+    logger.info(f'% earn: {wallet.stats.earn_percentage}%')

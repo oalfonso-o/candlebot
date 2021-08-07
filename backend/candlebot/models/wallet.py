@@ -1,5 +1,6 @@
 import logging
 from typing import List
+from dataclasses import dataclass
 
 from candlebot.models.position import Position
 
@@ -28,7 +29,7 @@ class Wallet:
         self.transaction_fee = transaction_fee
         self.positions_long: List[Position] = []
         self.positions_short: List[Position] = []
-        self.total_payed_fees = 0
+        self.stats: WalletStats = WalletStats(self)
 
     def open_pos(
         self,
@@ -49,7 +50,7 @@ class Wallet:
         new_open_balance = prev_open_balance + second_symbol_amount_w_fee
         setattr(self, balance_type_fieldname, new_open_balance)
         self.balance_origin -= amount_to_open
-        self.total_payed_fees += fee * price
+        self.stats.total_payed_fees += fee * price
         position = Position(
             type_=type_,
             action='open',
@@ -91,7 +92,7 @@ class Wallet:
         setattr(self, balance_type_fieldname, new_open_balance)
         closed_amount_to_the_origin = close_amount_w_fee * price
         self.balance_origin += closed_amount_to_the_origin
-        self.total_payed_fees += fee * price
+        self.stats.total_payed_fees += fee * price
         position = Position(
             type_=type_,
             action='close',
@@ -106,3 +107,32 @@ class Wallet:
         prev_positions = getattr(self, positions_type_fieldname)
         prev_positions.append(position)
         setattr(self, positions_type_fieldname, prev_positions)
+
+
+@dataclass
+class WalletStats:
+    """Model to store stats from a wallet"""
+    wallet: Wallet
+    wins: int = 0
+    losses: int = 0
+    total_payed_fees: float = 0.
+
+    @property
+    def win_lose_ratio(self) -> float:
+        return self.wins / self.losses if self.losses else self.wins
+
+    @property
+    def open_pos(self) -> float:
+        return (
+            self.wallet.amount_to_open
+            if self.wallet.balance_long
+            else 0.
+        )
+
+    @property
+    def balance(self) -> float:
+        return self.wallet.balance_origin + self.open_pos
+
+    @property
+    def earn_percentage(self) -> float:
+        return self.balance / self.wallet.balance_origin_start * 100

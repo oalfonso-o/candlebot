@@ -77,13 +77,19 @@ class StrategyScalping(StrategyBase):
         # standard win
         if row['high'] - self.last_open_pos_close_value > high_diff:
             close_pos = self.last_open_pos_close_value + high_diff
-            self.wins += 1
-            logging.info(f'wins {self.wins} - loses {self.losses}')
+            self.wallet.stats.wins += 1
+            logging.info(
+                f'wins {self.wallet.stats.wins} - '
+                f'loses {self.wallet.stats.losses}'
+            )
             return close_pos
         # standard lose
         elif self.last_open_pos_close_value - row['low'] > low_diff:
             close_pos = self.last_open_pos_close_value - low_diff
-            self.losses += 1
-            logging.info(f'wins {self.wins} - loses {self.losses}')
+            self.wallet.stats.losses += 1
+            logging.info(
+                f'wins {self.wallet.stats.wins} - '
+                f'loses {self.wallet.stats.losses}'
+            )
             return close_pos
         return 0

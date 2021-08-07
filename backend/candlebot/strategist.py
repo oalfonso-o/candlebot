@@ -37,3 +37,7 @@ class Strategist:
         all_strategies = {**cls.strategies, **cls.generic_strategies}
         strat_df, wallet = all_strategies[strategy](candles_df).calc()
         return strat_df, wallet
+
+    @property
+    def all_strats(cls) -> dict:
+        return {**cls.strategies, **cls.generic_strategies}

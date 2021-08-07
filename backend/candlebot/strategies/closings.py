@@ -16,7 +16,7 @@ class Closings(metaclass=abc.ABCMeta):
     def close_lose_by_stop_loss(self, crow, reason):
         prev_stop_loss = self.stop_loss
         self.stop_loss = 0
-        self.losses += 1
+        self.wallet.stats.losses += 1
         logging.info(f'LOSE: {reason}')
         return prev_stop_loss
 
@@ -27,11 +27,11 @@ class Closings(metaclass=abc.ABCMeta):
         )
         self.stop_loss = 0
         if crow['close'] < win_desired:
-            self.losses += 1
+            self.wallet.stats.losses += 1
             logging.info(f'LOSE: {reason}')
             return crow['close']
         elif crow['close'] >= win_desired:
-            self.wins += 1
+            self.wallet.stats.wins += 1
             logging.info(f'WIN: {reason}')
             return crow['close']
 
@@ -40,7 +40,7 @@ class Closings(metaclass=abc.ABCMeta):
         high_diff = last_open_value_pips * self.win_pips_margin
         close_pos = self.last_open_pos_close_value + high_diff
         self.stop_loss = 0
-        self.wins += 1
+        self.wallet.stats.wins += 1
         logging.info(f'WIN: {reason}')
         return close_pos
 
@@ -49,6 +49,6 @@ class Closings(metaclass=abc.ABCMeta):
         low_diff = last_open_value_pips * self.loss_pips_margin
         close_pos = self.last_open_pos_close_value - low_diff
         self.stop_loss = 0
-        self.losses += 1
+        self.wallet.stats.losses += 1
         logging.info(f'LOSE: {reason}')
         return close_pos
