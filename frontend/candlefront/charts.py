@@ -103,12 +103,8 @@ def get_legend(strat_response):
         for serie in data['series']
         if serie['type'] != 'candles'
     }
-    markers_indicators = {
-        'title_x': {'above': 'red', 'below': 'blue'},
-        'title_y': {'above': 'magenta', 'below': 'teal'},
-    }
     return {
         'stats': strat_response['stats'],
         'lines_indicators': lines_indicators,
-        'markers_indicators': markers_indicators,
+        'markers_indicators': strat_response['markers'],
     }

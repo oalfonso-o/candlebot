@@ -76,9 +76,9 @@ def calc(
     chart_positions_long = []
     index_positions_long = 0
     lines_indicators = Strategy.indicators
-    # markers_indicators = Strategy.markers_indicators
+    markers_indicators = Strategy.markers_indicators
     lines_series_data = defaultdict(list)
-    # markers_series_data = []
+    markers_series_data = []
     for _, c in strat_df.iterrows():
         time = get_time(c)
         candle = get_candle_dict(candle=c, time=time)
@@ -95,13 +95,24 @@ def calc(
             time=time,
             candle=c,
         )
+        add_markers_series_data_points(
+            indicators=markers_indicators,
+            markers_series_data=markers_series_data,
+            time=time,
+            candle=c,
+        )
 
     lines_series = get_lines_series(lines_series_data, ind_used_colors)
     charts = basic_charts_dict(candles, chart_positions_long, lines_series)
+    markers = {
+        'title_x': {'above': 'red', 'below': 'blue'},
+        'title_y': {'above': 'magenta', 'below': 'teal'},
+    }
     stats = get_stats(wallet)
     return {
         'charts': charts,
         'stats': stats,
+        'markers': markers,
     }
 
 
@@ -154,6 +165,10 @@ def add_lines_series_data_points(indicators, lines_series_data, time, candle):
     for i in indicators:
         point = {'time': time, 'value': candle[i._id]}
         lines_series_data[i._id].append(point)
+
+
+def add_markers_series_data_points():
+    pass
 
 
 def get_lines_series(lines_series_data, ind_used_colors):
