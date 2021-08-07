@@ -58,6 +58,6 @@ class StrategyScalpingEMA10_20(StrategyBase):
         ('cond_close_lose_pips_margin', 'close_lose_pip_margin'),
         # ('reached_stop_loss', 'close_by_stop_loss'),
     ]
-    post_close_actions = []
+    # post_close_actions = []  # if uncommented this overrides the base
     win_pips_margin = 20
     loss_pips_margin = 40

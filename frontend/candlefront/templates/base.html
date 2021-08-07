@@ -70,6 +70,12 @@
                       <option value="{{s_id}}" {% if s_id == strategy_selected %} selected="selected"{% endif %}>{{s_id}}</option>
                     {% endfor %}
                   </select>
+                  <label for="generic_strategy">Generic Strategy</label>
+                  <select name="generic_strategy" id="generic_strategy">
+                    {% for s_id in generic_strategy_options %}
+                      <option value="{{s_id}}" {% if s_id == generic_strategy_selected %} selected="selected"{% endif %}>{{s_id}}</option>
+                    {% endfor %}
+                  </select>
                 {% endif %}
                 <button type="submit" name="submit">{{ submit_button_text }}</button>
               </form>

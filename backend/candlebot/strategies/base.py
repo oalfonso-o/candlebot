@@ -78,7 +78,7 @@ class StrategyBase(Conditions, Closings, PostOpenActions):
                         row['_id'].to_pydatetime()
                     )
                     self.wallet.close_pos('long', close_pos, timestamp)
-                    self._post_close_actions()
+                    self._post_close_actions(row)
         logger.info(f'wins: {self.wins}')
         logger.info(f'losses: {self.losses}')
         logger.info(f'win/lose: {self.wins / self.losses if self.losses else str(self.wins)+":-"}')  # noqa
@@ -197,6 +197,6 @@ class StrategyBase(Conditions, Closings, PostOpenActions):
                 return getattr(self, close)(row, condition)
         return 0
 
-    def _post_close_actions(self):
+    def _post_close_actions(self, row):
         for f in self.post_close_actions:
-            getattr(self, f)()
+            getattr(self, f)(row)

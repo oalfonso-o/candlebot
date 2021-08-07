@@ -5,6 +5,7 @@ from candlebot.api.strategies import engulfing
 from candlebot.api.strategies import triangle
 from candlebot.api.strategies import scalping
 from candlebot.api.strategies import scalping_ema_10_20
+from candlebot.api.strategies import generic
 
 router = APIRouter(
     prefix="/strategies",
@@ -46,3 +47,10 @@ async def strategy_triangle(
     date_from=None, date_to=None, symbol='ADAUSDT', interval='1d'
 ):
     return triangle.calc(date_from, date_to, symbol, interval)
+
+
+@router.get("/generic")
+async def strategy_generic(
+    strategy, date_from=None, date_to=None, symbol='ADAUSDT', interval='1d',
+):
+    return generic.calc(strategy, date_from, date_to, symbol, interval)

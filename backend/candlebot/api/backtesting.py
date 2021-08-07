@@ -80,6 +80,11 @@ async def backtest_strategies():
     return strategies
 
 
+@router.get("/generic_strategies")
+async def backtest_generic_strategies():
+    return list(Strategist.generic_strategies.keys())
+
+
 class BacktestArgs(BaseModel):
     date_from: str
     date_to: str

@@ -1,9 +1,12 @@
 import math
 
 from candlebot import utils
-from candlebot.db.candle_retriever import CandleRetriever
-from candlebot.strategist import Strategist
 from candlebot import constants
+from candlebot.strategist import Strategist
+from candlebot.db.candle_retriever import CandleRetriever
+from candlebot.api.strategies.utils import (
+    add_open_close_points_to_chart_positions,
+)
 
 
 def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
@@ -179,36 +182,6 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
             'height': 100,
         },
     ]
-
-
-def add_open_close_points_to_chart_positions(
-    position, balance_origin, balance_long, balance_short, time,
-    chart_positions
-):
-    point_balance_origin = {'time': time, 'value': position.balance_origin}
-    point_balance_long = {'time': time, 'value': position.balance_long}
-    point_balance_short = {'time': time, 'value': position.balance_short}
-    balance_origin.append(point_balance_origin)
-    balance_long.append(point_balance_long)
-    balance_short.append(point_balance_short)
-    if position.action == 'open':
-        point_open_position = {
-            'time': time,
-            'text': str(round(position.amount, 4)),
-            'position': 'belowBar',
-            'color': 'blue',
-            'shape': 'arrowUp',
-        }
-        chart_positions.append(point_open_position)
-    if position.action == 'close':
-        point_close_position = {
-            'time': time,
-            'text': str(round(position.amount, 4)),
-            'position': 'aboveBar',
-            'color': 'green',
-            'shape': 'arrowDown',
-        }
-        chart_positions.append(point_close_position)
 
 
 def add_fractals_points_to_chart(time, value, chart_positions_fractals):

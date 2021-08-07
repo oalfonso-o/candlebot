@@ -18,7 +18,9 @@ charts_bp = Blueprint('charts', __name__)
 def charts():
     symbol_selected = 'BNBUSDT'
     interval_selected = '15m'
-    strategy_selected = 'scalping_ema_10_20'
+    strategy_selected = 'scalping'
+    generic_strategy_selected = 'scalping_yolo'
+    strategy_for_api_request = strategy_selected
     date_from = datetime.date.today() - datetime.timedelta(days=40)
     date_to = datetime.date.today() + datetime.timedelta(days=1)
     strategy_params = {
@@ -39,14 +41,25 @@ def charts():
         date_from = strategy_params['date_from']
         date_to = strategy_params['date_to']
         strategy_selected = flask.request.form['strategy']
+        generic_strategy_selected = flask.request.form['generic_strategy']
+        if generic_strategy_selected:
+            strategy_params['strategy'] = generic_strategy_selected
+            strategy_for_api_request = 'generic'
+        else:
+            strategy_for_api_request = strategy_selected
     symbols = requests.get('/'.join([config.API, 'forms', 'symbols']))
     intervals = requests.get('/'.join([config.API, 'forms', 'intervals']))
     data_points_response = requests.get(
-        '/'.join([config.API, 'strategies', strategy_selected]),
+        '/'.join([config.API, 'strategies', strategy_for_api_request]),
         params=strategy_params,
     )
     strategies = requests.get(
         '/'.join([config.API, 'backtesting', 'strategies']))
+    strategies = strategies.json()
+    generic_strategies = requests.get(
+        '/'.join([config.API, 'backtesting', 'generic_strategies']))
+    generic_strategies = generic_strategies.json()
+    generic_strategies.insert(0, '')
     if data_points_response.status_code != 200:
         logger.error(data_points_response.json())
         data_points_response.raise_for_status()
@@ -58,7 +71,8 @@ def charts():
         interval_selected=interval_selected,
         strategy_selected=strategy_selected,
         interval_options=intervals.json(),
-        strategy_options=strategies.json(),
+        strategy_options=strategies,
+        generic_strategy_options=generic_strategies,
         data_points=json.dumps(data_points_response.json()),
         show_strategy=True,
         submit_button_text='Charts',
