@@ -33,9 +33,6 @@ def calc(
     log_wallet_stats(wallet)
     Strategy = Strategist.all_strats[strategy]
     candles = []
-    balance_origin = []
-    balance_long = []
-    balance_short = []
     chart_positions_long = []
     index_positions_long = 0
     lines_indicators = Strategy.indicators
@@ -55,7 +52,6 @@ def calc(
         }
 
         candles.append(candle)
-        any_marker_shown = False
         if (
             index_positions_long < len(wallet.positions_long)
             and (
@@ -65,23 +61,13 @@ def calc(
         ):
             add_open_close_points_to_chart_positions(
                 wallet.positions_long[index_positions_long],
-                balance_origin,
-                balance_long,
-                balance_short,
                 time,
                 chart_positions_long,
             )
             index_positions_long += 1
-            any_marker_shown = True
         else:
             chart_positions_long.append({'time': time})
-        if not any_marker_shown:
-            balance_origin.append({'time': time})
-            balance_long.append({'time': time})
-            balance_short.append({'time': time})
-    charts = basic_charts_dict(
-        candles, chart_positions_long, balance_origin, balance_long
-    )
+    charts = basic_charts_dict(candles, chart_positions_long)
     return charts
 
 

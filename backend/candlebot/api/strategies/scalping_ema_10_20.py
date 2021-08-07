@@ -26,9 +26,6 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
         return []
     strat_df, wallet = Strategist.calc(candles, 'scalping_ema_10_20')
     candles = []
-    balance_origin = []
-    balance_long = []
-    balance_short = []
     chart_positions_long = []
     index_positions_long = 0
     ema10 = []
@@ -57,7 +54,6 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
         zigzag.append(zigzag_line)
 
         candles.append(candle)
-        any_marker_shown = False
         if (
             index_positions_long < len(wallet.positions_long)
             and (
@@ -67,20 +63,12 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
         ):
             add_open_close_points_to_chart_positions(
                 wallet.positions_long[index_positions_long],
-                balance_origin,
-                balance_long,
-                balance_short,
                 time,
                 chart_positions_long,
             )
             index_positions_long += 1
-            any_marker_shown = True
         else:
             chart_positions_long.append({'time': time})
-        if not any_marker_shown:
-            balance_origin.append({'time': time})
-            balance_long.append({'time': time})
-            balance_short.append({'time': time})
     return [
         {
             'id': 'open/close long positions',
@@ -96,21 +84,5 @@ def calc(date_from=None, date_to=None, symbol='ADAEUR', interval='1d'):
             ],
             'width': 1200,
             'height': 500,
-        },
-        {
-            'id': 'balance_origin',
-            'series': [
-                {'type': 'lines', 'values': balance_origin, 'color': '#39f'},
-            ],
-            'width': 1200,
-            'height': 100,
-        },
-        {
-            'id': 'balance_long',
-            'series': [
-                {'type': 'lines', 'values': balance_long, 'color': '#f5a'},
-            ],
-            'width': 1200,
-            'height': 100,
         },
     ]
