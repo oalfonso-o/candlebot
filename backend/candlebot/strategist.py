@@ -1,7 +1,9 @@
 import logging
 import pandas as pd
 
-from candlebot.strategies.scalping_yolo import StrategyScalpingYolo
+from candlebot.strategies.fractal_and_engulfing import (
+    StrategyFractalAndEngulfing,
+)
 from candlebot.strategies.scalping import StrategyScalping
 from candlebot import utils
 from candlebot import constants
@@ -12,7 +14,7 @@ logger = logging.getLogger(__name__)
 class Strategist:
 
     strategies = {
-        'scalping_yolo': StrategyScalpingYolo,
+        'fractal_and_engulfing': StrategyFractalAndEngulfing,
         'scalping': StrategyScalping,
     }
 

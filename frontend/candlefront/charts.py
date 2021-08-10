@@ -18,7 +18,7 @@ charts_bp = Blueprint('charts', __name__)
 def charts():
     symbol_selected = 'BNBUSDT'
     interval_selected = '15m'
-    strategy_selected = 'scalping_yolo'
+    strategy_selected = 'fractal_and_engulfing'
     date_from = datetime.date.today() - datetime.timedelta(days=40)
     date_to = datetime.date.today() + datetime.timedelta(days=1)
     strategy_params = {

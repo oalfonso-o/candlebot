@@ -22,9 +22,7 @@ generic_colors = [
     'darkseagreen', 'forestgreen', 'gainsboro',
     'gold', 'goldenrod', 'green', 'greenyellow', 'honeydew',
     'ivory', 'khaki', 'lavender', 'lawngreen', 'lemonchiffon',
-    'lightgoldenrodyellow', 'lightgreen',
-    'lightpink', 'lightsalmon'
-    'lightsteelblue', 'lightyellow', 'lime', 'limegreen',
+    'lime', 'limegreen',
     'mediumseagreen', 'mediumspringgreen', 'mistyrose', 'moccasin',
     'oldlace', 'olive', 'olivedrab', 'palegoldenrod',
     'palegreen', 'papayawhip', 'peachpuff', 'peru', 'seagreen', 'seashell',
@@ -35,7 +33,7 @@ generic_colors = [
 red_colors = [
     'brown', 'burlywood', 'chocolate', 'coral', 'crimson', 'darkorange',
     'darkred', 'deeppink', 'firebrick', 'fuchsia', 'hotpink', 'indianred',
-    'lightcoral', 'magenta', 'maroon', 'orange', 'orangered', 'pink', 'red',
+    'magenta', 'maroon', 'orange', 'orangered', 'pink', 'red',
     'rosybrown', 'saddlebrown', 'salmon', 'sandybrown', 'sienna', 'tomato',
     'palevioletred', 'mediumvioletred', 'violet'
 ]

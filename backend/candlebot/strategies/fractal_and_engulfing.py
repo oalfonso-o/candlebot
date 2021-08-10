@@ -5,10 +5,12 @@ from candlebot.indicators.ema import (
 )
 from candlebot.indicators.william_fractal import IndicatorWilliamBullFractals
 from candlebot.indicators.william_fractal import IndicatorWilliamBearFractals
+from candlebot.indicators.engulfing import IndicatorEngulfingBull
+from candlebot.indicators.engulfing import IndicatorEngulfingBear
 
 
-class StrategyScalpingYolo(StrategyBase):
-    _id = 'scalping_yolo'
+class StrategyFractalAndEngulfing(StrategyBase):
+    _id = 'fractal_and_engulfing'
     variables = []
     indicators = [
         IndicatorEMA10,
@@ -17,6 +19,8 @@ class StrategyScalpingYolo(StrategyBase):
     markers_indicators = [
         IndicatorWilliamBullFractals,
         IndicatorWilliamBearFractals,
+        IndicatorEngulfingBull,
+        IndicatorEngulfingBear,
     ]
     len_queue = 15
     custom_df_ready_conditions = []
@@ -27,9 +31,10 @@ class StrategyScalpingYolo(StrategyBase):
     }
     open_conditions = [
         'trend_long',
+        'bull_engulfing_and_bull_fractal',
         'all_5_prev_rows_ema10_gt_ema20',
         'crow_color_green',
-        'crow_close_gt_ema10',
+        # 'crow_close_gt_ema10',
     ]
     post_open_actions = []
     close_win_conditions = [
@@ -38,5 +43,11 @@ class StrategyScalpingYolo(StrategyBase):
     close_lose_conditions = [
         ('cond_close_lose_pips_margin', 'close_lose_pip_margin'),
     ]
-    win_pips_margin = 30
-    loss_pips_margin = 30
+    win_pips_margin = 40
+    loss_pips_margin = 100
+
+    def bull_engulfing_and_bull_fractal(self, crow):
+        return bool(
+            crow[IndicatorWilliamBullFractals._id]
+            and crow[IndicatorEngulfingBull._id]
+        )
