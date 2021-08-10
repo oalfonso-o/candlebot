@@ -4,6 +4,10 @@ import numpy as np
 
 class IndicatorWilliamBullFractals:
     _id = 'william_bull_fractals'
+    text = 'bull fractal'
+    position = 'belowBar'
+    color = 'green'
+    shape = 'arrowUp'
     variables = []
 
     @classmethod
@@ -35,6 +39,10 @@ class IndicatorWilliamBullFractals:
 
 class IndicatorWilliamBearFractals:
     _id = 'william_bear_fractals'
+    text = 'bear fractal'
+    position = 'aboveBar'
+    color = 'red'
+    shape = 'arrowDown'
     variables = []
 
     @classmethod

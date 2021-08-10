@@ -2,6 +2,7 @@ import logging
 import pandas as pd
 
 from candlebot.strategies.scalping_yolo import StrategyScalpingYolo
+from candlebot.strategies.scalping import StrategyScalping
 from candlebot import utils
 from candlebot import constants
 
@@ -12,6 +13,7 @@ class Strategist:
 
     strategies = {
         'scalping_yolo': StrategyScalpingYolo,
+        'scalping': StrategyScalping,
     }
 
     @classmethod

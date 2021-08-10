@@ -6,6 +6,7 @@ def add_open_close_points_to_chart_positions(position, time, chart_positions):
             'position': 'belowBar',
             'color': 'blue',
             'shape': 'arrowUp',
+            'size': 2,
         }
         chart_positions.append(point_open_position)
     if position.action == 'close':
@@ -13,8 +14,9 @@ def add_open_close_points_to_chart_positions(position, time, chart_positions):
             'time': time,
             'text': str(round(position.amount, 4)),
             'position': 'aboveBar',
-            'color': 'green',
+            'color': 'orange',
             'shape': 'arrowDown',
+            'size': 2,
         }
         chart_positions.append(point_close_position)
 

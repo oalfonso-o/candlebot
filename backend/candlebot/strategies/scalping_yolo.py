@@ -4,6 +4,7 @@ from candlebot.indicators.ema import (
     IndicatorEMA20,
 )
 from candlebot.indicators.william_fractal import IndicatorWilliamBullFractals
+from candlebot.indicators.william_fractal import IndicatorWilliamBearFractals
 
 
 class StrategyScalpingYolo(StrategyBase):
@@ -15,6 +16,7 @@ class StrategyScalpingYolo(StrategyBase):
     ]
     markers_indicators = [
         IndicatorWilliamBullFractals,
+        IndicatorWilliamBearFractals,
     ]
     len_queue = 15
     custom_df_ready_conditions = []

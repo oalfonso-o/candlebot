@@ -23,7 +23,7 @@
         <div id=charts_legend>
             <table>
                 <tr>
-                    <td colspan="3" class="charts_legend_stats_title">
+                    <td colspan="2" class="charts_legend_stats_title">
                         Markers Indicators
                     </td>
                 </tr>
@@ -32,22 +32,16 @@
                         id
                     </td>
                     <td>
-                        color above
-                    </td>
-                    <td>
-                        color below
+                        color
                     </td>
                 </tr>
-                {% for indicator_id, indicator_data in legend.markers_indicators.items() %}
+                {% for indicator_id, color in legend.markers_indicators.items() %}
                     <tr>
                         <td>
                             {{ indicator_id }}
                         </td>
-                        <td style="background-color: {{ indicator_data.above }}">
-                            {{ indicator_data.above }}
-                        </td>
-                        <td style="background-color: {{ indicator_data.below }}">
-                            {{ indicator_data.below }}
+                        <td style="background-color: {{ color }}">
+                            {{ color }}
                         </td>
                     </tr>
                 {% endfor %}

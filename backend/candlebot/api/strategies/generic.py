@@ -16,19 +16,19 @@ logger = logging.getLogger(__name__)
 generic_colors = [
     'darkviolet', 'plum', 'orchid', 'mediumorchid', 'darkorchid', 'purple',
     'mediumpurple', 'mediumslateblue', 'blueviolet', 'darkmagenta',
-    'darkgoldenrod', 'antiquewhite', 'azure', 'beige', 'bisque',
-    'blanchedalmond', 'cadetblue', 'chartreuse', 'cornsilk', 'darkgray',
-    'darkgreen', 'darkgrey', 'darkkhaki', 'darkolivegreen', 'darksalmon',
-    'darkseagreen', 'dimgrey', 'floralwhite', 'forestgreen', 'gainsboro',
-    'gold', 'goldenrod', 'gray', 'green', 'greenyellow', 'grey', 'honeydew',
-    'ivory', 'khaki', 'lavender', 'lavenderblush', 'lawngreen', 'lemonchiffon',
-    'lightgoldenrodyellow', 'lightgray', 'lightgreen', 'lightgrey',
-    'lightpink', 'lightsalmon', 'lightslategray', 'lightslategrey',
+    'darkgoldenrod', 'azure', 'beige', 'bisque',
+    'blanchedalmond', 'cadetblue', 'chartreuse', 'cornsilk',
+    'darkgreen', 'darkkhaki', 'darkolivegreen', 'darksalmon',
+    'darkseagreen', 'forestgreen', 'gainsboro',
+    'gold', 'goldenrod', 'green', 'greenyellow', 'honeydew',
+    'ivory', 'khaki', 'lavender', 'lawngreen', 'lemonchiffon',
+    'lightgoldenrodyellow', 'lightgreen',
+    'lightpink', 'lightsalmon'
     'lightsteelblue', 'lightyellow', 'lime', 'limegreen',
     'mediumseagreen', 'mediumspringgreen', 'mistyrose', 'moccasin',
-    'navajowhite', 'oldlace', 'olive', 'olivedrab', 'palegoldenrod',
+    'oldlace', 'olive', 'olivedrab', 'palegoldenrod',
     'palegreen', 'papayawhip', 'peachpuff', 'peru', 'seagreen', 'seashell',
-    'silver', 'slategray', 'slategrey', 'springgreen', 'tan', 'thistle',
+    'silver', 'springgreen', 'tan', 'thistle',
     'wheat', 'yellow'
 ]
 
@@ -73,7 +73,6 @@ def calc(
     log_wallet_stats(wallet)
     Strategy = Strategist.strategies[strategy]
     candles = []
-    chart_positions_long = []
     index_positions_long = 0
     lines_indicators = Strategy.indicators
     markers_indicators = Strategy.markers_indicators
@@ -87,7 +86,7 @@ def calc(
             index_positions_long=index_positions_long,
             wallet=wallet,
             time=time,
-            chart_positions_long=chart_positions_long,
+            markers_series_data=markers_series_data,
         )
         add_lines_series_data_points(
             indicators=lines_indicators,
@@ -103,11 +102,10 @@ def calc(
         )
 
     lines_series = get_lines_series(lines_series_data, ind_used_colors)
-    charts = basic_charts_dict(candles, chart_positions_long, lines_series)
-    markers = {
-        'title_x': {'above': 'red', 'below': 'blue'},
-        'title_y': {'above': 'magenta', 'below': 'teal'},
-    }
+    charts = basic_charts_dict(candles, markers_series_data, lines_series)
+    markers = {i._id: i.color for i in markers_indicators}
+    markers['open'] = 'blue'  # TODO: don't harcode this
+    markers['close'] = 'orange'
     stats = get_stats(wallet)
     return {
         'charts': charts,
@@ -142,7 +140,7 @@ def log_wallet_stats(wallet):
     logger.info(f'% earn: {wallet.stats.earn_percentage}%')
 
 
-def add_long_markers(index_positions_long, wallet, time, chart_positions_long):
+def add_long_markers(index_positions_long, wallet, time, markers_series_data):
     if (
         index_positions_long < len(wallet.positions_long)
         and (
@@ -153,11 +151,11 @@ def add_long_markers(index_positions_long, wallet, time, chart_positions_long):
         add_open_close_points_to_chart_positions(
             wallet.positions_long[index_positions_long],
             time,
-            chart_positions_long,
+            markers_series_data,
         )
         index_positions_long += 1
     else:
-        chart_positions_long.append({'time': time})
+        markers_series_data.append({'time': time})
     return index_positions_long
 
 
@@ -170,7 +168,14 @@ def add_lines_series_data_points(indicators, lines_series_data, time, candle):
 def add_markers_series_data_points(
     indicators, markers_series_data, time, candle
 ):
-    pass
+    for i in indicators:
+        point = {'time': time}
+        if candle[i._id]:
+            point['text'] = i.text
+            point['position'] = i.position
+            point['color'] = i.color
+            point['shape'] = i.shape
+        markers_series_data.append(point)
 
 
 def get_lines_series(lines_series_data, ind_used_colors):
