@@ -71,7 +71,7 @@ def calc(
         return []
     strat_df, wallet = Strategist.calc(candles, strategy)
     log_wallet_stats(wallet)
-    Strategy = Strategist.all_strats()[strategy]
+    Strategy = Strategist.strategies[strategy]
     candles = []
     chart_positions_long = []
     index_positions_long = 0
@@ -167,7 +167,9 @@ def add_lines_series_data_points(indicators, lines_series_data, time, candle):
         lines_series_data[i._id].append(point)
 
 
-def add_markers_series_data_points():
+def add_markers_series_data_points(
+    indicators, markers_series_data, time, candle
+):
     pass
 
 
