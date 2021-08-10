@@ -19,6 +19,7 @@
         </div>
     </div>
     <div id="page-container-charter" data-points="{{ data_points }}"></div>
+    {% if legend %}
     <div id=charts_legend_stats_container>
         <div id=charts_legend>
             <table>
@@ -100,6 +101,9 @@
             </table>
         </div>
     </div>
+    {% else %}
+    No data returned from api, maybe you need first to backfill the database with the desired PAIR + INTERVAL + PERIOD
+    {% endif %}
 
 {% endblock %}
 {% block footer %}

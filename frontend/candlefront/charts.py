@@ -44,12 +44,12 @@ def charts():
 
     symbols = requests.get('/'.join([config.API, 'forms', 'symbols']))
     intervals = requests.get('/'.join([config.API, 'forms', 'intervals']))
-    strat_response = get_strat_response(strategy_params=strategy_params)
-    legend = get_legend(strat_response)
     strategies = requests.get(
         '/'.join([config.API, 'backtesting', 'strategies']))
     strategies = strategies.json()
-    strategy_params['strategy'] = strategy_selected
+    strat_response = get_strat_response(strategy_params=strategy_params)
+    legend = get_legend(strat_response) if strat_response else {}
+    chart_data = json.dumps(strat_response['charts']) if strat_response else {}
     return render_template(
         'index.html',
         symbol_options=symbols.json(),
@@ -58,7 +58,7 @@ def charts():
         strategy_selected=strategy_selected,
         interval_options=intervals.json(),
         strategy_options=strategies,
-        data_points=json.dumps(strat_response['charts']),
+        data_points=chart_data,
         legend=legend,
         show_strategy=True,
         submit_button_text='Charts',

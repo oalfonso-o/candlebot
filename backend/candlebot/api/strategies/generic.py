@@ -65,8 +65,8 @@ def calc(
     )
     candles = list(candles_cursor)
     if not candles:
-        logger.warning('Not candles!!!')
-        return []
+        logger.warning('No candles!!!')
+        return {}
     strat_df, wallet = Strategist.calc(candles, strategy)
     log_wallet_stats(wallet)
     Strategy = Strategist.strategies[strategy]

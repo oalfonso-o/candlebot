@@ -1,3 +1,9 @@
+TODO:
+- return list of closed positions (win/lose) with it's position in the chart
+    - print a table with close positions and a button, when click the button, the chart goes to that position -> chart.timeScale().scrollToPosition(2, true);
+- add a datetime picker to scroll the view to X position with "chart.timeScale().scrollToPosition(2, true);"
+    - for the coordinate this method can be used "chart.timeScale().timeToCoordinate('1990-04-24');"
+
 MA indicators are used with 1h candles, so MA 200 in 1h candles uses 200 1h candles,
 if we switch to 15min we have to use MA 800 because 15m is a 1/4 of 60m
 so we always must respect the MA ratio between interval and number of candles
