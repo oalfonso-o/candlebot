@@ -101,3 +101,13 @@ class Charter {
 
 const charter = new Charter()
 charter.init()
+
+function changeChartPosition(event) {
+  datetime = new Date(event.target.value).getTime() / 1000
+  console.log(datetime)
+  chart = charter.charts[0].chart
+  position = chart.timeScale().timeToCoordinate(datetime);
+  console.log(position)
+  console.log(chart)
+  chart.timeScale().scrollToPosition(position, true);
+}

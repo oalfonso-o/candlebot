@@ -1,27 +1,10 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-    <div class="row" style="height: 38px;">
-        <div class="col-2">
-            <p class="p-heading--3">{{ strategy_params.symbol }}</p>
-        </div>
-        <div class="col-2">
-            <div class="u-align-text--small-to-default p-text--small">from: {{ strategy_params.date_from }}</div>
-        </div>
-        <div class="col-2" style="text-align: center;">
-            <p class="p-text--x-small-capitalised u-align-text--x-small-to-default" style="font-weight: 700">{{ strategy_params.strategy }}</p>
-        </div>
-        <div class="col-2">
-            <div class="u-align-text--small-to-default p-text--small">to: {{ strategy_params.date_to }}</div>
-        </div>
-        <div class="col-4">
-            <p class="p-text--x-small-capitalised u-align-text--x-small-to-default">Interval: {{ strategy_params.interval }}</p>
-        </div>
-    </div>
     <div id="page-container-charter" data-points="{{ data_points }}"></div>
     {% if legend %}
-    <div id=charts_legend_stats_container>
-        <div id=charts_legend>
+    <div id="charts_legend_stats_container">
+        <div class="charts_legend">
             <table>
                 <tr>
                     <td colspan="2" class="charts_legend_stats_title">
@@ -48,7 +31,7 @@
                 {% endfor %}
             </table>
         </div>
-        <div id=charts_legend>
+        <div class="charts_legend">
             <table>
                 <tr>
                     <td colspan="2" class="charts_legend_stats_title">
@@ -99,6 +82,10 @@
                     </tr>
                 {% endfor %}
             </table>
+        </div>
+        <div id="charts_datetime">
+            <label for="point_in_chart">Choose a point in the chart</label>
+            <input type="datetime-local" id="point_in_chart" name="point_in_chart" value="2021-08-09T00:00" onchange="changeChartPosition(event)">
         </div>
     </div>
     {% else %}

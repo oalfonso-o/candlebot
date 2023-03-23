@@ -53,5 +53,4 @@ table th {
 
 #charts_legend_stats_container {display: flex; margin: 0 auto;}
 .charts_legend_stats_title {font-size: 16px; text-align: center}
-#charts_legend {padding-right: 200px;}
-#charts_stats {padding-right: 200px;}
+.charts_legend, #charts_stats, #charts_datetime {padding-right: 50px;}
