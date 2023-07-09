@@ -37,14 +37,16 @@ And now we can also run the commands of `run.py` but more friendly.
 
 We can do it from a form:
 
-![backfilling](docs_assets/backfill_btc_usdt_1d.webm)
+[backfill_btc_usdt_1d.webm](https://github.com/oalfonso-o/candlebot/assets/9935204/c349f2b9-9e2e-4d30-a182-0a1182c2213f)
+
 
 And now we can test our strategies:
 
 ### Testing an strategy (backtesting)
 
 Also from the dashboard:
-![backtesting](docs_assets/testing_strategy.webm)
+
+[testing_strategy.webm](https://github.com/oalfonso-o/candlebot/assets/9935204/b2e0af64-578d-4980-8b23-6be845ca2856)
 
 
 ## Usage: backend/run.py
