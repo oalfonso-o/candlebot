@@ -37,14 +37,16 @@ And now we can also run the commands of `run.py` but more friendly.
 
 We can do it from a form:
 
-![backfilling](docs_assets/backfill_btc_usdt_1d.webm)
+[backfill_btc_usdt_1d.webm](https://github.com/oalfonso-o/candlebot/assets/9935204/c349f2b9-9e2e-4d30-a182-0a1182c2213f)
+
 
 And now we can test our strategies:
 
 ### Testing an strategy (backtesting)
 
 Also from the dashboard:
-![backtesting](docs_assets/testing_strategy.webm)
+
+[testing_strategy.webm](https://github.com/oalfonso-o/candlebot/assets/9935204/b2e0af64-578d-4980-8b23-6be845ca2856)
 
 This example shows a minimum win of 0.04% from Jan 01 2022 to Jul 07 2023, this strategy is not worth it. And I couldn't find one that was really a winning strategy. But this project allows you defining your own strategy, when to buy, when to sell, take into account the fees for each operation and see if with a rigic logic you could find a method that it always returns profit.
 
