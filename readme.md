@@ -18,6 +18,34 @@ Some of the features included in this project:
 - For a complete list of commands we have backend/run.py
 
 
+## Dashboard
+
+To make it easy to work with this data there's a dashboard, we need to run the front and the backend:
+
+```
+make back
+```
+and
+```
+make front
+```
+(With mongod running)
+
+And now we can also run the commands of `run.py` but more friendly.
+
+### Backfilling
+
+We can do it from a form:
+
+![backfilling](docs_assets/backfill_btc_usdt_1d.webm)
+
+And now we can test our strategies:
+
+### Testing an strategy (backtesting)
+
+Also from the dashboard:
+![backtesting](docs_assets/testing_strategy.webm)
+
 
 ## Usage: backend/run.py
 
@@ -59,6 +87,12 @@ Take into account that this can take very long, as it have many currencies, feel
 ### 2. Fill
 Same as Fil All but only foran specific pair of crypto currencies to allow us doing backtesting with them
 
+This is better to fill only the data needed for your tests, for example ADA USDT for 1 day candles since Jan 01 2021:
+
+```
+python backend/run.py fill --symbol ADAUSDT --interval 1d --fill-date-from 20210101
+```
+
 ### 3. Crawl
 Keep a loop running that will collect the latest candles in the specified interval in real time for an specified currency pair
 
@@ -75,20 +109,6 @@ Run the backtesting strategy which will store the results of the win/loses in th
 Retrieve current prices of multiple CEX and check if there's enough difference between any of them to make it worth to buy cheaper in one CEX, transfer it to the other and sell there getting profit.
 
 
-
-## Dashboard
-
-To make it easy to work with this data there's a dashboard, we need to run the front and the backend:
-
-```
-make back
-```
-and
-```
-make front
-```
-
-With mongod running
 
 
 ## List of Symbols
