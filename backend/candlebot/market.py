@@ -166,12 +166,14 @@ class Hotbit:
     def parse_prices(cls, response, symbol=None):
         market_values = {}
         response_data = response.json()
-        for data in response_data['ticker']:
-            symbol = data['symbol']
-            price = float(data['last'])
-            vol = float(data['vol']) * price
-            if is_trackable_symbol(symbol, vol, cls.BANNED_SYMBOLS):
-                market_values[symbol] = price
+        ticker = response_data['ticker']
+        if ticker:
+            for data in response_data['ticker']:
+                symbol = data['symbol']
+                price = float(data['last'])
+                vol = float(data['vol']) * price
+                if is_trackable_symbol(symbol, vol, cls.BANNED_SYMBOLS):
+                    market_values[symbol] = price
         return market_values
 
 
