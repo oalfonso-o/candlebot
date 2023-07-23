@@ -217,8 +217,8 @@ This opportunity looks crazy, it says we can get a ~x1293 (+129309%) of profit b
 You can check them in `backend.candlebot.constants`
 
 ## Interesting documentation
-- https://www.youtube.com/watch?v=L7G0OfJUON8
-- https://www.youtube.com/watch?v=9h3lByx59ns&t=1s
-- https://www.youtube.com/channel/UCkDiQC3OeMnHBcSWgBy2plQ/videos
-- https://jsfiddle.net/trior/q3kt6psb/3/ -> pin charts
-- https://jsfiddle.net/q3u2khzt/ -> show volume
+- [https://www.youtube.com/watch?v=L7G0OfJUON8](https://www.youtube.com/watch?v=L7G0OfJUON8)
+- [https://www.youtube.com/watch?v=9h3lByx59ns&t=1s](https://www.youtube.com/watch?v=9h3lByx59ns&t=1s)
+- [https://www.youtube.com/channel/UCkDiQC3OeMnHBcSWgBy2plQ/videos](https://www.youtube.com/channel/UCkDiQC3OeMnHBcSWgBy2plQ/videos)
+- [https://jsfiddle.net/trior/q3kt6psb/3/](https://jsfiddle.net/trior/q3kt6psb/3/) -> pin charts
+- [https://jsfiddle.net/q3u2khzt/](https://jsfiddle.net/q3u2khzt/) -> show volume
