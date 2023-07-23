@@ -50,17 +50,44 @@ And we see we retrieved 2167 candles
 
 And now we can test our strategies:
 
-### Testing a strategy (backtesting)
+### Testing a strategy and visualize it in the chart
 
-Also from the dashboard:
+Also from the dashboard, in this case an example with ADAUSDT (in the backfill step we backfilled ETHUSDT, you can select the symbol in the form), this helps to define our strategy:
 
-[testing_strategy.webm](https://github.com/oalfonso-o/candlebot/assets/9935204/b2e0af64-578d-4980-8b23-6be845ca2856)
+![candlebot_backtesting_ada](https://github.com/oalfonso-o/candlebot/assets/9935204/8f78bd52-296b-44e6-a67c-e9cefe588991)
 
-This example shows a minimum win of 0.04% from Jan 01 2022 to Jul 07 2023, this strategy is not worth it. And I couldn't find one that was really a winning strategy. But this project allows you defining your own strategy, when to buy, when to sell, take into account the fees for each operation and see if with a rigid logic you could find a method that it always returns profit.
+In this example we select since 2000 up to 2023 for ADAUSDT symbol with intervals of 1d and strategy "fractal_and_engulfing" (you have to define in code your own strategies, this is a random strategy being tested). The first candle is from January 2021 and the last from July 2023. In the chart we can see all the indicators needed for this strategy which helps to debug the decisions we put in this strategy on when to open and when to close position. We can also see the candles where we open and where we close the position. In the lower section we see a legend with a summary, showing the number of "winner" operations which in this case is 4 and the % of amount at the end of this period using this strategy. We see it's only close to 0.1% of win (100.099) which doesn't look very promising in 2 years and a half.
 
 The good thing of this is the level of detail and having the charts to validate what would happen with your strategy with the past data.
 
 To define your own strategy you need to add a new strategy in `backend.candlebot.strategist.Strategist.strategies`, you can use other strategies as a reference to create your own.
+
+It's pending to add also more details about the current wallet being used, as the strategy simulates a wallet and a fictional amount used to open and close positions.
+
+### Backtesting
+
+Once we have our trategy tested with the charts and we see it's something it can make sense and be a "winner" option to put it to work automatic it's time to validate this doing backtesting using more time periods and more symbols, as we can think our strategy can beat any market but only backtesting can prove that it is true. For that there's also a friendly view in the dashboard to run our strategy against many options. Depending on the number of options that you select this can take a lot of time, it's better to start backtesting with less periods and currencies. The output of the backtest is a summary of stats to be able to view the top most efficient strategies with their symbols, intervals and stats.
+
+An example running 2 backtests with ADAUSDT and ETHUSDT for 1 day interval with the strategy we saw previously:
+
+![candlebot_backtesting_ada_eth_1d](https://github.com/oalfonso-o/candlebot/assets/9935204/1eb9a6e1-763e-427c-8596-ee7844bd3a8a)
+
+After running the test we see 2 lines, one per each symbol but we could select all the symbols (we need them backfilled first) and add also 1m period (but think that 1m candlesticks are too many candlesticks to process in a normal laptop, 1 year of daily candlesticks are only 365 candles, 1 year of candles with 1m interval are 525600 candles, and also multiply this per the number of symbols so better start the backtesting with less number of permutations and bigger intervals).
+
+In each line we see these details:
+
+- Strategy: fractal_and_engulfing
+- Symbol: ADAUSDT and ETHUSDT
+- Interval: 1d
+- % won: the table is sorted by this value, so we see the best strategy for this backtest
+- Balance Origin Start: the amount of fake currency present in the wallet before starting
+- Balance Origin End: the amount of take currency present in the wallet after the test -> in this case the real win amount is very sad TBH
+- Open amount: which is 100, this can be configured in the strategy, to open positions with a different amount
+- Balance Long: the final balance in open positions in long, it's 0 because all the open positions have been closed
+- Opened Position Long: number of total operations opened in long
+- Closed Positions Long: number of total operations closed in long
+- Fee: total amount paid in fees (in Binance you pay a fixed fee for each operation, we need to take this into account too)
+- Date From, Date To and the Date of the test
 
 
 ## Usage: backend/run.py
