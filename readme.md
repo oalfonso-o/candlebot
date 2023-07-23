@@ -56,7 +56,7 @@ Also from the dashboard:
 
 [testing_strategy.webm](https://github.com/oalfonso-o/candlebot/assets/9935204/b2e0af64-578d-4980-8b23-6be845ca2856)
 
-This example shows a minimum win of 0.04% from Jan 01 2022 to Jul 07 2023, this strategy is not worth it. And I couldn't find one that was really a winning strategy. But this project allows you defining your own strategy, when to buy, when to sell, take into account the fees for each operation and see if with a rigic logic you could find a method that it always returns profit.
+This example shows a minimum win of 0.04% from Jan 01 2022 to Jul 07 2023, this strategy is not worth it. And I couldn't find one that was really a winning strategy. But this project allows you defining your own strategy, when to buy, when to sell, take into account the fees for each operation and see if with a rigid logic you could find a method that it always returns profit.
 
 The good thing of this is the level of detail and having the charts to validate what would happen with your strategy with the past data.
 
