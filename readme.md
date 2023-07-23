@@ -14,9 +14,9 @@ Some of the features included in this project:
 - Create a virtualenv with python 3.8
 - Install `backend` and `frontend` with pip
 - Run a mongod
-- Copy .env.example to .env and customize vars
-- For a complete list of commands we have backend/run.py
-
+- Create a [Binance API key](https://www.binance.com/en/support/faq/how-to-create-api-keys-on-binance-360002502072)
+- Copy .env.example to .env and customize vars -> here you need the Binance API key
+- For a complete list of commands we have `python backend/run.py --help`
 
 ## Dashboard
 
@@ -31,7 +31,7 @@ make front
 ```
 (With mongod running)
 
-And now we can also run the commands of `run.py` but more friendly.
+And now we can also run some of the commands of `run.py` but more friendly.
 
 ### Backfilling
 
@@ -146,12 +146,71 @@ python backend/run.py crawl -s BTCUSDT
 We have the pairs choices in the help message of `run.py`.
 
 ### 4. Backtesting
-Run the backtesting strategy which will store the results of the win/loses in the database
+Run the backtesting strategy which will store the results of the win/loses in the database, you need to define a test in the `backend/backtesting.yml` which can be created from the template of `backend/backtesting.yml.example`. The test has to be defined under the key of `tests` in that yaml, then use this id to run the backtesting:
+
+```
+python backend/run.py backtesting --bt-test-id fractal_and_engulfing
+```
+
+Notice that this strategy is not in the example yaml, has to be defined, check the implementation of this command for better understanding.
 
 ### 5. Market Arbitrage
 Retrieve current prices of multiple CEX and check if there's enough difference between any of them to make it worth to buy cheaper in one CEX, transfer it to the other and sell there getting profit.
 
+An example:
 
+```
+$ python backend/run.py market
+2023-07-23 13:57:10,568             root   <module>    INFO: Command market launched.
+2023-07-23 13:57:10,568 candlebot.market    compare    INFO: Start comparing prices
+2023-07-23 13:57:10,568 candlebot.market    compare    INFO: CEX: binance
+2023-07-23 13:57:13,561 candlebot.market    compare    INFO: CEX: crypto
+2023-07-23 13:57:14,364 candlebot.market    compare    INFO: CEX: poloniex
+2023-07-23 13:57:14,624 candlebot.market    compare    INFO: CEX: gateio
+2023-07-23 13:57:16,480 candlebot.market    compare    INFO: CEX: bitmart
+2023-07-23 13:57:17,185 candlebot.market    compare    INFO: CEX: hotbit
+2023-07-23 13:57:17,612 candlebot.market    compare    INFO: CEX: kucoin
+2023-07-23 13:57:18,140 candlebot.market _reconcile    INFO: Reconciling prices
+2023-07-23 13:57:18,141 candlebot.market _compare_r    INFO: Calculate best price
+QUICKUSDT [129309.55]
+	- binance	https://www.binance.com/es/trade/QUICKUSDT?type=spot
+	+ kucoin	https://trade.kucoin.com/QUICK-USDT
+
+[{'symbol': 'QUICKUSDT', 'prices': [{'binance': 0.05301}, {'kucoin': 68.6}], 'best_percent': 129309.54536879832, 'best': {'low': {'cex': 'binance', 'price': 0.05301, 'exchange_endpoint': 'https://www.binance.com/es/trade/QUICKUSDT?type=spot'}, 'high': {'cex': 'kucoin', 'price': 68.6, 'exchange_endpoint': 'https://trade.kucoin.com/QUICK-USDT'}}}]
+2023-07-23 13:57:18,143             root   <module>    INFO: Command market finished.
+```
+
+We can see we have found a possible option of gaining some profit margin doing arbitrage between Binance and Kucoin:
+```json
+[
+    {
+       "symbol":"QUICKUSDT",
+       "prices":[
+          {
+             "binance":0.05301
+          },
+          {
+             "kucoin":68.6
+          }
+       ],
+       "best_percent":129309.54536879832,
+       "best":{
+          "low":{
+             "cex":"binance",
+             "price":0.05301,
+             "exchange_endpoint":"https://www.binance.com/es/trade/QUICKUSDT?type=spot"
+          },
+          "high":{
+             "cex":"kucoin",
+             "price":68.6,
+             "exchange_endpoint":"https://trade.kucoin.com/QUICK-USDT"
+          }
+       }
+    }
+ ]
+```
+
+This opportunity looks crazy, it says we can get a ~x1293 (+129309%) of profit buying this token in Binance at 0.05 USDT and selling it in Kucoin at 68.6 USDT, so 99.9% of the times there's something wrong with this. There are the links to the exchanges to see the charts and compare. In this case we can see they have the same symbol name "QUICK" but are different tokens, other times the volume is dead in the "profitable" CEX so nobody is going to buy it and others the CEX is blocking doing transfers for that token or the fees are so high that the profit margin is destroyed. This tool is interesting but there are many other bots already playing this game so it's not so easy taking advantage here.
 
 
 ## List of Symbols
