@@ -66,7 +66,7 @@ It's pending to add also more details about the current wallet being used, as th
 
 ### Backtesting
 
-Once we have our trategy tested with the charts and we see it's something it can make sense and be a "winner" option to put it to work automatic it's time to validate this doing backtesting using more time periods and more symbols, as we can think our strategy can beat any market but only backtesting can prove that it is true. For that there's also a friendly view in the dashboard to run our strategy against many options. Depending on the number of options that you select this can take a lot of time, it's better to start backtesting with less periods and currencies. The output of the backtest is a summary of stats to be able to view the top most efficient strategies with their symbols, intervals and stats.
+Once we have our strategy tested with the charts and we see it's something it can make sense and be a "winner" option to put it to work automatic it's time to validate this doing backtesting using more time periods and more symbols, as we can think our strategy can beat any market but only backtesting can prove that it is true. For that there's also a friendly view in the dashboard to run our strategy against many options. Depending on the number of options that you select this can take a lot of time, it's better to start backtesting with less periods and currencies. The output of the backtest is a summary of stats to be able to view the top most efficient strategies with their symbols, intervals and stats.
 
 An example running 2 backtests with ADAUSDT and ETHUSDT for 1 day interval with the strategy we saw previously:
 
