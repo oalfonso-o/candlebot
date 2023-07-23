@@ -4,7 +4,7 @@ Project to retrieve historical crypto data from CEX (Centralized Exchanges) like
 
 Some of the features included in this project:
 
-- crawl Binance candles and store them in a DB
+- crawl Binance [candlesticks](https://en.wikipedia.org/wiki/Candlestick_chart) and store them in a DB
 - show charts of these values
 - define custom backtesting strategies, run them against real historical data and see the charts with all the forecasted operations
 - put this strategy to run automatically with the Binance API (WIP)
@@ -37,12 +37,20 @@ And now we can also run the commands of `run.py` but more friendly.
 
 We can do it from a form:
 
-[backfill_btc_usdt_1d.webm](https://github.com/oalfonso-o/candlebot/assets/9935204/c349f2b9-9e2e-4d30-a182-0a1182c2213f)
+![candlebot_backfill](https://github.com/oalfonso-o/candlebot/assets/9935204/61224e09-b335-4206-b4ff-6d841e86abee)
 
+Here we are downloading candles from Binance:
+
+- since 2000: first candle starts in 2017
+- until 2023
+- candles intervals of 1 day
+- symbol ETHUSDT
+
+And we see we retrieved 2167 candles
 
 And now we can test our strategies:
 
-### Testing an strategy (backtesting)
+### Testing a strategy (backtesting)
 
 Also from the dashboard:
 
