@@ -266,7 +266,7 @@ class Backtesting:
             'balance_long': wallet.balance_long,
             'open_positions_long': open_positions_long,
             'close_positions_long': close_positions_long,
-            'total_payed_fees': wallet.total_payed_fees,
+            'total_payed_fees': wallet.stats.total_payed_fees,
             **specific_fields,
         }
         return row
