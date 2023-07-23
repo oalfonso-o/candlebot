@@ -128,7 +128,7 @@ python backend/run.py fill_all
 Take into account that this can take very long, as it have many currencies, feel free to edit the constants to reduce the number of pairs. Also there's risk of getting banned if the CEX APIs decide to do it.
 
 ### 2. Fill
-Same as Fil All but only for a specific pair of crypto currencies to allow us doing backtesting with them
+Same as Fill All but only for a specific pair of crypto currencies to allow us doing backtesting with them
 
 This is better to fill only the data needed for your tests, for example ADA USDT for 1 day candles since Jan 01 2021:
 
